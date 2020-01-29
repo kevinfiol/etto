@@ -1,5 +1,9 @@
 const Element = {
-    el: new document.createElement(),
+    el: null,
+
+    init: function(tag) {
+        this.el = document.createElement(tag);
+    },
 
     update: function(props) {
         this.el.innerHTML = this.template(props);
