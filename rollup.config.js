@@ -28,7 +28,7 @@ const configs = [
         plugins: [
             resolve(),
             cjs(),
-            buble(),
+            buble({ objectAssign: 'Object.assign' }),
             isProd && uglify(),
             isDev && serve('dist'),
             isDev && livereload('dist')
@@ -45,7 +45,7 @@ const configs = [
         plugins: [
             resolve(),
             cjs(),
-            buble()
+            buble({ objectAssign: 'Object.assign' })
         ]
     }
 ];

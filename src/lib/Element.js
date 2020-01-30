@@ -1,16 +1,17 @@
 const Element = {
     el: null,
 
-    init: function(tag) {
+    init: function(tag, className) {
         this.el = document.createElement(tag);
+        if (className) this.el.className = className;
     },
 
-    update: function(props) {
-        this.el.innerHTML = this.template(props);
+    addEventListener: function(event, callback, options) {
+        this.el.addEventListener(event, callback, options);
     },
 
-    view: function() {
-        return this.el.innerHTML;
+    setAttr: function(name, value) {
+        this.el.setAttribute(name, value);
     }
 };
 

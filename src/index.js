@@ -1,9 +1,15 @@
-import UnorderedList from './components/UnorderedList';
-import Foo from './components/Foo';
+import State from './lib/State';
+import view from './view';
 
-const state = { name: 'kevin' };
-const container = document.getElementById('demo-1');
+const initialState = { name: 'kevin' };
 
-UnorderedList.update({ state });
+function Etto(root, config, choices) {
+    this.state = Object.create(State);
 
-container.innerHTML = UnorderedList.view();
+    this.state.init(initialState, () => {
+        const props = this.state.props;
+        root.innerHTML = view(props);
+    });
+}
+
+new Etto(document.getElementById('demo-1'), null, null);

@@ -3,32 +3,42 @@
 (function () {
     'use strict';
 
-    var Element = {
-        el: new document.createElement(),
+    var State = {
+        props: null,
+        redraw: null,
 
-        update: function(props) {
-            this.el.innerHTML = this.template(props);
+        init: function(initialState, redraw) {
+            this.props = initialState;
+            this.redraw = redraw;
+            this.redraw();
         },
 
-        view: function() {
-            return this.el.innerHTML;
+        update: function(newState) {
+            this.props = newState;
+            this.redraw();
+        },
+
+        setName: function(name) {
+            this.update(Object.assign({}, this.props, {name: name}));
         }
     };
 
-    var UnorderedList = Object.create(Element);
+    var view = function (props) { return 'foo'; };
 
-    UnorderedList.template = function (props) { return ("\n    <div>\n        hello " + (props.state.name) + "\n        " + (props.children) + "\n    </div>\n"); };
+    var initialState = { name: 'kevin' };
 
-    var Foo = Object.create(Element);
+    function Etto(root, config, choices) {
+        var this$1 = this;
 
-    Foo.template = function () { return "\n    <h2>test me</h2>\n"; };
+        this.state = Object.create(State);
 
-    var state = { name: 'kevin' };
-    var container = document.getElementById('demo-1');
+        this.state.init(initialState, function () {
+            var props = this$1.state.props;
+            root.innerHTML = view();
+        });
+    }
 
-    UnorderedList.update({ state: state });
-
-    container.innerHTML = UnorderedList.view();
+    new Etto(document.getElementById('demo-1'), null, null);
 
 }());
 //# sourceMappingURL=etto.js.map
