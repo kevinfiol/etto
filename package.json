@@ -8,18 +8,19 @@
   "scripts": {
     "dev": "rollup -c -w --environment DEV",
     "build": "rollup -c --environment PROD",
-    "test": "ospec"
+    "test": "ospec --require reify"
   },
   "devDependencies": {
     "@rollup/plugin-buble": "^0.21.0",
     "@rollup/plugin-commonjs": "^11.0.1",
     "@rollup/plugin-node-resolve": "^7.0.0",
     "eslint": "^6.8.0",
+    "jsdom": "^16.0.1",
     "ospec": "^4.0.1",
+    "reify": "^0.20.12",
     "rollup": "^1.30.1",
     "rollup-plugin-livereload": "^1.0.4",
     "rollup-plugin-serve": "^1.0.1",
-    "rollup-plugin-terser": "^5.2.0",
     "rollup-plugin-uglify": "^6.0.4"
   }
 }
