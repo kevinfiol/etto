@@ -11,10 +11,6 @@ const State = {
     update: function(newState) {
         this.props = newState;
         this.redraw();
-    },
-
-    setName: function(name) {
-        this.update({ ...this.props, name });
     }
 };
 

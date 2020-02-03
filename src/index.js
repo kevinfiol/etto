@@ -1,10 +1,10 @@
-import State from './lib/State';
+import EttoState from './EttoState';
 import view from './view';
 
 const initialState = { name: 'kevin' };
 
 function Etto(root, config, choices) {
-    this.state = Object.create(State);
+    this.state = Object.create(EttoState);
 
     this.state.init(initialState, () => {
         const props = this.state.props;
