@@ -6,6 +6,12 @@ const Element = {
         if (className) this.el.className = className;
     },
 
+    assignEl: function(el, className) {
+        if (this.el) delete this.el;
+        this.el = el;
+        if (className) this.el.className = className;
+    }
+
     setClassName: function(className) {
         this.el.className = className;
     },
