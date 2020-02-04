@@ -1,5 +1,4 @@
 import EttoState from './EttoState';
-import view from './view';
 
 const initialState = { name: 'kevin' };
 
