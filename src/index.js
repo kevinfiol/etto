@@ -17,7 +17,8 @@ function Etto(root, config, choices) {
     this.state.init(initialState);
     if (choices) this.state.update({ ...this.state.props, choices });
     
-    this.root = Element.assignEl(root);
+    this.root = Object.create(Element);
+    this.root.assignEl(root);
 
 }
 
