@@ -12,14 +12,13 @@ const initialState = {
     inputVal: '',
 };
 
-function Etto(root, config, choices) {
-    this.state = Object.create(EttoState);
-    this.state.init(initialState);
-    if (choices) this.state.update({ ...this.state.props, choices });
-    
-    this.root = Object.create(Element);
-    this.root.assignEl(root);
+class Etto {
+    constructor(root, config, choices) {
+        this.state = new EttoState(initialState);
+        if (choices) this.state.update({ ...this.state.props, choices });
 
+        this.root = new Element(root);
+    }
 }
 
 new Etto(document.getElementById('demo-1'), {}, ['wisconsin', 'connecticutt', 'minnesota', 'florida']);

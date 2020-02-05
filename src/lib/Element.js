@@ -1,44 +1,46 @@
-const Element = {
-    el: null,
+class Element {
+    constructor(el, className) {
+        if (typeof(el) === 'string') {
+            this.el = document.createElement(el);
+        } else {
+            this.el = el;
+        }
 
-    init: function(tag, className) {
-        this.el = document.createElement(tag);
         if (className) this.el.className = className;
-    },
+    }
 
-    assignEl: function(el, className) {
+    assignEl(el) {
         if (this.el) delete this.el;
         this.el = el;
-        if (className) this.el.className = className;
     }
 
-    setClassName: function(className) {
+    setClassName(className) {
         this.el.className = className;
-    },
+    }
 
-    addClass: function(className) {
+    addClass(className) {
         this.el.classList.add(className);
-    },
+    }
 
-    removeClass: function(className) {
+    removeClass(className) {
         this.el.classList.remove(className);
-    },
+    }
 
-    toggleClass: function(className) {
+    toggleClass(className) {
         this.el.classList.toggle(className);
-    },
+    }
 
-    containsClass: function(className) {
+    containsClass(className) {
         return this.el.classList.contains(className);
-    },
+    }
 
-    addEventListener: function(event, callback, options) {
+    addEventListener(event, callback, options) {
         this.el.addEventListener(event, callback, options);
-    },
+    }
 
-    setAttr: function(name, value) {
+    setAttr(name, value) {
         this.el.setAttribute(name, value);
     }
-};
+}
 
 export default Element;

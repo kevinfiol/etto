@@ -1,8 +1,9 @@
 import State from './lib/State';
-const EttoState = Object.create(State);
 
-// EttoState.setName = function(name) {
-//     this.update({ ...this.props, name });
-// };
+class EttoState extends State {
+    constructor() {
+        super();
+    }
+}
 
 export default EttoState;
