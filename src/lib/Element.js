@@ -1,45 +1,57 @@
 class Element {
-    constructor(el, className) {
-        if (typeof(el) === 'string') {
-            this.el = document.createElement(el);
+    constructor(dom, className) {
+        if (typeof(dom) === 'string') {
+            this.dom = document.createElement(dom);
         } else {
-            this.el = el;
+            this.dom = dom;
         }
 
-        if (className) this.el.className = className;
+        if (className) this.dom.className = className;
+        this.children = [];
     }
 
-    assignEl(el) {
-        if (this.el) delete this.el;
-        this.el = el;
+    assignEl(dom) {
+        if (this.dom) delete this.dom;
+        this.dom = dom;
     }
 
     setClassName(className) {
-        this.el.className = className;
+        this.dom.className = className;
     }
 
     addClass(className) {
-        this.el.classList.add(className);
+        this.dom.classList.add(className);
     }
 
     removeClass(className) {
-        this.el.classList.remove(className);
+        this.dom.classList.remove(className);
     }
 
     toggleClass(className) {
-        this.el.classList.toggle(className);
+        this.dom.classList.toggle(className);
     }
 
     containsClass(className) {
-        return this.el.classList.contains(className);
+        return this.dom.classList.contains(className);
     }
 
     addEventListener(event, callback, options) {
-        this.el.addEventListener(event, callback, options);
+        this.dom.addEventListener(event, callback, options);
     }
 
-    setAttr(name, value) {
-        this.el.setAttribute(name, value);
+    setAttrs(attrs) {
+        for (let key in attrs) {
+            this.dom.setAttribute(key, attrs[key]);
+        }
+    }
+
+    appendChild(element) {
+        this.dom.appendChild(element.dom);
+        this.children.push(element);
+    }
+
+    setInnerHtml(html) {
+        this.dom.innerHTML = html;
     }
 }
 

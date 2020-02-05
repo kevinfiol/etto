@@ -1,5 +1,5 @@
 import Element from './lib/Element';
-import EttoState from './EttoState';
+// import EttoState from './EttoState';
 
 const initialState = {
     minChar: 3,
@@ -14,10 +14,65 @@ const initialState = {
 
 class Etto {
     constructor(root, config, choices) {
-        this.state = new EttoState(initialState);
-        if (choices) this.state.update({ ...this.state.props, choices });
+        // this.state = new EttoState(initialState);
+        // if (choices) this.state.setChoices(choices);
+        this.state = {
+            minChar: 3,
+            maxResults: 7,
+        
+            cache: {},
+            choices: [],
+            filtered: [],
+        
+            inputVal: '',
+        };
+
+        this.ul = this.createUnorderedList();
+        this.ul.setInnerHtml(this.generateList(this.state.props.choices));
+
+        this.dropdown = this.createDropdown();
+        this.dropdown.appendChild(this.ul);
+
+        this.input = this.createInput();
 
         this.root = new Element(root);
+        this.root.appendChild(this.input);
+        this.root.appendChild(this.dropdown);
+    }
+
+    createInput(className) {
+        const input = new Element('input', className);
+        input.setAttrs({
+            autocomplete: 'off',
+            value: '',
+            style: 'box-sizing: border-box;'
+        });
+
+        return input;
+    }
+
+    createDropdown(className) {
+        const dropdown = new Element('div', className);
+        dropdown.setAttrs({
+            style: 'position: absolute; max-height: 300px; width: 100%; background-color: white; overflow: hidden; overflow-y: auto; z-index: 99;'
+        });
+
+        return dropdown;
+    }
+
+    createUnorderedList(className) {
+        const ul = new Element('ul', className);
+        return ul;
+    }
+
+    generateList(choices) {
+        let lis = '';
+
+        for (let i = 0; i < choices.length; i++) {
+            lis += `<li>${ choices[i] }</li>`;
+        }
+
+        return lis;
     }
 }
 
