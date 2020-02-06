@@ -1,4 +1,7 @@
-import Element from './lib/Element';
+import Element from './Element';
+import EttoActions from './EttoActions';
+import { removeHtml, createEmText } from './util';
+
 // import EttoState from './EttoState';
 
 class Etto {
@@ -9,6 +12,8 @@ class Etto {
             filtered: [],
             inputVal: ''
         };
+
+        this.actions = new EttoActions(this.state);
 
         this.source = config.source || null;
         this.minChars = config.minChars || 3;
@@ -27,18 +32,6 @@ class Etto {
         this.root.appendChild(this.dropdown);
     }
 
-    setInputVal(inputVal) {
-        this.state.inputVal = inputVal;
-    }
-
-    setChoices(choices) {
-        this.state.choices = choices;
-    }
-
-    setFiltered(filtered) {
-        this.state.filtered = filtered;
-    }
-
     createInput(className) {
         const input = new Element('input', className);
 
@@ -50,7 +43,7 @@ class Etto {
 
         input.addEventListener('input', e => {
             const inputVal = e.target.value;
-            this.setInputVal(inputVal);
+            this.actions.setInputVal(inputVal);
 
             if (inputVal && inputVal.trim().length >= this.minChars) {
                 if (this.source) this.fetchFromSource(this.onReceiveChoices);
@@ -71,8 +64,8 @@ class Etto {
             this.maxResults
         );
 
-        this.setChoices(choices);
-        this.setFiltered(filtered);
+        this.actions.setChoices(choices);
+        this.actions.setFiltered(filtered);
         this.renderList(this.state.inputVal, filtered);
     }
 
@@ -90,41 +83,51 @@ class Etto {
         return ul;
     }
 
+    createListItem(choice, inputVal) {
+        const li = document.createElement('li');
+        li.setAttribute('style', 'list-style-type: none; cursor: default;');
+        li.className = 'etto-li';
+        li.innerHTML = createEmText(choice.label, inputVal);
+
+        li.addEventListener('mousedown', e => {
+            const filtered = this.filter(
+                choice.value,
+                this.choices,
+                this.matchFullWord,
+                this.maxResults
+            );
+
+            this.actions.setInputVal(choice.value);
+            this.actions.setFiltered(filtered);
+            // then Focus Input and Hide Dropdown
+        });
+
+        return li;
+    }
+
     generateList(inputVal, choices, renderItem) {
-        let items = '';
+        let items = [];
 
         for (let i = 0; i < choices.length; i++) {
             if (renderItem) {
-                items += renderItem(choices[i], inputVal);
+                items.push( renderItem(choices[i], inputVal) );
             } else {
-                const choiceText = this.createEmText(choices[i], inputVal);
-                items += `<li>${ choiceText }</li>`;
+                items.push( this.createListItem(choices[i], inputVal) );
             }
         }
 
         return items;
     }
 
-    createEmText(choice, inputVal) {
-        const label = this.removeHtml(choice);
-        const len = inputVal.length;
-        const emIndex = choice.toUpperCase().indexOf(inputVal.toUpperCase());
-
-        const beg = label.slice(0, emIndex);
-        const mid = label.slice(emIndex, emIndex + len);
-        const end = label.slice(emIndex + len);
-
-        return `${ beg }<b>${ mid }</b>${ end }`;
-    }
-
     filter(inputVal, choices, matchFullWord, maxResults) {
         const v = inputVal.toUpperCase();
 
         let filtered = choices.filter(c => {
-            let index = c.toUpperCase().indexOf(v);
+            const label = c.label;
+            let index = label.toUpperCase().indexOf(v);
 
             const passes = matchFullWord || false
-                ? c[index - 1] === undefined || c[index - 1] === ' '
+                ? label[index - 1] === undefined || label[index - 1] === ' '
                 : true
             ;
 
@@ -138,15 +141,31 @@ class Etto {
     }
 
     renderList(inputVal, filtered) {
-        this.ul.setInnerHtml(this.generateList(inputVal, filtered, this.renderItem));
-    }
+        const items = this.generateList(inputVal, filtered, this.renderItem);
 
-    removeHtml(s) {
-        return s.replace(/&/g, '').replace(/</g, '').replace(/>/g, '');
+        this.ul.setInnerHtml('');
+        for (let i = 0; i < items.length; i++) {
+            this.ul.dom.appendChild(items[i]);
+        }
     }
 }
 
-new Etto(document.getElementById('demo-1'), {}, ['wisconsin', 'connecticutt', 'minnesota', 'florida']);
+
+
+new Etto(document.getElementById('demo-1'), {}, [
+    { label: 'Alabama' },
+    { label: 'Alaska' },
+    { label: 'Michigan' },
+    { label: 'Minnesota' },
+    { label: 'Wyoming' },
+    { label: 'Doug' },
+    { label: 'Omigod Records' },
+    { label: 'Ganon' },
+    { label: 'Little Bambam' },
+    { label: 'Ness from Earthbound' },
+    { label: 'Ghoul' },
+    { label: 'Banana' }
+]);
 
 // const state = {
 //     showDropdown: false,

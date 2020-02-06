@@ -55,6 +55,38 @@ Element.prototype.setInnerHtml = function setInnerHtml (html) {
     this.dom.innerHTML = html;
 };
 
+var EttoActions = function EttoActions(state) {
+    this.state = state;
+};
+
+EttoActions.prototype.setInputVal = function setInputVal (inputVal) {
+    this.state.inputVal = inputVal;
+};
+
+EttoActions.prototype.setChoices = function setChoices (choices) {
+    this.state.choices = choices;
+};
+
+EttoActions.prototype.setFiltered = function setFiltered (filtered) {
+    this.state.filtered = filtered;
+};
+
+function removeHtml(s) {
+    return s.replace(/&/g, '').replace(/</g, '').replace(/>/g, '');
+}
+
+function createEmText(choiceLabel, inputVal) {
+    var label = removeHtml(choiceLabel);
+    var len = inputVal.length;
+    var emIndex = choiceLabel.toUpperCase().indexOf(inputVal.toUpperCase());
+
+    var beg = label.slice(0, emIndex);
+    var mid = label.slice(emIndex, emIndex + len);
+    var end = label.slice(emIndex + len);
+
+    return (beg + "<b>" + mid + "</b>" + end);
+}
+
 // import EttoState from './EttoState';
 
 var Etto = function Etto(root, config, choices) {
@@ -64,6 +96,8 @@ var Etto = function Etto(root, config, choices) {
         filtered: [],
         inputVal: ''
     };
+
+    this.actions = new EttoActions(this.state);
 
     this.source = config.source || null;
     this.minChars = config.minChars || 3;
@@ -82,18 +116,6 @@ var Etto = function Etto(root, config, choices) {
     this.root.appendChild(this.dropdown);
 };
 
-Etto.prototype.setInputVal = function setInputVal (inputVal) {
-    this.state.inputVal = inputVal;
-};
-
-Etto.prototype.setChoices = function setChoices (choices) {
-    this.state.choices = choices;
-};
-
-Etto.prototype.setFiltered = function setFiltered (filtered) {
-    this.state.filtered = filtered;
-};
-
 Etto.prototype.createInput = function createInput (className) {
         var this$1 = this;
 
@@ -107,7 +129,7 @@ Etto.prototype.createInput = function createInput (className) {
 
     input.addEventListener('input', function (e) {
         var inputVal = e.target.value;
-        this$1.setInputVal(inputVal);
+        this$1.actions.setInputVal(inputVal);
 
         if (inputVal && inputVal.trim().length >= this$1.minChars) {
             if (this$1.source) { this$1.fetchFromSource(this$1.onReceiveChoices); }
@@ -128,8 +150,8 @@ Etto.prototype.onReceiveChoices = function onReceiveChoices (choices) {
         this.maxResults
     );
 
-    this.setChoices(choices);
-    this.setFiltered(filtered);
+    this.actions.setChoices(choices);
+    this.actions.setFiltered(filtered);
     this.renderList(this.state.inputVal, filtered);
 };
 
@@ -147,41 +169,53 @@ Etto.prototype.createUnorderedList = function createUnorderedList (className) {
     return ul;
 };
 
+Etto.prototype.createListItem = function createListItem (choice, inputVal) {
+        var this$1 = this;
+
+    var li = document.createElement('li');
+    li.setAttribute('style', 'list-style-type: none; cursor: default;');
+    li.className = 'etto-li';
+    li.innerHTML = createEmText(choice.label, inputVal);
+
+    li.addEventListener('mousedown', function (e) {
+        var filtered = this$1.filter(
+            choice.value,
+            this$1.choices,
+            this$1.matchFullWord,
+            this$1.maxResults
+        );
+
+        this$1.actions.setInputVal(choice.value);
+        this$1.actions.setFiltered(filtered);
+        // then Focus Input and Hide Dropdown
+    });
+
+    return li;
+};
+
 Etto.prototype.generateList = function generateList (inputVal, choices, renderItem) {
-    var items = '';
+    var items = [];
 
     for (var i = 0; i < choices.length; i++) {
         if (renderItem) {
-            items += renderItem(choices[i], inputVal);
+            items.push( renderItem(choices[i], inputVal) );
         } else {
-            var choiceText = this.createEmText(choices[i], inputVal);
-            items += "<li>" + choiceText + "</li>";
+            items.push( this.createListItem(choices[i], inputVal) );
         }
     }
 
     return items;
 };
 
-Etto.prototype.createEmText = function createEmText (choice, inputVal) {
-    var label = this.removeHtml(choice);
-    var len = inputVal.length;
-    var emIndex = choice.toUpperCase().indexOf(inputVal.toUpperCase());
-
-    var beg = label.slice(0, emIndex);
-    var mid = label.slice(emIndex, emIndex + len);
-    var end = label.slice(emIndex + len);
-
-    return (beg + "<b>" + mid + "</b>" + end);
-};
-
 Etto.prototype.filter = function filter (inputVal, choices, matchFullWord, maxResults) {
     var v = inputVal.toUpperCase();
 
     var filtered = choices.filter(function (c) {
-        var index = c.toUpperCase().indexOf(v);
+        var label = c.label;
+        var index = label.toUpperCase().indexOf(v);
 
         var passes = matchFullWord || false
-            ? c[index - 1] === undefined || c[index - 1] === ' '
+            ? label[index - 1] === undefined || label[index - 1] === ' '
             : true
         ;
 
@@ -195,14 +229,30 @@ Etto.prototype.filter = function filter (inputVal, choices, matchFullWord, maxRe
 };
 
 Etto.prototype.renderList = function renderList (inputVal, filtered) {
-    this.ul.setInnerHtml(this.generateList(inputVal, filtered, this.renderItem));
+    var items = this.generateList(inputVal, filtered, this.renderItem);
+
+    this.ul.setInnerHtml('');
+    for (var i = 0; i < items.length; i++) {
+        this.ul.dom.appendChild(items[i]);
+    }
 };
 
-Etto.prototype.removeHtml = function removeHtml (s) {
-    return s.replace(/&/g, '').replace(/</g, '').replace(/>/g, '');
-};
 
-new Etto(document.getElementById('demo-1'), {}, ['wisconsin', 'connecticutt', 'minnesota', 'florida']);
+
+new Etto(document.getElementById('demo-1'), {}, [
+    { label: 'Alabama' },
+    { label: 'Alaska' },
+    { label: 'Michigan' },
+    { label: 'Minnesota' },
+    { label: 'Wyoming' },
+    { label: 'Doug' },
+    { label: 'Omigod Records' },
+    { label: 'Ganon' },
+    { label: 'Little Bambam' },
+    { label: 'Ness from Earthbound' },
+    { label: 'Ghoul' },
+    { label: 'Banana' }
+]);
 
 // const state = {
 //     showDropdown: false,
