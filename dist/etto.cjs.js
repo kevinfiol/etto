@@ -55,42 +55,82 @@ Element.prototype.setInnerHtml = function setInnerHtml (html) {
     this.dom.innerHTML = html;
 };
 
+// import EttoState from './EttoState';
+
 var Etto = function Etto(root, config, choices) {
-    // this.state = new EttoState(initialState);
-    // if (choices) this.state.setChoices(choices);
     this.state = {
-        minChar: 3,
-        maxResults: 7,
-        
         cache: {},
-        choices: [],
+        choices: choices || [],
         filtered: [],
-        
-        inputVal: '',
+        inputVal: ''
     };
 
+    this.source = config.source || null;
+    this.minChars = config.minChars || 3;
+    this.maxResults = config.maxResults || 7;
+    this.matchFullWord = config.matchFullWord || false;
+
     this.ul = this.createUnorderedList();
-    this.ul.setInnerHtml(this.generateList(this.state.props.choices));
+    this.renderList(this.state.inputVal, this.state.filtered);
 
     this.dropdown = this.createDropdown();
     this.dropdown.appendChild(this.ul);
 
     this.input = this.createInput();
-
     this.root = new Element(root);
     this.root.appendChild(this.input);
     this.root.appendChild(this.dropdown);
 };
 
+Etto.prototype.setInputVal = function setInputVal (inputVal) {
+    this.state.inputVal = inputVal;
+};
+
+Etto.prototype.setChoices = function setChoices (choices) {
+    this.state.choices = choices;
+};
+
+Etto.prototype.setFiltered = function setFiltered (filtered) {
+    this.state.filtered = filtered;
+};
+
 Etto.prototype.createInput = function createInput (className) {
+        var this$1 = this;
+
     var input = new Element('input', className);
+
     input.setAttrs({
         autocomplete: 'off',
         value: '',
         style: 'box-sizing: border-box;'
     });
 
+    input.addEventListener('input', function (e) {
+        var inputVal = e.target.value;
+        this$1.setInputVal(inputVal);
+
+        if (inputVal && inputVal.trim().length >= this$1.minChars) {
+            if (this$1.source) { this$1.fetchFromSource(this$1.onReceiveChoices); }
+            else { this$1.onReceiveChoices(this$1.state.choices); }
+        } else {
+            this$1.renderList(inputVal, []);
+        }
+    });
+
     return input;
+};
+
+Etto.prototype.onReceiveChoices = function onReceiveChoices (choices) {
+    var filtered = this.filter(
+        this.state.inputVal,
+        choices,
+        this.matchFullWord,
+        this.maxResults
+    );
+
+    this.setChoices(choices);
+    this.setFiltered(filtered);
+    this.renderList(this.state.inputVal, filtered);
 };
 
 Etto.prototype.createDropdown = function createDropdown (className) {
@@ -107,14 +147,59 @@ Etto.prototype.createUnorderedList = function createUnorderedList (className) {
     return ul;
 };
 
-Etto.prototype.generateList = function generateList (choices) {
-    var lis = '';
+Etto.prototype.generateList = function generateList (inputVal, choices, renderItem) {
+    var items = '';
 
     for (var i = 0; i < choices.length; i++) {
-        lis += "<li>" + (choices[i]) + "</li>";
+        if (renderItem) {
+            items += renderItem(choices[i], inputVal);
+        } else {
+            var choiceText = this.createEmText(choices[i], inputVal);
+            items += "<li>" + choiceText + "</li>";
+        }
     }
 
-    return lis;
+    return items;
+};
+
+Etto.prototype.createEmText = function createEmText (choice, inputVal) {
+    var label = this.removeHtml(choice);
+    var len = inputVal.length;
+    var emIndex = choice.toUpperCase().indexOf(inputVal.toUpperCase());
+
+    var beg = label.slice(0, emIndex);
+    var mid = label.slice(emIndex, emIndex + len);
+    var end = label.slice(emIndex + len);
+
+    return (beg + "<b>" + mid + "</b>" + end);
+};
+
+Etto.prototype.filter = function filter (inputVal, choices, matchFullWord, maxResults) {
+    var v = inputVal.toUpperCase();
+
+    var filtered = choices.filter(function (c) {
+        var index = c.toUpperCase().indexOf(v);
+
+        var passes = matchFullWord || false
+            ? c[index - 1] === undefined || c[index - 1] === ' '
+            : true
+        ;
+
+        return index > -1 && passes;
+    });
+
+    if (maxResults !== undefined)
+        { filtered = filtered.slice(0, maxResults); }
+
+    return filtered;
+};
+
+Etto.prototype.renderList = function renderList (inputVal, filtered) {
+    this.ul.setInnerHtml(this.generateList(inputVal, filtered, this.renderItem));
+};
+
+Etto.prototype.removeHtml = function removeHtml (s) {
+    return s.replace(/&/g, '').replace(/</g, '').replace(/>/g, '');
 };
 
 new Etto(document.getElementById('demo-1'), {}, ['wisconsin', 'connecticutt', 'minnesota', 'florida']);
