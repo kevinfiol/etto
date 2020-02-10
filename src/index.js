@@ -1,13 +1,12 @@
-import Element from './Element';
 import EttoActions from './EttoActions';
-import { removeHtml, createEmText } from './util';
+import { createEmText, filterChoices } from './util';
 
 // import EttoState from './EttoState';
 
 class Etto {
     constructor(root, config, choices) {
         this.state = {
-            cache: {},
+            cache: config.initialCache || {},
             choices: choices || [],
             filtered: [],
             inputVal: ''
@@ -26,20 +25,19 @@ class Etto {
         this.dropdown = this.createDropdown();
         this.dropdown.appendChild(this.ul);
 
+        this.root = root;
         this.input = this.createInput();
-        this.root = new Element(root);
         this.root.appendChild(this.input);
         this.root.appendChild(this.dropdown);
     }
 
-    createInput(className) {
-        const input = new Element('input', className);
+    createInput() {
+        const input = document.createElement('input');
+        input.classList.add('etto-input');
 
-        input.setAttrs({
-            autocomplete: 'off',
-            value: '',
-            style: 'box-sizing: border-box;'
-        });
+        input.setAttribute('autocomplete', 'off');
+        input.setAttribute('value', '');
+        input.setAttribute('style', 'box-sizing: border-box;');
 
         input.addEventListener('input', e => {
             const inputVal = e.target.value;
@@ -56,8 +54,56 @@ class Etto {
         return input;
     }
 
+    createDropdown() {
+        const dropdown = document.createElement('div');
+        dropdown.classList.add('etto-dropdown');
+
+        dropdown.setAttribute(
+            'style',
+            'position: absolute; max-height: 300px; width: 100%; background-color: white; overflow: hidden; overflow-y: auto; z-index: 99;'
+        );
+
+        return dropdown;
+    }
+
+    createUnorderedList() {
+        const ul = document.createElement('ul');
+        ul.classList.add('etto-ul');
+
+        return ul;
+    }
+
+    createListItem(choice, inputVal) {
+        const choiceValue = choice.value || choice.label;
+
+        const li = document.createElement('li');
+        li.classList.add('etto-li');
+
+        li.setAttribute('style', 'list-style-type: none; cursor: default;');
+        li.innerHTML = createEmText(choice.label, inputVal);
+
+        // Set HTML5 data-* attributes
+        li.dataset.label = choice.label;
+        li.dataset.value = choiceValue;
+
+        li.addEventListener('mousedown', e => {
+            const filtered = filterChoices(
+                choiceValue,
+                this.state.choices,
+                this.matchFullWord,
+                this.maxResults
+            );
+
+            this.actions.setInputVal(choiceValue);
+            this.actions.setFiltered(filtered);
+            // then Focus Input and Hide Dropdown
+        });
+
+        return li;
+    }
+
     onReceiveChoices(choices) {
-        const filtered = this.filter(
+        const filtered = filterChoices(
             this.state.inputVal,
             choices,
             this.matchFullWord,
@@ -69,88 +115,18 @@ class Etto {
         this.renderList(this.state.inputVal, filtered);
     }
 
-    createDropdown(className) {
-        const dropdown = new Element('div', className);
-        dropdown.setAttrs({
-            style: 'position: absolute; max-height: 300px; width: 100%; background-color: white; overflow: hidden; overflow-y: auto; z-index: 99;'
-        });
-
-        return dropdown;
-    }
-
-    createUnorderedList(className) {
-        const ul = new Element('ul', className);
-        return ul;
-    }
-
-    createListItem(choice, inputVal) {
-        const li = document.createElement('li');
-        li.setAttribute('style', 'list-style-type: none; cursor: default;');
-        li.className = 'etto-li';
-        li.innerHTML = createEmText(choice.label, inputVal);
-
-        li.addEventListener('mousedown', e => {
-            const filtered = this.filter(
-                choice.value,
-                this.choices,
-                this.matchFullWord,
-                this.maxResults
-            );
-
-            this.actions.setInputVal(choice.value);
-            this.actions.setFiltered(filtered);
-            // then Focus Input and Hide Dropdown
-        });
-
-        return li;
-    }
-
-    generateList(inputVal, choices, renderItem) {
-        let items = [];
-
-        for (let i = 0; i < choices.length; i++) {
-            if (renderItem) {
-                items.push( renderItem(choices[i], inputVal) );
-            } else {
-                items.push( this.createListItem(choices[i], inputVal) );
-            }
-        }
-
-        return items;
-    }
-
-    filter(inputVal, choices, matchFullWord, maxResults) {
-        const v = inputVal.toUpperCase();
-
-        let filtered = choices.filter(c => {
-            const label = c.label;
-            let index = label.toUpperCase().indexOf(v);
-
-            const passes = matchFullWord || false
-                ? label[index - 1] === undefined || label[index - 1] === ' '
-                : true
-            ;
-
-            return index > -1 && passes;
-        });
-
-        if (maxResults !== undefined)
-            filtered = filtered.slice(0, maxResults);
-
-        return filtered;
-    }
-
     renderList(inputVal, filtered) {
-        const items = this.generateList(inputVal, filtered, this.renderItem);
+        // Use custom renderItem function if exists
+        const renderItem = this.renderItem || this.createListItem.bind(this);
 
-        this.ul.setInnerHtml('');
-        for (let i = 0; i < items.length; i++) {
-            this.ul.dom.appendChild(items[i]);
+        // Clear & Repopulate List
+        this.ul.innerHTML = '';
+
+        for (let i = 0; i < filtered.length; i++) {
+            this.ul.appendChild( renderItem(filtered[i], inputVal) );
         }
     }
 }
-
-
 
 new Etto(document.getElementById('demo-1'), {}, [
     { label: 'Alabama' },

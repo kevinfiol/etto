@@ -3,6 +3,10 @@ class EttoActions {
         this.state = state;
     }
 
+    setCache(cache) {
+        this.state.cache = cache;
+    }
+
     setInputVal(inputVal) {
         this.state.inputVal = inputVal;
     }
