@@ -34,3 +34,10 @@ export function filterChoices(inputVal, choices, matchFullWord, maxResults) {
 
     return filtered;
 }
+
+export function choiceMap(choice) {
+    return Object.assign({}, choice, {
+        label: choice.label,
+        value: choice.value || choice.label
+    });
+}

@@ -18,6 +18,10 @@ class EttoActions {
     setFiltered(filtered) {
         this.state.filtered = filtered;
     }
+
+    setIsFetching(isFetching) {
+        this.state.isFetching = isFetching;
+    }
 }
 
 export default EttoActions;

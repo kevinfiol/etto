@@ -1,11 +1,10 @@
 import EttoActions from './EttoActions';
-import { createEmText, filterChoices } from './util';
-
-// import EttoState from './EttoState';
+import { createEmText, filterChoices, choiceMap } from './util';
 
 class Etto {
     constructor(root, config, choices) {
         this.state = {
+            isFetching: false,
             cache: config.initialCache || {},
             choices: choices || [],
             filtered: [],
@@ -31,6 +30,49 @@ class Etto {
         this.root.appendChild(this.dropdown);
     }
 
+    onReceiveChoices(choices) {
+        const filtered = filterChoices(
+            this.state.inputVal,
+            choices,
+            this.matchFullWord,
+            this.maxResults
+        );
+
+        this.actions.setChoices(choices);
+        this.actions.setFiltered(filtered);
+        this.renderList(this.state.inputVal, filtered);
+    }
+
+    renderList(inputVal, filtered) {
+        // Use custom renderItem function if exists
+        const renderItem = this.renderItem || this.createListItem.bind(this);
+
+        // Clear & Repopulate List
+        this.ul.innerHTML = '';
+
+        for (let i = 0; i < filtered.length; i++) {
+            this.ul.appendChild( renderItem(filtered[i], inputVal) );
+        }
+    }
+
+    fetchFromSource() {
+        const key = this.state.inputVal.toUpperCase().trim();
+
+        if (this.state.cache[key]) {
+            this.onReceiveChoices(this.state.cache[key]);
+        } else {
+            this.actions.setIsFetching(true);
+
+            this.source(this.state.inputVal, res => {
+                const choices = res ? res.map(choiceMap) : [];
+
+                this.actions.setCache({ ...this.state.cache, [key]: choices });
+                this.actions.setIsFetching(false);
+                this.onReceiveChoices(choices);
+            });
+        }
+    }
+
     createInput() {
         const input = document.createElement('input');
         input.classList.add('etto-input');
@@ -44,7 +86,7 @@ class Etto {
             this.actions.setInputVal(inputVal);
 
             if (inputVal && inputVal.trim().length >= this.minChars) {
-                if (this.source) this.fetchFromSource(this.onReceiveChoices);
+                if (this.source) this.fetchFromSource();
                 else this.onReceiveChoices(this.state.choices);
             } else {
                 this.renderList(inputVal, []);
@@ -86,7 +128,7 @@ class Etto {
         li.dataset.label = choice.label;
         li.dataset.value = choiceValue;
 
-        li.addEventListener('mousedown', e => {
+        li.addEventListener('mousedown', () => {
             const filtered = filterChoices(
                 choiceValue,
                 this.state.choices,
@@ -96,52 +138,67 @@ class Etto {
 
             this.actions.setInputVal(choiceValue);
             this.actions.setFiltered(filtered);
+
+            // Update DOM
+            this.input.value = choiceValue;
             // then Focus Input and Hide Dropdown
         });
 
         return li;
     }
-
-    onReceiveChoices(choices) {
-        const filtered = filterChoices(
-            this.state.inputVal,
-            choices,
-            this.matchFullWord,
-            this.maxResults
-        );
-
-        this.actions.setChoices(choices);
-        this.actions.setFiltered(filtered);
-        this.renderList(this.state.inputVal, filtered);
-    }
-
-    renderList(inputVal, filtered) {
-        // Use custom renderItem function if exists
-        const renderItem = this.renderItem || this.createListItem.bind(this);
-
-        // Clear & Repopulate List
-        this.ul.innerHTML = '';
-
-        for (let i = 0; i < filtered.length; i++) {
-            this.ul.appendChild( renderItem(filtered[i], inputVal) );
-        }
-    }
 }
 
-new Etto(document.getElementById('demo-1'), {}, [
-    { label: 'Alabama' },
-    { label: 'Alaska' },
-    { label: 'Michigan' },
-    { label: 'Minnesota' },
-    { label: 'Wyoming' },
-    { label: 'Doug' },
-    { label: 'Omigod Records' },
-    { label: 'Ganon' },
-    { label: 'Little Bambam' },
-    { label: 'Ness from Earthbound' },
-    { label: 'Ghoul' },
-    { label: 'Banana' }
-]);
+let xhr = null;
+const source = function(query, done) {
+    // Abort last request
+    if (xhr) {
+        xhr.abort();
+    }
+
+    xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://swapi.co/api/people/?search=' + query, true);
+
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 400) {
+            // Parse the response here...
+            var choices = [];
+            var json = JSON.parse(xhr.responseText);
+
+            json.results.forEach(function(person) {
+                choices.push({ label: person.name });
+            });
+
+            done(choices);
+        } else {
+            // Else return empty array
+            done([]);
+        }
+    };
+
+    // Returns empty array onerror
+    xhr.onerror = function() { 
+        done([]);
+    };
+    
+    xhr.send();
+};
+
+new Etto(document.getElementById('demo-1'), { source });
+
+// new Etto(document.getElementById('demo-1'), {}, [
+//     { label: 'Alabama' },
+//     { label: 'Alaska' },
+//     { label: 'Michigan' },
+//     { label: 'Minnesota' },
+//     { label: 'Wyoming' },
+//     { label: 'Doug' },
+//     { label: 'Omigod Records' },
+//     { label: 'Ganon' },
+//     { label: 'Little Bambam' },
+//     { label: 'Ness from Earthbound' },
+//     { label: 'Ghoul' },
+//     { label: 'Banana' }
+// ]);
 
 // const state = {
 //     showDropdown: false,

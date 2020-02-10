@@ -20,6 +20,10 @@ EttoActions.prototype.setFiltered = function setFiltered (filtered) {
     this.state.filtered = filtered;
 };
 
+EttoActions.prototype.setIsFetching = function setIsFetching (isFetching) {
+    this.state.isFetching = isFetching;
+};
+
 function removeHtml(s) {
     return s.replace(/&/g, '').replace(/</g, '').replace(/>/g, '');
 }
@@ -57,10 +61,16 @@ function filterChoices(inputVal, choices, matchFullWord, maxResults) {
     return filtered;
 }
 
-// import EttoState from './EttoState';
+function choiceMap(choice) {
+    return Object.assign({}, choice, {
+        label: choice.label,
+        value: choice.value || choice.label
+    });
+}
 
 var Etto = function Etto(root, config, choices) {
     this.state = {
+        isFetching: false,
         cache: config.initialCache || {},
         choices: choices || [],
         filtered: [],
@@ -86,6 +96,53 @@ var Etto = function Etto(root, config, choices) {
     this.root.appendChild(this.dropdown);
 };
 
+Etto.prototype.onReceiveChoices = function onReceiveChoices (choices) {
+    var filtered = filterChoices(
+        this.state.inputVal,
+        choices,
+        this.matchFullWord,
+        this.maxResults
+    );
+
+    this.actions.setChoices(choices);
+    this.actions.setFiltered(filtered);
+    this.renderList(this.state.inputVal, filtered);
+};
+
+Etto.prototype.renderList = function renderList (inputVal, filtered) {
+    // Use custom renderItem function if exists
+    var renderItem = this.renderItem || this.createListItem.bind(this);
+
+    // Clear & Repopulate List
+    this.ul.innerHTML = '';
+
+    for (var i = 0; i < filtered.length; i++) {
+        this.ul.appendChild( renderItem(filtered[i], inputVal) );
+    }
+};
+
+Etto.prototype.fetchFromSource = function fetchFromSource () {
+        var this$1 = this;
+
+    var key = this.state.inputVal.toUpperCase().trim();
+
+    if (this.state.cache[key]) {
+        this.onReceiveChoices(this.state.cache[key]);
+    } else {
+        this.actions.setIsFetching(true);
+
+        this.source(this.state.inputVal, function (res) {
+                var obj;
+
+            var choices = res ? res.map(choiceMap) : [];
+
+            this$1.actions.setCache(Object.assign({}, this$1.state.cache, ( obj = {}, obj[key] = choices, obj )));
+            this$1.actions.setIsFetching(false);
+            this$1.onReceiveChoices(choices);
+        });
+    }
+};
+
 Etto.prototype.createInput = function createInput () {
         var this$1 = this;
 
@@ -101,7 +158,7 @@ Etto.prototype.createInput = function createInput () {
         this$1.actions.setInputVal(inputVal);
 
         if (inputVal && inputVal.trim().length >= this$1.minChars) {
-            if (this$1.source) { this$1.fetchFromSource(this$1.onReceiveChoices); }
+            if (this$1.source) { this$1.fetchFromSource(); }
             else { this$1.onReceiveChoices(this$1.state.choices); }
         } else {
             this$1.renderList(inputVal, []);
@@ -145,7 +202,7 @@ Etto.prototype.createListItem = function createListItem (choice, inputVal) {
     li.dataset.label = choice.label;
     li.dataset.value = choiceValue;
 
-    li.addEventListener('mousedown', function (e) {
+    li.addEventListener('mousedown', function () {
         var filtered = filterChoices(
             choiceValue,
             this$1.state.choices,
@@ -155,51 +212,66 @@ Etto.prototype.createListItem = function createListItem (choice, inputVal) {
 
         this$1.actions.setInputVal(choiceValue);
         this$1.actions.setFiltered(filtered);
+
+        // Update DOM
+        this$1.input.value = choiceValue;
         // then Focus Input and Hide Dropdown
     });
 
     return li;
 };
 
-Etto.prototype.onReceiveChoices = function onReceiveChoices (choices) {
-    var filtered = filterChoices(
-        this.state.inputVal,
-        choices,
-        this.matchFullWord,
-        this.maxResults
-    );
-
-    this.actions.setChoices(choices);
-    this.actions.setFiltered(filtered);
-    this.renderList(this.state.inputVal, filtered);
-};
-
-Etto.prototype.renderList = function renderList (inputVal, filtered) {
-    // Use custom renderItem function if exists
-    var renderItem = this.renderItem || this.createListItem.bind(this);
-
-    // Clear & Repopulate List
-    this.ul.innerHTML = '';
-
-    for (var i = 0; i < filtered.length; i++) {
-        this.ul.appendChild( renderItem(filtered[i], inputVal) );
+var xhr = null;
+var source = function(query, done) {
+    // Abort last request
+    if (xhr) {
+        xhr.abort();
     }
+
+    xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://swapi.co/api/people/?search=' + query, true);
+
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 400) {
+            // Parse the response here...
+            var choices = [];
+            var json = JSON.parse(xhr.responseText);
+
+            json.results.forEach(function(person) {
+                choices.push({ label: person.name });
+            });
+
+            done(choices);
+        } else {
+            // Else return empty array
+            done([]);
+        }
+    };
+
+    // Returns empty array onerror
+    xhr.onerror = function() { 
+        done([]);
+    };
+    
+    xhr.send();
 };
 
-new Etto(document.getElementById('demo-1'), {}, [
-    { label: 'Alabama' },
-    { label: 'Alaska' },
-    { label: 'Michigan' },
-    { label: 'Minnesota' },
-    { label: 'Wyoming' },
-    { label: 'Doug' },
-    { label: 'Omigod Records' },
-    { label: 'Ganon' },
-    { label: 'Little Bambam' },
-    { label: 'Ness from Earthbound' },
-    { label: 'Ghoul' },
-    { label: 'Banana' }
-]);
+new Etto(document.getElementById('demo-1'), { source: source });
+
+// new Etto(document.getElementById('demo-1'), {}, [
+//     { label: 'Alabama' },
+//     { label: 'Alaska' },
+//     { label: 'Michigan' },
+//     { label: 'Minnesota' },
+//     { label: 'Wyoming' },
+//     { label: 'Doug' },
+//     { label: 'Omigod Records' },
+//     { label: 'Ganon' },
+//     { label: 'Little Bambam' },
+//     { label: 'Ness from Earthbound' },
+//     { label: 'Ghoul' },
+//     { label: 'Banana' }
+// ]);
 
 // const state = {
 //     showDropdown: false,
