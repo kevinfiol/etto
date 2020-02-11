@@ -5,6 +5,7 @@ class EttoActions {
 
     setSelected(selected) {
         this.state.selected = selected;
+        console.log(this.state.selected);
     }
 
     setCache(cache) {

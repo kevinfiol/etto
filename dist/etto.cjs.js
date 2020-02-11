@@ -6,6 +6,7 @@ var EttoActions = function EttoActions(state) {
 
 EttoActions.prototype.setSelected = function setSelected (selected) {
     this.state.selected = selected;
+    console.log(this.state.selected);
 };
 
 EttoActions.prototype.setCache = function setCache (cache) {
@@ -76,9 +77,10 @@ var Etto = function Etto(root, config, choices) {
     this.state = {
         isFetching: false,
         cache: config.initialCache || {},
-        choices: choices || [],
+        choices: choices.map(choiceMap) || [],
         filtered: [],
-        inputVal: ''
+        inputVal: '',
+        selected: null
     };
 
     this.actions = new EttoActions(this.state);
@@ -112,33 +114,12 @@ var Etto = function Etto(root, config, choices) {
     this.renderList(this.state.inputVal, this.state.filtered);
 };
 
-Etto.prototype.onReceiveChoices = function onReceiveChoices (choices) {
-    var filtered = filterChoices(
-        this.state.inputVal,
-        choices,
-        this.matchFullWord,
-        this.maxResults
-    );
-
-    this.actions.setChoices(choices);
-    this.actions.setFiltered(filtered);
-    this.renderList(this.state.inputVal, filtered);
-};
-
-Etto.prototype.renderList = function renderList (inputVal, filtered) {
-    // Use custom renderItem function if exists
-    var renderItem = this.renderItem || this.createListItem.bind(this);
-
-    // Clear & Repopulate List
-    this.ul.innerHTML = '';
-
-    for (var i = 0; i < filtered.length; i++) {
-        this.ul.appendChild( renderItem(filtered[i], inputVal) );
-    }
-
+Etto.prototype.setShowDropdownElement = function setShowDropdownElement (showDropdown) {
     // DOM Update
-    var showDropdown = filtered.length > 0;
     this.dropdown.style.display = showDropdown ? 'block' : 'none';
+
+    // Reset Selected if Dropdown has been hidden
+    if (!showDropdown && this.state.selected) { this.actions.setSelected(null); }
 };
 
 Etto.prototype.fetchFromSource = function fetchFromSource () {
@@ -163,6 +144,36 @@ Etto.prototype.fetchFromSource = function fetchFromSource () {
     }
 };
 
+Etto.prototype.onReceiveChoices = function onReceiveChoices (choices) {
+    var filtered = filterChoices(
+        this.state.inputVal,
+        choices,
+        this.matchFullWord,
+        this.maxResults
+    );
+
+    this.actions.setChoices(choices);
+    this.actions.setFiltered(filtered);
+
+    this.renderList(this.state.inputVal, filtered);
+    this.setShowDropdownElement(filtered.length > 0);
+};
+
+Etto.prototype.renderList = function renderList (inputVal, filtered) {
+    // Use custom renderItem function if exists
+    var renderItem = this.renderItem || this.createListItem.bind(this);
+
+    // Clear & Repopulate List
+    this.ul.innerHTML = '';
+
+    for (var i = 0; i < filtered.length; i++) {
+        var isSelected = i === this.state.selected;
+        this.ul.appendChild( renderItem(filtered[i], inputVal, isSelected) );
+    }
+
+    console.log(this.ul);
+};
+
 Etto.prototype.createInput = function createInput () {
         var this$1 = this;
 
@@ -182,15 +193,76 @@ Etto.prototype.createInput = function createInput () {
             else { this$1.onReceiveChoices(this$1.state.choices); }
         } else {
             this$1.renderList(inputVal, []);
+            this$1.setShowDropdownElement(false);
         }
     });
 
     input.addEventListener('focus', function () {
-        this$1.dropdown.style.display = this$1.state.filtered.length ? 'block' : 'none';
+        this$1.setShowDropdownElement(this$1.state.filtered.length > 0);
     });
 
     input.addEventListener('blur', function () {
-        this$1.dropdown.style.display = 'none';
+        // Reset Selected
+        if (this$1.state.selected) {
+            this$1.renderList(this$1.state.inputVal, this$1.state.filtered);
+            this$1.setShowDropdownElement(this$1.state.filtered.length > 0);
+        }
+    });
+
+    input.addEventListener('keydown', function (e) {
+        var showDropdown = this$1.dropdown.style.display === 'block';
+
+        if ((e.keyCode == 38 || e.keyCode == 40) && showDropdown) {
+            e.preventDefault();
+
+            // Decrement (Go Up)
+            if (e.keyCode == 38) {
+                if (this$1.state.selected === null)
+                    { this$1.actions.setSelected(0); }
+                else if (this$1.state.selected !== 0)
+                    { this$1.actions.setSelected(this$1.state.selected - 1); }
+            }
+
+            // Increment (Go Down)
+            if (e.keyCode == 40) {
+                if (this$1.state.selected === null)
+                    { this$1.actions.setSelected(0); }
+                else if (this$1.state.selected !== this$1.state.filtered.length - 1)
+                    { this$1.actions.setSelected(this$1.state.selected + 1); }
+            }
+
+            this$1.renderList(this$1.state.inputVal, this$1.state.filtered);
+            this$1.setShowDropdownElement(this$1.state.filtered.length > 0);
+        }
+
+        // Enter or Tab
+        if (e.keyCode == 9 || e.keyCode == 13) {
+            if (showDropdown) {
+                e.preventDefault();
+                var inputVal = undefined;
+
+                if (this$1.state.selected !== null) {
+                    var choice = this$1.state.filtered[this$1.state.selected];
+                    inputVal = choice.label;
+
+                    this$1.actions.setInputVal(inputVal);
+                    this$1.actions.setSelected(null);
+
+                    // Update DOM
+                    this$1.input.value = inputVal;
+
+                    var filtered = filterChoices(
+                        inputVal,
+                        this$1.state.choices,
+                        this$1.matchFullWord,
+                        this$1.maxResults
+                    );
+
+                    this$1.renderList(inputVal, filtered);
+                    this$1.setShowDropdownElement(false);
+                }
+            }
+        }
     });
 
     return input;
@@ -218,13 +290,16 @@ Etto.prototype.createUnorderedList = function createUnorderedList () {
     return ul;
 };
 
-Etto.prototype.createListItem = function createListItem (choice, inputVal) {
+Etto.prototype.createListItem = function createListItem (choice, inputVal, isSelected) {
         var this$1 = this;
 
     var choiceValue = choice.value || choice.label;
 
     var li = document.createElement('li');
     li.classList.add('etto-li');
+
+    if (isSelected) { li.classList.add('etto-selected'); }
+    else { li.classList.remove('etto-selected'); }
 
     li.setAttribute('style', 'list-style-type: none; cursor: default;');
     li.innerHTML = createEmText(choice.label, inputVal);
@@ -243,12 +318,13 @@ Etto.prototype.createListItem = function createListItem (choice, inputVal) {
 
         this$1.actions.setInputVal(choiceValue);
         this$1.actions.setFiltered(filtered);
+
         this$1.renderList(choice.label, filtered);
+        this$1.setShowDropdownElement(filtered.length > 0);
 
         // Update DOM
         this$1.input.value = choiceValue;
         this$1.input.focus();
-        this$1.dropdown.style.display = 'none';
     });
 
     return li;

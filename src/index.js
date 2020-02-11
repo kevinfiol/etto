@@ -6,7 +6,7 @@ class Etto {
         this.state = {
             isFetching: false,
             cache: config.initialCache || {},
-            choices: choices || [],
+            choices: choices.map(choiceMap) || [],
             filtered: [],
             inputVal: '',
             selected: null
@@ -43,33 +43,12 @@ class Etto {
         this.renderList(this.state.inputVal, this.state.filtered);
     }
 
-    onReceiveChoices(choices) {
-        const filtered = filterChoices(
-            this.state.inputVal,
-            choices,
-            this.matchFullWord,
-            this.maxResults
-        );
-
-        this.actions.setChoices(choices);
-        this.actions.setFiltered(filtered);
-        this.renderList(this.state.inputVal, filtered);
-    }
-
-    renderList(inputVal, filtered) {
-        // Use custom renderItem function if exists
-        const renderItem = this.renderItem || this.createListItem.bind(this);
-
-        // Clear & Repopulate List
-        this.ul.innerHTML = '';
-
-        for (let i = 0; i < filtered.length; i++) {
-            this.ul.appendChild( renderItem(filtered[i], inputVal) );
-        }
-
+    setShowDropdownElement(showDropdown) {
         // DOM Update
-        const showDropdown = filtered.length > 0;
         this.dropdown.style.display = showDropdown ? 'block' : 'none';
+
+        // Reset Selected if Dropdown has been hidden
+        if (!showDropdown && this.state.selected) this.actions.setSelected(null);
     }
 
     fetchFromSource() {
@@ -90,6 +69,36 @@ class Etto {
         }
     }
 
+    onReceiveChoices(choices) {
+        const filtered = filterChoices(
+            this.state.inputVal,
+            choices,
+            this.matchFullWord,
+            this.maxResults
+        );
+
+        this.actions.setChoices(choices);
+        this.actions.setFiltered(filtered);
+
+        this.renderList(this.state.inputVal, filtered);
+        this.setShowDropdownElement(filtered.length > 0);
+    }
+
+    renderList(inputVal, filtered) {
+        // Use custom renderItem function if exists
+        const renderItem = this.renderItem || this.createListItem.bind(this);
+
+        // Clear & Repopulate List
+        this.ul.innerHTML = '';
+
+        for (let i = 0; i < filtered.length; i++) {
+            const isSelected = i === this.state.selected;
+            this.ul.appendChild( renderItem(filtered[i], inputVal, isSelected) );
+        }
+
+        console.log(this.ul);
+    }
+
     createInput() {
         const input = document.createElement('input');
         input.classList.add('etto-input');
@@ -107,15 +116,20 @@ class Etto {
                 else this.onReceiveChoices(this.state.choices);
             } else {
                 this.renderList(inputVal, []);
+                this.setShowDropdownElement(false);
             }
         });
 
         input.addEventListener('focus', () => {
-            this.dropdown.style.display = this.state.filtered.length ? 'block' : 'none';
+            this.setShowDropdownElement(this.state.filtered.length > 0);
         });
 
         input.addEventListener('blur', () => {
-            this.dropdown.style.display = 'none';
+            // Reset Selected
+            if (this.state.selected) {
+                this.renderList(this.state.inputVal, this.state.filtered);
+                this.setShowDropdownElement(this.state.filtered.length > 0);
+            }
         });
 
         input.addEventListener('keydown', e => {
@@ -123,18 +137,53 @@ class Etto {
 
             if ((e.keyCode == 38 || e.keyCode == 40) && showDropdown) {
                 e.preventDefault();
+
+                // Decrement (Go Up)
                 if (e.keyCode == 38) {
-                    if (this.state.selected === null || this.state.selected === 0)
+                    if (this.state.selected === null)
                         this.actions.setSelected(0);
-                    else
+                    else if (this.state.selected !== 0)
                         this.actions.setSelected(this.state.selected - 1);
                 }
 
+                // Increment (Go Down)
                 if (e.keyCode == 40) {
                     if (this.state.selected === null)
                         this.actions.setSelected(0);
                     else if (this.state.selected !== this.state.filtered.length - 1)
                         this.actions.setSelected(this.state.selected + 1);
+                }
+
+                this.renderList(this.state.inputVal, this.state.filtered);
+                this.setShowDropdownElement(this.state.filtered.length > 0);
+            }
+
+            // Enter or Tab
+            if (e.keyCode == 9 || e.keyCode == 13) {
+                if (showDropdown) {
+                    e.preventDefault();
+                    let inputVal = undefined;
+
+                    if (this.state.selected !== null) {
+                        const choice = this.state.filtered[this.state.selected];
+                        inputVal = choice.label;
+
+                        this.actions.setInputVal(inputVal);
+                        this.actions.setSelected(null);
+
+                        // Update DOM
+                        this.input.value = inputVal;
+
+                        const filtered = filterChoices(
+                            inputVal,
+                            this.state.choices,
+                            this.matchFullWord,
+                            this.maxResults
+                        );
+
+                        this.renderList(inputVal, filtered);
+                        this.setShowDropdownElement(false);
+                    }
                 }
             }
         });
@@ -164,11 +213,14 @@ class Etto {
         return ul;
     }
 
-    createListItem(choice, inputVal) {
+    createListItem(choice, inputVal, isSelected) {
         const choiceValue = choice.value || choice.label;
 
         const li = document.createElement('li');
         li.classList.add('etto-li');
+
+        if (isSelected) li.classList.add('etto-selected');
+        else li.classList.remove('etto-selected');
 
         li.setAttribute('style', 'list-style-type: none; cursor: default;');
         li.innerHTML = createEmText(choice.label, inputVal);
@@ -187,12 +239,13 @@ class Etto {
 
             this.actions.setInputVal(choiceValue);
             this.actions.setFiltered(filtered);
+
             this.renderList(choice.label, filtered);
+            this.setShowDropdownElement(filtered.length > 0);
 
             // Update DOM
             this.input.value = choiceValue;
             this.input.focus();
-            this.dropdown.style.display = 'none';
         });
 
         return li;
