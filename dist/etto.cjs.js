@@ -4,6 +4,10 @@ var EttoActions = function EttoActions(state) {
     this.state = state;
 };
 
+EttoActions.prototype.setSelected = function setSelected (selected) {
+    this.state.selected = selected;
+};
+
 EttoActions.prototype.setCache = function setCache (cache) {
     this.state.cache = cache;
 };
@@ -85,15 +89,27 @@ var Etto = function Etto(root, config, choices) {
     this.matchFullWord = config.matchFullWord || false;
 
     this.ul = this.createUnorderedList();
-    this.renderList(this.state.inputVal, this.state.filtered);
-
     this.dropdown = this.createDropdown();
     this.dropdown.appendChild(this.ul);
+    this.input = this.createInput();
+
+    // Containers
+    this.container = document.createElement('div');
+    this.container.classList.add('etto-container');
+    this.container.setAttribute('style', 'position: relative;');
+
+    var inputContainer = document.createElement('div');
+    inputContainer.setAttribute('style', 'position: relative;');
+    inputContainer.appendChild(this.input);
+
+    this.container.appendChild(inputContainer);
+    this.container.appendChild(this.dropdown);
 
     this.root = root;
-    this.input = this.createInput();
-    this.root.appendChild(this.input);
-    this.root.appendChild(this.dropdown);
+    this.root.appendChild(this.container);
+
+    // Initial Render
+    this.renderList(this.state.inputVal, this.state.filtered);
 };
 
 Etto.prototype.onReceiveChoices = function onReceiveChoices (choices) {
@@ -119,6 +135,10 @@ Etto.prototype.renderList = function renderList (inputVal, filtered) {
     for (var i = 0; i < filtered.length; i++) {
         this.ul.appendChild( renderItem(filtered[i], inputVal) );
     }
+
+    // DOM Update
+    var showDropdown = filtered.length > 0;
+    this.dropdown.style.display = showDropdown ? 'block' : 'none';
 };
 
 Etto.prototype.fetchFromSource = function fetchFromSource () {
@@ -165,6 +185,14 @@ Etto.prototype.createInput = function createInput () {
         }
     });
 
+    input.addEventListener('focus', function () {
+        this$1.dropdown.style.display = this$1.state.filtered.length ? 'block' : 'none';
+    });
+
+    input.addEventListener('blur', function () {
+        this$1.dropdown.style.display = 'none';
+    });
+
     return input;
 };
 
@@ -174,8 +202,11 @@ Etto.prototype.createDropdown = function createDropdown () {
 
     dropdown.setAttribute(
         'style',
-        'position: absolute; max-height: 300px; width: 100%; background-color: white; overflow: hidden; overflow-y: auto; z-index: 99;'
+        'position: absolute; width: 100%; background-color: white; overflow: hidden; z-index: 99;'
     );
+
+    // Hidden by default
+    dropdown.style.display = 'none';
 
     return dropdown;
 };
@@ -212,100 +243,31 @@ Etto.prototype.createListItem = function createListItem (choice, inputVal) {
 
         this$1.actions.setInputVal(choiceValue);
         this$1.actions.setFiltered(filtered);
+        this$1.renderList(choice.label, filtered);
 
         // Update DOM
         this$1.input.value = choiceValue;
-        // then Focus Input and Hide Dropdown
+        this$1.input.focus();
+        this$1.dropdown.style.display = 'none';
     });
 
     return li;
 };
 
-var xhr = null;
-var source = function(query, done) {
-    // Abort last request
-    if (xhr) {
-        xhr.abort();
-    }
+// new Etto(document.getElementById('demo-1'), { source });
 
-    xhr = new XMLHttpRequest();
-    xhr.open('GET', 'https://swapi.co/api/people/?search=' + query, true);
-
-    xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 400) {
-            // Parse the response here...
-            var choices = [];
-            var json = JSON.parse(xhr.responseText);
-
-            json.results.forEach(function(person) {
-                choices.push({ label: person.name });
-            });
-
-            done(choices);
-        } else {
-            // Else return empty array
-            done([]);
-        }
-    };
-
-    // Returns empty array onerror
-    xhr.onerror = function() { 
-        done([]);
-    };
-    
-    xhr.send();
-};
-
-new Etto(document.getElementById('demo-1'), { source: source });
-
-// new Etto(document.getElementById('demo-1'), {}, [
-//     { label: 'Alabama' },
-//     { label: 'Alaska' },
-//     { label: 'Michigan' },
-//     { label: 'Minnesota' },
-//     { label: 'Wyoming' },
-//     { label: 'Doug' },
-//     { label: 'Omigod Records' },
-//     { label: 'Ganon' },
-//     { label: 'Little Bambam' },
-//     { label: 'Ness from Earthbound' },
-//     { label: 'Ghoul' },
-//     { label: 'Banana' }
-// ]);
-
-// const state = {
-//     showDropdown: false,
-//     isFetching: false,
-//     selected: null,
-//     inputRef: null,
-//     inputVal: '',
-//     timer: undefined,
-
-//     cache: {},
-//     filtered: [],
-//     all: choices || [],
-
-//     // User Configurations
-//     // Classes & Ids
-//     inputId: config.inputId || null,
-//     inputClass: config.inputClass || null,
-//     divClass: config.divClass || null,
-//     dropdownClass: config.dropdownClass || '',
-//     ulClass: config.ulClass || '',
-//     liClass: config.liClass || '',
-
-//     showClearBtn: config.showClearBtn || true,
-//     showSpinner: config.showSpinner || true,
-//     emptyMsg: config.emptyMsg || 'No Options',
-//     selectMode: config.selectMode || false,
-//     matchFullWord: config.matchFullWord || false,
-//     minChars: config.minChars || 3,
-//     maxResults: config.maxResults || 7,
-//     enterEvent: config.enterEvent || null,
-//     valueEvent: config.valueEvent || null,
-//     renderItem: config.renderItem || null,
-//     selectEvent: config.selectEvent || null,
-//     events: config.events || null,
-//     source: config.source || null
-// };
+new Etto(document.getElementById('demo-1'), {}, [
+    { label: 'Alabama' },
+    { label: 'Alaska' },
+    { label: 'Michigan' },
+    { label: 'Minnesota' },
+    { label: 'Wyoming' },
+    { label: 'Doug' },
+    { label: 'Omigod Records' },
+    { label: 'Ganon' },
+    { label: 'Little Bambam' },
+    { label: 'Ness from Earthbound' },
+    { label: 'Ghoul' },
+    { label: 'Banana' }
+]);
 //# sourceMappingURL=etto.cjs.js.map

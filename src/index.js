@@ -19,15 +19,27 @@ class Etto {
         this.matchFullWord = config.matchFullWord || false;
 
         this.ul = this.createUnorderedList();
-        this.renderList(this.state.inputVal, this.state.filtered);
-
         this.dropdown = this.createDropdown();
         this.dropdown.appendChild(this.ul);
+        this.input = this.createInput();
+
+        // Containers
+        this.container = document.createElement('div');
+        this.container.classList.add('etto-container');
+        this.container.setAttribute('style', 'position: relative;');
+
+        const inputContainer = document.createElement('div');
+        inputContainer.setAttribute('style', 'position: relative;');
+        inputContainer.appendChild(this.input);
+
+        this.container.appendChild(inputContainer);
+        this.container.appendChild(this.dropdown);
 
         this.root = root;
-        this.input = this.createInput();
-        this.root.appendChild(this.input);
-        this.root.appendChild(this.dropdown);
+        this.root.appendChild(this.container);
+
+        // Initial Render
+        this.renderList(this.state.inputVal, this.state.filtered);
     }
 
     onReceiveChoices(choices) {
@@ -53,6 +65,10 @@ class Etto {
         for (let i = 0; i < filtered.length; i++) {
             this.ul.appendChild( renderItem(filtered[i], inputVal) );
         }
+
+        // DOM Update
+        const showDropdown = filtered.length > 0;
+        this.dropdown.style.display = showDropdown ? 'block' : 'none';
     }
 
     fetchFromSource() {
@@ -93,6 +109,14 @@ class Etto {
             }
         });
 
+        input.addEventListener('focus', () => {
+            this.dropdown.style.display = this.state.filtered.length ? 'block' : 'none';
+        });
+
+        input.addEventListener('blur', () => {
+            this.dropdown.style.display = 'none';
+        });
+
         return input;
     }
 
@@ -102,8 +126,11 @@ class Etto {
 
         dropdown.setAttribute(
             'style',
-            'position: absolute; max-height: 300px; width: 100%; background-color: white; overflow: hidden; overflow-y: auto; z-index: 99;'
+            'position: absolute; width: 100%; background-color: white; overflow: hidden; z-index: 99;'
         );
+
+        // Hidden by default
+        dropdown.style.display = 'none';
 
         return dropdown;
     }
@@ -138,10 +165,12 @@ class Etto {
 
             this.actions.setInputVal(choiceValue);
             this.actions.setFiltered(filtered);
+            this.renderList(choice.label, filtered);
 
             // Update DOM
             this.input.value = choiceValue;
-            // then Focus Input and Hide Dropdown
+            this.input.focus();
+            this.dropdown.style.display = 'none';
         });
 
         return li;
@@ -183,55 +212,19 @@ const source = function(query, done) {
     xhr.send();
 };
 
-new Etto(document.getElementById('demo-1'), { source });
+// new Etto(document.getElementById('demo-1'), { source });
 
-// new Etto(document.getElementById('demo-1'), {}, [
-//     { label: 'Alabama' },
-//     { label: 'Alaska' },
-//     { label: 'Michigan' },
-//     { label: 'Minnesota' },
-//     { label: 'Wyoming' },
-//     { label: 'Doug' },
-//     { label: 'Omigod Records' },
-//     { label: 'Ganon' },
-//     { label: 'Little Bambam' },
-//     { label: 'Ness from Earthbound' },
-//     { label: 'Ghoul' },
-//     { label: 'Banana' }
-// ]);
-
-// const state = {
-//     showDropdown: false,
-//     isFetching: false,
-//     selected: null,
-//     inputRef: null,
-//     inputVal: '',
-//     timer: undefined,
-
-//     cache: {},
-//     filtered: [],
-//     all: choices || [],
-
-//     // User Configurations
-//     // Classes & Ids
-//     inputId: config.inputId || null,
-//     inputClass: config.inputClass || null,
-//     divClass: config.divClass || null,
-//     dropdownClass: config.dropdownClass || '',
-//     ulClass: config.ulClass || '',
-//     liClass: config.liClass || '',
-
-//     showClearBtn: config.showClearBtn || true,
-//     showSpinner: config.showSpinner || true,
-//     emptyMsg: config.emptyMsg || 'No Options',
-//     selectMode: config.selectMode || false,
-//     matchFullWord: config.matchFullWord || false,
-//     minChars: config.minChars || 3,
-//     maxResults: config.maxResults || 7,
-//     enterEvent: config.enterEvent || null,
-//     valueEvent: config.valueEvent || null,
-//     renderItem: config.renderItem || null,
-//     selectEvent: config.selectEvent || null,
-//     events: config.events || null,
-//     source: config.source || null
-// };
+new Etto(document.getElementById('demo-1'), {}, [
+    { label: 'Alabama' },
+    { label: 'Alaska' },
+    { label: 'Michigan' },
+    { label: 'Minnesota' },
+    { label: 'Wyoming' },
+    { label: 'Doug' },
+    { label: 'Omigod Records' },
+    { label: 'Ganon' },
+    { label: 'Little Bambam' },
+    { label: 'Ness from Earthbound' },
+    { label: 'Ghoul' },
+    { label: 'Banana' }
+]);
