@@ -8,7 +8,8 @@ class Etto {
             cache: config.initialCache || {},
             choices: choices || [],
             filtered: [],
-            inputVal: ''
+            inputVal: '',
+            selected: null
         };
 
         this.actions = new EttoActions(this.state);
@@ -115,6 +116,27 @@ class Etto {
 
         input.addEventListener('blur', () => {
             this.dropdown.style.display = 'none';
+        });
+
+        input.addEventListener('keydown', e => {
+            let showDropdown = this.dropdown.style.display === 'block';
+
+            if ((e.keyCode == 38 || e.keyCode == 40) && showDropdown) {
+                e.preventDefault();
+                if (e.keyCode == 38) {
+                    if (this.state.selected === null || this.state.selected === 0)
+                        this.actions.setSelected(0);
+                    else
+                        this.actions.setSelected(this.state.selected - 1);
+                }
+
+                if (e.keyCode == 40) {
+                    if (this.state.selected === null)
+                        this.actions.setSelected(0);
+                    else if (this.state.selected !== this.state.filtered.length - 1)
+                        this.actions.setSelected(this.state.selected + 1);
+                }
+            }
         });
 
         return input;
