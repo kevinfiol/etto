@@ -9,7 +9,6 @@
 
     EttoActions.prototype.setSelected = function setSelected (selected) {
         this.state.selected = selected;
-        console.log(this.state.selected);
     };
 
     EttoActions.prototype.setCache = function setCache (cache) {
@@ -30,6 +29,14 @@
 
     EttoActions.prototype.setIsFetching = function setIsFetching (isFetching) {
         this.state.isFetching = isFetching;
+    };
+
+    EttoActions.prototype.setTimer = function setTimer (timer) {
+        this.state.timer = timer;
+    };
+
+    EttoActions.prototype.clearTimer = function clearTimer () {
+        clearInterval(this.state.timer);
     };
 
     function removeHtml(s) {
@@ -80,10 +87,11 @@
         this.state = {
             isFetching: false,
             cache: config.initialCache || {},
-            choices: choices.map(choiceMap) || [],
+            choices: choices ? choices.map(choiceMap) : [],
             filtered: [],
             inputVal: '',
-            selected: null
+            selected: null,
+            timer: null
         };
 
         this.actions = new EttoActions(this.state);
@@ -113,8 +121,46 @@
         this.root = root;
         this.root.appendChild(this.container);
 
+        // Append spinner after appending container to calculate appropriate offsetHeight
+        var dotSize = 6;
+        this.dots = this.createSpinnerDots(dotSize);
+
+        var spinnerTopPosition = ((this.input.offsetHeight / 2) - (dotSize / 2)) + 'px';
+        this.spinner = this.createSpinner(this.dots, spinnerTopPosition);
+        this.container.appendChild(this.spinner);
+
         // Initial Render
         this.renderList(this.state.inputVal, this.state.filtered);
+    };
+
+    Etto.prototype.setShowSpinner = function setShowSpinner (showSpinner) {
+            var this$1 = this;
+
+        var loOpacity = '0.3';
+        var hiOpacity = '0.7';
+
+        this.spinner.style.display = showSpinner ? 'flex' : 'none';
+
+        if (showSpinner) {
+            // Timer to alternate dot opacities
+            var current = 1;
+            this.actions.setTimer(
+                setInterval(function () {
+                    for (var i = 0; i < this$1.dots.length; i++) {
+                        // Reset Opacities
+                        this$1.dots[i].style.opacity = loOpacity;
+                    }
+
+                    if (current == this$1.dots.length)
+                        { current = 0; }
+
+                    this$1.dots[current].style.opacity = hiOpacity;
+                    current += 1;
+                }, 300)
+            );
+        } else {
+            this.actions.clearTimer();
+        }
     };
 
     Etto.prototype.setShowDropdownElement = function setShowDropdownElement (showDropdown) {
@@ -134,6 +180,7 @@
             this.onReceiveChoices(this.state.cache[key]);
         } else {
             this.actions.setIsFetching(true);
+            this.setShowSpinner(true);
 
             this.source(this.state.inputVal, function (res) {
                     var obj;
@@ -142,6 +189,8 @@
 
                 this$1.actions.setCache(Object.assign({}, this$1.state.cache, ( obj = {}, obj[key] = choices, obj )));
                 this$1.actions.setIsFetching(false);
+
+                this$1.setShowSpinner(false);
                 this$1.onReceiveChoices(choices);
             });
         }
@@ -207,9 +256,11 @@
         input.addEventListener('blur', function () {
             // Reset Selected
             if (this$1.state.selected) {
+                this$1.actions.setSelected(null);
                 this$1.renderList(this$1.state.inputVal, this$1.state.filtered);
-                this$1.setShowDropdownElement(this$1.state.filtered.length > 0);
             }
+
+            this$1.setShowDropdownElement(false);
         });
 
         input.addEventListener('keydown', function (e) {
@@ -333,22 +384,95 @@
         return li;
     };
 
-    // new Etto(document.getElementById('demo-1'), { source });
+    Etto.prototype.createSpinner = function createSpinner (dots, spinnerTopPosition) {
+        var spinner = document.createElement('div');
+        spinner.classList.add('etto-spinner');
+        spinner.setAttribute(
+            'style',
+            'position: absolute; display: none; align-items: center; right: 1em;'
+        );
 
-    new Etto(document.getElementById('demo-1'), {}, [
-        { label: 'Alabama' },
-        { label: 'Alaska' },
-        { label: 'Michigan' },
-        { label: 'Minnesota' },
-        { label: 'Wyoming' },
-        { label: 'Doug' },
-        { label: 'Omigod Records' },
-        { label: 'Ganon' },
-        { label: 'Little Bambam' },
-        { label: 'Ness from Earthbound' },
-        { label: 'Ghoul' },
-        { label: 'Banana' }
-    ]);
+        // Calculate Position from top
+        spinner.style.top = spinnerTopPosition;
+
+        for (var i = 0; i < dots.length; i++) {
+            spinner.appendChild(dots[i]);
+        }
+
+        return spinner;
+    };
+
+    Etto.prototype.createSpinnerDots = function createSpinnerDots (dotSize) {
+        var dots = [];
+
+        for (var i = 0; i < 3; i++) {
+            var dot = document.createElement('div');
+            dot.classList.add('etto-spinner-dot');
+            dot.setAttribute(
+                'style',
+                'border-radius: 2em; margin: 0 0.1em; display: inline-block; transition: all 0.3s ease;'
+            );
+
+            dot.style.height  = dotSize + 'px';
+            dot.style.width   = dotSize + 'px';
+
+            dots.push(dot);
+        }
+
+        return dots;
+    };
+
+    var xhr = null;
+    var source = function(query, done) {
+        // Abort last request
+        if (xhr) {
+            xhr.abort();
+        }
+
+        xhr = new XMLHttpRequest();
+        xhr.open('GET', 'https://swapi.co/api/people/?search=' + query, true);
+
+        xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 400) {
+                // Parse the response here...
+                var choices = [];
+                var json = JSON.parse(xhr.responseText);
+
+                json.results.forEach(function(person) {
+                    choices.push({ label: person.name });
+                });
+
+                done(choices);
+            } else {
+                // Else return empty array
+                done([]);
+            }
+        };
+
+        // Returns empty array onerror
+        xhr.onerror = function() { 
+            done([]);
+        };
+        
+        xhr.send();
+    };
+
+    new Etto(document.getElementById('demo-1'), { source: source });
+
+    // new Etto(document.getElementById('demo-1'), {}, [
+    //     { label: 'Alabama' },
+    //     { label: 'Alaska' },
+    //     { label: 'Michigan' },
+    //     { label: 'Minnesota' },
+    //     { label: 'Wyoming' },
+    //     { label: 'Doug' },
+    //     { label: 'Omigod Records' },
+    //     { label: 'Ganon' },
+    //     { label: 'Little Bambam' },
+    //     { label: 'Ness from Earthbound' },
+    //     { label: 'Ghoul' },
+    //     { label: 'Banana' }
+    // ]);
 
 }());
 //# sourceMappingURL=etto.js.map

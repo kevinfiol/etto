@@ -5,7 +5,6 @@ class EttoActions {
 
     setSelected(selected) {
         this.state.selected = selected;
-        console.log(this.state.selected);
     }
 
     setCache(cache) {
@@ -26,6 +25,14 @@ class EttoActions {
 
     setIsFetching(isFetching) {
         this.state.isFetching = isFetching;
+    }
+
+    setTimer(timer) {
+        this.state.timer = timer;
+    }
+
+    clearTimer() {
+        clearInterval(this.state.timer);
     }
 }
 

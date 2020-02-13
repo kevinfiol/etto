@@ -6,10 +6,11 @@ class Etto {
         this.state = {
             isFetching: false,
             cache: config.initialCache || {},
-            choices: choices.map(choiceMap) || [],
+            choices: choices ? choices.map(choiceMap) : [],
             filtered: [],
             inputVal: '',
-            selected: null
+            selected: null,
+            timer: null
         };
 
         this.actions = new EttoActions(this.state);
@@ -39,8 +40,44 @@ class Etto {
         this.root = root;
         this.root.appendChild(this.container);
 
+        // Append spinner after appending container to calculate appropriate offsetHeight
+        const dotSize = 6;
+        this.dots = this.createSpinnerDots(dotSize);
+
+        const spinnerTopPosition = ((this.input.offsetHeight / 2) - (dotSize / 2)) + 'px';
+        this.spinner = this.createSpinner(this.dots, spinnerTopPosition);
+        this.container.appendChild(this.spinner);
+
         // Initial Render
         this.renderList(this.state.inputVal, this.state.filtered);
+    }
+
+    setShowSpinner(showSpinner) {
+        const loOpacity = '0.3';
+        const hiOpacity = '0.7';
+
+        this.spinner.style.display = showSpinner ? 'flex' : 'none';
+
+        if (showSpinner) {
+            // Timer to alternate dot opacities
+            let current = 1;
+            this.actions.setTimer(
+                setInterval(() => {
+                    for (let i = 0; i < this.dots.length; i++) {
+                        // Reset Opacities
+                        this.dots[i].style.opacity = loOpacity;
+                    }
+
+                    if (current == this.dots.length)
+                        current = 0;
+
+                    this.dots[current].style.opacity = hiOpacity;
+                    current += 1;
+                }, 300)
+            );
+        } else {
+            this.actions.clearTimer();
+        }
     }
 
     setShowDropdownElement(showDropdown) {
@@ -58,12 +95,15 @@ class Etto {
             this.onReceiveChoices(this.state.cache[key]);
         } else {
             this.actions.setIsFetching(true);
+            this.setShowSpinner(true);
 
             this.source(this.state.inputVal, res => {
                 const choices = res ? res.map(choiceMap) : [];
 
                 this.actions.setCache({ ...this.state.cache, [key]: choices });
                 this.actions.setIsFetching(false);
+
+                this.setShowSpinner(false);
                 this.onReceiveChoices(choices);
             });
         }
@@ -127,9 +167,11 @@ class Etto {
         input.addEventListener('blur', () => {
             // Reset Selected
             if (this.state.selected) {
+                this.actions.setSelected(null);
                 this.renderList(this.state.inputVal, this.state.filtered);
-                this.setShowDropdownElement(this.state.filtered.length > 0);
             }
+
+            this.setShowDropdownElement(false);
         });
 
         input.addEventListener('keydown', e => {
@@ -250,6 +292,44 @@ class Etto {
 
         return li;
     }
+
+    createSpinner(dots, spinnerTopPosition) {
+        const spinner = document.createElement('div');
+        spinner.classList.add('etto-spinner');
+        spinner.setAttribute(
+            'style',
+            'position: absolute; display: none; align-items: center; right: 1em;'
+        );
+
+        // Calculate Position from top
+        spinner.style.top = spinnerTopPosition;
+
+        for (let i = 0; i < dots.length; i++) {
+            spinner.appendChild(dots[i]);
+        }
+
+        return spinner;
+    }
+
+    createSpinnerDots(dotSize) {
+        const dots = [];
+
+        for (let i = 0; i < 3; i++) {
+            const dot = document.createElement('div');
+            dot.classList.add('etto-spinner-dot');
+            dot.setAttribute(
+                'style',
+                'border-radius: 2em; margin: 0 0.1em; display: inline-block; transition: all 0.3s ease;'
+            );
+
+            dot.style.height  = dotSize + 'px';
+            dot.style.width   = dotSize + 'px';
+
+            dots.push(dot);
+        }
+
+        return dots;
+    }
 }
 
 let xhr = null;
@@ -287,19 +367,19 @@ const source = function(query, done) {
     xhr.send();
 };
 
-// new Etto(document.getElementById('demo-1'), { source });
+new Etto(document.getElementById('demo-1'), { source });
 
-new Etto(document.getElementById('demo-1'), {}, [
-    { label: 'Alabama' },
-    { label: 'Alaska' },
-    { label: 'Michigan' },
-    { label: 'Minnesota' },
-    { label: 'Wyoming' },
-    { label: 'Doug' },
-    { label: 'Omigod Records' },
-    { label: 'Ganon' },
-    { label: 'Little Bambam' },
-    { label: 'Ness from Earthbound' },
-    { label: 'Ghoul' },
-    { label: 'Banana' }
-]);
+// new Etto(document.getElementById('demo-1'), {}, [
+//     { label: 'Alabama' },
+//     { label: 'Alaska' },
+//     { label: 'Michigan' },
+//     { label: 'Minnesota' },
+//     { label: 'Wyoming' },
+//     { label: 'Doug' },
+//     { label: 'Omigod Records' },
+//     { label: 'Ganon' },
+//     { label: 'Little Bambam' },
+//     { label: 'Ness from Earthbound' },
+//     { label: 'Ghoul' },
+//     { label: 'Banana' }
+// ]);
