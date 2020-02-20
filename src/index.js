@@ -10,15 +10,18 @@ class Etto {
             filtered: [],
             inputVal: '',
             selected: null,
-            timer: null
+            spinnerTimer: null,
+            fetchTimer: null
         };
 
         this.actions = new EttoActions(this.state);
 
+        this.selectMode = config.selectMode || false;
         this.source = config.source || null;
         this.minChars = config.minChars || 3;
         this.maxResults = config.maxResults || 7;
         this.matchFullWord = config.matchFullWord || false;
+        this.requestDelay = config.requestDelay || 350;
 
         this.ul = this.createUnorderedList();
         this.dropdown = this.createDropdown();
@@ -42,41 +45,25 @@ class Etto {
 
         // Append spinner after appending container to calculate appropriate offsetHeight
         const dotSize = 6;
-        this.dots = this.createSpinnerDots(dotSize);
-
         const spinnerTopPosition = ((this.input.offsetHeight / 2) - (dotSize / 2)) + 'px';
-        this.spinner = this.createSpinner(this.dots, spinnerTopPosition);
-        this.container.appendChild(this.spinner);
+        
+        this.spinner = this.createSpinner(dotSize, spinnerTopPosition);
+        this.container.appendChild(this.spinner.container);
 
         // Initial Render
         this.renderList(this.state.inputVal, this.state.filtered);
     }
 
     setShowSpinner(showSpinner) {
-        const loOpacity = '0.3';
-        const hiOpacity = '0.7';
-
-        this.spinner.style.display = showSpinner ? 'flex' : 'none';
+        this.spinner.container.style.display = showSpinner ? 'flex' : 'none';
 
         if (showSpinner) {
-            // Timer to alternate dot opacities
-            let current = 1;
-            this.actions.setTimer(
-                setInterval(() => {
-                    for (let i = 0; i < this.dots.length; i++) {
-                        // Reset Opacities
-                        this.dots[i].style.opacity = loOpacity;
-                    }
-
-                    if (current == this.dots.length)
-                        current = 0;
-
-                    this.dots[current].style.opacity = hiOpacity;
-                    current += 1;
-                }, 300)
+            // Timer to animate dot opacities
+            this.actions.setSpinnerTimer(
+                setInterval(this.spinner.animateDots, 300)
             );
         } else {
-            this.actions.clearTimer();
+            this.actions.clearSpinnerTimer();
         }
     }
 
@@ -94,18 +81,24 @@ class Etto {
         if (this.state.cache[key]) {
             this.onReceiveChoices(this.state.cache[key]);
         } else {
-            this.actions.setIsFetching(true);
-            this.setShowSpinner(true);
+            if (this.state.fetchTimer) this.actions.clearFetchTimer();
 
-            this.source(this.state.inputVal, res => {
-                const choices = res ? res.map(choiceMap) : [];
+            this.actions.setFetchTimer(
+                setTimeout(() => {
+                    this.actions.setIsFetching(true);
+                    this.setShowSpinner(true);
 
-                this.actions.setCache({ ...this.state.cache, [key]: choices });
-                this.actions.setIsFetching(false);
+                    this.source(this.state.inputVal, res => {
+                        const choices = res ? res.map(choiceMap) : [];
 
-                this.setShowSpinner(false);
-                this.onReceiveChoices(choices);
-            });
+                        this.actions.setCache({ ...this.state.cache, [key]: choices });
+                        this.actions.setIsFetching(false);
+
+                        this.setShowSpinner(false);
+                        this.onReceiveChoices(choices);
+                    });
+                }, this.requestDelay)
+            );
         }
     }
 
@@ -233,28 +226,6 @@ class Etto {
         return input;
     }
 
-    createDropdown() {
-        const dropdown = document.createElement('div');
-        dropdown.classList.add('etto-dropdown');
-
-        dropdown.setAttribute(
-            'style',
-            'position: absolute; width: 100%; background-color: white; overflow: hidden; z-index: 99;'
-        );
-
-        // Hidden by default
-        dropdown.style.display = 'none';
-
-        return dropdown;
-    }
-
-    createUnorderedList() {
-        const ul = document.createElement('ul');
-        ul.classList.add('etto-ul');
-
-        return ul;
-    }
-
     createListItem(choice, inputVal, isSelected) {
         const choiceValue = choice.value || choice.label;
 
@@ -293,27 +264,44 @@ class Etto {
         return li;
     }
 
-    createSpinner(dots, spinnerTopPosition) {
-        const spinner = document.createElement('div');
-        spinner.classList.add('etto-spinner');
-        spinner.setAttribute(
+    createDropdown() {
+        const dropdown = document.createElement('div');
+        dropdown.classList.add('etto-dropdown');
+
+        dropdown.setAttribute(
+            'style',
+            'position: absolute; width: 100%; background-color: white; overflow: hidden; z-index: 99;'
+        );
+
+        // Hidden by default
+        dropdown.style.display = 'none';
+
+        return dropdown;
+    }
+
+    createUnorderedList() {
+        const ul = document.createElement('ul');
+        ul.classList.add('etto-ul');
+
+        return ul;
+    }
+
+    createSpinner(dotSize, spinnerTopPosition) {
+        const loOpacity = '0.3';
+        const hiOpacity = '0.7';
+
+        const spinner = { container: document.createElement('div') };
+        spinner.container.classList.add('etto-spinner');
+        spinner.container.setAttribute(
             'style',
             'position: absolute; display: none; align-items: center; right: 1em;'
         );
 
         // Calculate Position from top
-        spinner.style.top = spinnerTopPosition;
+        spinner.container.style.top = spinnerTopPosition;
 
-        for (let i = 0; i < dots.length; i++) {
-            spinner.appendChild(dots[i]);
-        }
-
-        return spinner;
-    }
-
-    createSpinnerDots(dotSize) {
+        // Create dots
         const dots = [];
-
         for (let i = 0; i < 3; i++) {
             const dot = document.createElement('div');
             dot.classList.add('etto-spinner-dot');
@@ -325,10 +313,31 @@ class Etto {
             dot.style.height  = dotSize + 'px';
             dot.style.width   = dotSize + 'px';
 
+            // Push Object references in Array
             dots.push(dot);
+
+            // Append to DOM Container
+            spinner.container.appendChild(dot);
         }
 
-        return dots;
+        let current = 0;
+        spinner.animateDots = function() {
+            for (let i = 0; i < dots.length; i++) {
+                // Reset Opacities
+                dots[i].style.opacity = loOpacity;
+            }
+
+            if (current == dots.length)
+                current = 0;
+
+            dots[current].style.opacity = hiOpacity;
+            current += 1;
+        };
+
+        // Animate once
+        spinner.animateDots();
+
+        return spinner;
     }
 }
 

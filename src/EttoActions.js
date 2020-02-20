@@ -27,12 +27,20 @@ class EttoActions {
         this.state.isFetching = isFetching;
     }
 
-    setTimer(timer) {
-        this.state.timer = timer;
+    setSpinnerTimer(spinnerTimer) {
+        this.state.spinnerTimer = spinnerTimer;
     }
 
-    clearTimer() {
-        clearInterval(this.state.timer);
+    clearSpinnerTimer() {
+        clearInterval(this.state.spinnerTimer);
+    }
+
+    setFetchTimer(fetchTimer) {
+        this.state.fetchTimer = fetchTimer;
+    }
+
+    clearFetchTimer() {
+        clearTimeout(this.state.fetchTimer);
     }
 }
 

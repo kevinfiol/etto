@@ -31,12 +31,20 @@
         this.state.isFetching = isFetching;
     };
 
-    EttoActions.prototype.setTimer = function setTimer (timer) {
-        this.state.timer = timer;
+    EttoActions.prototype.setSpinnerTimer = function setSpinnerTimer (spinnerTimer) {
+        this.state.spinnerTimer = spinnerTimer;
     };
 
-    EttoActions.prototype.clearTimer = function clearTimer () {
-        clearInterval(this.state.timer);
+    EttoActions.prototype.clearSpinnerTimer = function clearSpinnerTimer () {
+        clearInterval(this.state.spinnerTimer);
+    };
+
+    EttoActions.prototype.setFetchTimer = function setFetchTimer (fetchTimer) {
+        this.state.fetchTimer = fetchTimer;
+    };
+
+    EttoActions.prototype.clearFetchTimer = function clearFetchTimer () {
+        clearTimeout(this.state.fetchTimer);
     };
 
     function removeHtml(s) {
@@ -91,15 +99,18 @@
             filtered: [],
             inputVal: '',
             selected: null,
-            timer: null
+            spinnerTimer: null,
+            fetchTimer: null
         };
 
         this.actions = new EttoActions(this.state);
 
+        this.selectMode = config.selectMode || false;
         this.source = config.source || null;
         this.minChars = config.minChars || 3;
         this.maxResults = config.maxResults || 7;
         this.matchFullWord = config.matchFullWord || false;
+        this.requestDelay = config.requestDelay || 350;
 
         this.ul = this.createUnorderedList();
         this.dropdown = this.createDropdown();
@@ -123,43 +134,25 @@
 
         // Append spinner after appending container to calculate appropriate offsetHeight
         var dotSize = 6;
-        this.dots = this.createSpinnerDots(dotSize);
-
         var spinnerTopPosition = ((this.input.offsetHeight / 2) - (dotSize / 2)) + 'px';
-        this.spinner = this.createSpinner(this.dots, spinnerTopPosition);
-        this.container.appendChild(this.spinner);
+            
+        this.spinner = this.createSpinner(dotSize, spinnerTopPosition);
+        this.container.appendChild(this.spinner.container);
 
         // Initial Render
         this.renderList(this.state.inputVal, this.state.filtered);
     };
 
     Etto.prototype.setShowSpinner = function setShowSpinner (showSpinner) {
-            var this$1 = this;
-
-        var loOpacity = '0.3';
-        var hiOpacity = '0.7';
-
-        this.spinner.style.display = showSpinner ? 'flex' : 'none';
+        this.spinner.container.style.display = showSpinner ? 'flex' : 'none';
 
         if (showSpinner) {
-            // Timer to alternate dot opacities
-            var current = 1;
-            this.actions.setTimer(
-                setInterval(function () {
-                    for (var i = 0; i < this$1.dots.length; i++) {
-                        // Reset Opacities
-                        this$1.dots[i].style.opacity = loOpacity;
-                    }
-
-                    if (current == this$1.dots.length)
-                        { current = 0; }
-
-                    this$1.dots[current].style.opacity = hiOpacity;
-                    current += 1;
-                }, 300)
+            // Timer to animate dot opacities
+            this.actions.setSpinnerTimer(
+                setInterval(this.spinner.animateDots, 300)
             );
         } else {
-            this.actions.clearTimer();
+            this.actions.clearSpinnerTimer();
         }
     };
 
@@ -179,20 +172,26 @@
         if (this.state.cache[key]) {
             this.onReceiveChoices(this.state.cache[key]);
         } else {
-            this.actions.setIsFetching(true);
-            this.setShowSpinner(true);
+            if (this.state.fetchTimer) { this.actions.clearFetchTimer(); }
 
-            this.source(this.state.inputVal, function (res) {
-                    var obj;
+            this.actions.setFetchTimer(
+                setTimeout(function () {
+                    this$1.actions.setIsFetching(true);
+                    this$1.setShowSpinner(true);
 
-                var choices = res ? res.map(choiceMap) : [];
+                    this$1.source(this$1.state.inputVal, function (res) {
+                            var obj;
 
-                this$1.actions.setCache(Object.assign({}, this$1.state.cache, ( obj = {}, obj[key] = choices, obj )));
-                this$1.actions.setIsFetching(false);
+                        var choices = res ? res.map(choiceMap) : [];
 
-                this$1.setShowSpinner(false);
-                this$1.onReceiveChoices(choices);
-            });
+                        this$1.actions.setCache(Object.assign({}, this$1.state.cache, ( obj = {}, obj[key] = choices, obj )));
+                        this$1.actions.setIsFetching(false);
+
+                        this$1.setShowSpinner(false);
+                        this$1.onReceiveChoices(choices);
+                    });
+                }, this.requestDelay)
+            );
         }
     };
 
@@ -322,28 +321,6 @@
         return input;
     };
 
-    Etto.prototype.createDropdown = function createDropdown () {
-        var dropdown = document.createElement('div');
-        dropdown.classList.add('etto-dropdown');
-
-        dropdown.setAttribute(
-            'style',
-            'position: absolute; width: 100%; background-color: white; overflow: hidden; z-index: 99;'
-        );
-
-        // Hidden by default
-        dropdown.style.display = 'none';
-
-        return dropdown;
-    };
-
-    Etto.prototype.createUnorderedList = function createUnorderedList () {
-        var ul = document.createElement('ul');
-        ul.classList.add('etto-ul');
-
-        return ul;
-    };
-
     Etto.prototype.createListItem = function createListItem (choice, inputVal, isSelected) {
             var this$1 = this;
 
@@ -384,27 +361,44 @@
         return li;
     };
 
-    Etto.prototype.createSpinner = function createSpinner (dots, spinnerTopPosition) {
-        var spinner = document.createElement('div');
-        spinner.classList.add('etto-spinner');
-        spinner.setAttribute(
+    Etto.prototype.createDropdown = function createDropdown () {
+        var dropdown = document.createElement('div');
+        dropdown.classList.add('etto-dropdown');
+
+        dropdown.setAttribute(
+            'style',
+            'position: absolute; width: 100%; background-color: white; overflow: hidden; z-index: 99;'
+        );
+
+        // Hidden by default
+        dropdown.style.display = 'none';
+
+        return dropdown;
+    };
+
+    Etto.prototype.createUnorderedList = function createUnorderedList () {
+        var ul = document.createElement('ul');
+        ul.classList.add('etto-ul');
+
+        return ul;
+    };
+
+    Etto.prototype.createSpinner = function createSpinner (dotSize, spinnerTopPosition) {
+        var loOpacity = '0.3';
+        var hiOpacity = '0.7';
+
+        var spinner = { container: document.createElement('div') };
+        spinner.container.classList.add('etto-spinner');
+        spinner.container.setAttribute(
             'style',
             'position: absolute; display: none; align-items: center; right: 1em;'
         );
 
         // Calculate Position from top
-        spinner.style.top = spinnerTopPosition;
+        spinner.container.style.top = spinnerTopPosition;
 
-        for (var i = 0; i < dots.length; i++) {
-            spinner.appendChild(dots[i]);
-        }
-
-        return spinner;
-    };
-
-    Etto.prototype.createSpinnerDots = function createSpinnerDots (dotSize) {
+        // Create dots
         var dots = [];
-
         for (var i = 0; i < 3; i++) {
             var dot = document.createElement('div');
             dot.classList.add('etto-spinner-dot');
@@ -416,10 +410,31 @@
             dot.style.height  = dotSize + 'px';
             dot.style.width   = dotSize + 'px';
 
+            // Push Object references in Array
             dots.push(dot);
+
+            // Append to DOM Container
+            spinner.container.appendChild(dot);
         }
 
-        return dots;
+        var current = 0;
+        spinner.animateDots = function() {
+            for (var i = 0; i < dots.length; i++) {
+                // Reset Opacities
+                dots[i].style.opacity = loOpacity;
+            }
+
+            if (current == dots.length)
+                { current = 0; }
+
+            dots[current].style.opacity = hiOpacity;
+            current += 1;
+        };
+
+        // Animate once
+        spinner.animateDots();
+
+        return spinner;
     };
 
     var xhr = null;
