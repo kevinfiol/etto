@@ -88,6 +88,12 @@ function choiceMap(choice) {
     });
 }
 
+var MIN_CHARS = 3;
+var MAX_RESULTS = 7;
+var REQUEST_DELAY = 350;
+var DOT_SIZE = 6;
+var SPINNER_TIMER = 300;
+
 var Etto = function Etto(root, config, choices) {
     this.state = {
         isFetching: false,
@@ -102,17 +108,17 @@ var Etto = function Etto(root, config, choices) {
 
     this.actions = new EttoActions(this.state);
 
-    this.selectMode = config.selectMode || false;
-    this.source = config.source || null;
-    this.minChars = config.minChars || 3;
-    this.maxResults = config.maxResults || 7;
+    this.selectMode= config.selectMode || false;
+    this.source    = config.source || null;
+    this.minChars  = config.minChars || MIN_CHARS;
+    this.maxResults= config.maxResults || MAX_RESULTS;
     this.matchFullWord = config.matchFullWord || false;
-    this.requestDelay = config.requestDelay || 350;
+    this.requestDelay  = config.requestDelay || REQUEST_DELAY;
 
-    this.ul = this.createUnorderedList();
+    this.input= this.createInput();
+    this.ul   = this.createUnorderedList();
     this.dropdown = this.createDropdown();
     this.dropdown.appendChild(this.ul);
-    this.input = this.createInput();
 
     // Containers
     this.container = document.createElement('div');
@@ -130,10 +136,9 @@ var Etto = function Etto(root, config, choices) {
     this.root.appendChild(this.container);
 
     // Append spinner after appending container to calculate appropriate offsetHeight
-    var dotSize = 6;
-    var spinnerTopPosition = ((this.input.offsetHeight / 2) - (dotSize / 2)) + 'px';
+    var spinnerTopPosition = ((this.input.offsetHeight / 2) - (DOT_SIZE / 2)) + 'px';
         
-    this.spinner = this.createSpinner(dotSize, spinnerTopPosition);
+    this.spinner = this.createSpinner(DOT_SIZE, spinnerTopPosition);
     this.container.appendChild(this.spinner.container);
 
     // Initial Render
@@ -142,18 +147,9 @@ var Etto = function Etto(root, config, choices) {
 
 Etto.prototype.setShowSpinner = function setShowSpinner (showSpinner) {
     this.spinner.container.style.display = showSpinner ? 'flex' : 'none';
-
-    if (showSpinner) {
-        // Timer to animate dot opacities
-        this.actions.setSpinnerTimer(
-            setInterval(this.spinner.animateDots, 300)
-        );
-    } else {
-        this.actions.clearSpinnerTimer();
-    }
 };
 
-Etto.prototype.setShowDropdownElement = function setShowDropdownElement (showDropdown) {
+Etto.prototype.setShowDropdown = function setShowDropdown (showDropdown) {
     // DOM Update
     this.dropdown.style.display = showDropdown ? 'block' : 'none';
 
@@ -161,10 +157,10 @@ Etto.prototype.setShowDropdownElement = function setShowDropdownElement (showDro
     if (!showDropdown && this.state.selected) { this.actions.setSelected(null); }
 };
 
-Etto.prototype.fetchFromSource = function fetchFromSource () {
+Etto.prototype.fetchFromSource = function fetchFromSource (inputVal) {
         var this$1 = this;
 
-    var key = this.state.inputVal.toUpperCase().trim();
+    var key = inputVal.toUpperCase().trim();
 
     if (this.state.cache[key]) {
         this.onReceiveChoices(this.state.cache[key]);
@@ -175,8 +171,9 @@ Etto.prototype.fetchFromSource = function fetchFromSource () {
             setTimeout(function () {
                 this$1.actions.setIsFetching(true);
                 this$1.setShowSpinner(true);
+                this$1.actions.setSpinnerTimer(setInterval(this$1.spinner.animateDots, SPINNER_TIMER));
 
-                this$1.source(this$1.state.inputVal, function (res) {
+                this$1.source(inputVal, function (res) {
                         var obj;
 
                     var choices = res ? res.map(choiceMap) : [];
@@ -185,6 +182,8 @@ Etto.prototype.fetchFromSource = function fetchFromSource () {
                     this$1.actions.setIsFetching(false);
 
                     this$1.setShowSpinner(false);
+                    this$1.actions.clearSpinnerTimer();
+
                     this$1.onReceiveChoices(choices);
                 });
             }, this.requestDelay)
@@ -204,7 +203,7 @@ Etto.prototype.onReceiveChoices = function onReceiveChoices (choices) {
     this.actions.setFiltered(filtered);
 
     this.renderList(this.state.inputVal, filtered);
-    this.setShowDropdownElement(filtered.length > 0);
+    this.setShowDropdown(filtered.length > 0);
 };
 
 Etto.prototype.renderList = function renderList (inputVal, filtered) {
@@ -218,8 +217,6 @@ Etto.prototype.renderList = function renderList (inputVal, filtered) {
         var isSelected = i === this.state.selected;
         this.ul.appendChild( renderItem(filtered[i], inputVal, isSelected) );
     }
-
-    console.log(this.ul);
 };
 
 Etto.prototype.createInput = function createInput () {
@@ -237,16 +234,16 @@ Etto.prototype.createInput = function createInput () {
         this$1.actions.setInputVal(inputVal);
 
         if (inputVal && inputVal.trim().length >= this$1.minChars) {
-            if (this$1.source) { this$1.fetchFromSource(); }
+            if (this$1.source) { this$1.fetchFromSource(inputVal); }
             else { this$1.onReceiveChoices(this$1.state.choices); }
         } else {
             this$1.renderList(inputVal, []);
-            this$1.setShowDropdownElement(false);
+            this$1.setShowDropdown(false);
         }
     });
 
     input.addEventListener('focus', function () {
-        this$1.setShowDropdownElement(this$1.state.filtered.length > 0);
+        this$1.setShowDropdown(this$1.state.filtered.length > 0);
     });
 
     input.addEventListener('blur', function () {
@@ -256,7 +253,7 @@ Etto.prototype.createInput = function createInput () {
             this$1.renderList(this$1.state.inputVal, this$1.state.filtered);
         }
 
-        this$1.setShowDropdownElement(false);
+        this$1.setShowDropdown(false);
     });
 
     input.addEventListener('keydown', function (e) {
@@ -282,7 +279,7 @@ Etto.prototype.createInput = function createInput () {
             }
 
             this$1.renderList(this$1.state.inputVal, this$1.state.filtered);
-            this$1.setShowDropdownElement(this$1.state.filtered.length > 0);
+            this$1.setShowDropdown(this$1.state.filtered.length > 0);
         }
 
         // Enter or Tab
@@ -309,7 +306,7 @@ Etto.prototype.createInput = function createInput () {
                     );
 
                     this$1.renderList(inputVal, filtered);
-                    this$1.setShowDropdownElement(false);
+                    this$1.setShowDropdown(false);
                 }
             }
         }
@@ -348,7 +345,7 @@ Etto.prototype.createListItem = function createListItem (choice, inputVal, isSel
         this$1.actions.setFiltered(filtered);
 
         this$1.renderList(choice.label, filtered);
-        this$1.setShowDropdownElement(filtered.length > 0);
+        this$1.setShowDropdown(filtered.length > 0);
 
         // Update DOM
         this$1.input.value = choiceValue;
@@ -471,18 +468,18 @@ var source = function(query, done) {
 
 new Etto(document.getElementById('demo-1'), { source: source });
 
-// new Etto(document.getElementById('demo-1'), {}, [
-//     { label: 'Alabama' },
-//     { label: 'Alaska' },
-//     { label: 'Michigan' },
-//     { label: 'Minnesota' },
-//     { label: 'Wyoming' },
-//     { label: 'Doug' },
-//     { label: 'Omigod Records' },
-//     { label: 'Ganon' },
-//     { label: 'Little Bambam' },
-//     { label: 'Ness from Earthbound' },
-//     { label: 'Ghoul' },
-//     { label: 'Banana' }
-// ]);
+new Etto(document.getElementById('demo-2'), {}, [
+    { label: 'Alabama' },
+    { label: 'Alaska' },
+    { label: 'Michigan' },
+    { label: 'Minnesota' },
+    { label: 'Wyoming' },
+    { label: 'Doug' },
+    { label: 'Omigod Records' },
+    { label: 'Ganon' },
+    { label: 'Little Bambam' },
+    { label: 'Ness from Earthbound' },
+    { label: 'Ghoul' },
+    { label: 'Banana' }
+]);
 //# sourceMappingURL=etto.cjs.js.map

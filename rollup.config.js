@@ -30,7 +30,7 @@ const configs = [
             cjs(),
             buble({ objectAssign: 'Object.assign' }),
             isProd && uglify(),
-            isDev && serve('dist'),
+            isDev && serve({ contentBase: 'dist', port: 8090 }),
             isDev && livereload('dist')
         ]
     },

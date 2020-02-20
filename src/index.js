@@ -1,6 +1,12 @@
 import EttoActions from './EttoActions';
 import { createEmText, filterChoices, choiceMap } from './util';
 
+const MIN_CHARS = 3;
+const MAX_RESULTS = 7;
+const REQUEST_DELAY = 350;
+const DOT_SIZE = 6;
+const SPINNER_TIMER = 300;
+
 class Etto {
     constructor(root, config, choices) {
         this.state = {
@@ -16,17 +22,17 @@ class Etto {
 
         this.actions = new EttoActions(this.state);
 
-        this.selectMode = config.selectMode || false;
-        this.source = config.source || null;
-        this.minChars = config.minChars || 3;
-        this.maxResults = config.maxResults || 7;
+        this.selectMode    = config.selectMode || false;
+        this.source        = config.source || null;
+        this.minChars      = config.minChars || MIN_CHARS;
+        this.maxResults    = config.maxResults || MAX_RESULTS;
         this.matchFullWord = config.matchFullWord || false;
-        this.requestDelay = config.requestDelay || 350;
+        this.requestDelay  = config.requestDelay || REQUEST_DELAY;
 
-        this.ul = this.createUnorderedList();
+        this.input    = this.createInput();
+        this.ul       = this.createUnorderedList();
         this.dropdown = this.createDropdown();
         this.dropdown.appendChild(this.ul);
-        this.input = this.createInput();
 
         // Containers
         this.container = document.createElement('div');
@@ -44,10 +50,9 @@ class Etto {
         this.root.appendChild(this.container);
 
         // Append spinner after appending container to calculate appropriate offsetHeight
-        const dotSize = 6;
-        const spinnerTopPosition = ((this.input.offsetHeight / 2) - (dotSize / 2)) + 'px';
+        const spinnerTopPosition = ((this.input.offsetHeight / 2) - (DOT_SIZE / 2)) + 'px';
         
-        this.spinner = this.createSpinner(dotSize, spinnerTopPosition);
+        this.spinner = this.createSpinner(DOT_SIZE, spinnerTopPosition);
         this.container.appendChild(this.spinner.container);
 
         // Initial Render
@@ -56,18 +61,9 @@ class Etto {
 
     setShowSpinner(showSpinner) {
         this.spinner.container.style.display = showSpinner ? 'flex' : 'none';
-
-        if (showSpinner) {
-            // Timer to animate dot opacities
-            this.actions.setSpinnerTimer(
-                setInterval(this.spinner.animateDots, 300)
-            );
-        } else {
-            this.actions.clearSpinnerTimer();
-        }
     }
 
-    setShowDropdownElement(showDropdown) {
+    setShowDropdown(showDropdown) {
         // DOM Update
         this.dropdown.style.display = showDropdown ? 'block' : 'none';
 
@@ -75,8 +71,8 @@ class Etto {
         if (!showDropdown && this.state.selected) this.actions.setSelected(null);
     }
 
-    fetchFromSource() {
-        const key = this.state.inputVal.toUpperCase().trim();
+    fetchFromSource(inputVal) {
+        const key = inputVal.toUpperCase().trim();
 
         if (this.state.cache[key]) {
             this.onReceiveChoices(this.state.cache[key]);
@@ -87,14 +83,17 @@ class Etto {
                 setTimeout(() => {
                     this.actions.setIsFetching(true);
                     this.setShowSpinner(true);
+                    this.actions.setSpinnerTimer(setInterval(this.spinner.animateDots, SPINNER_TIMER));
 
-                    this.source(this.state.inputVal, res => {
+                    this.source(inputVal, res => {
                         const choices = res ? res.map(choiceMap) : [];
 
                         this.actions.setCache({ ...this.state.cache, [key]: choices });
                         this.actions.setIsFetching(false);
 
                         this.setShowSpinner(false);
+                        this.actions.clearSpinnerTimer();
+
                         this.onReceiveChoices(choices);
                     });
                 }, this.requestDelay)
@@ -114,7 +113,7 @@ class Etto {
         this.actions.setFiltered(filtered);
 
         this.renderList(this.state.inputVal, filtered);
-        this.setShowDropdownElement(filtered.length > 0);
+        this.setShowDropdown(filtered.length > 0);
     }
 
     renderList(inputVal, filtered) {
@@ -128,8 +127,6 @@ class Etto {
             const isSelected = i === this.state.selected;
             this.ul.appendChild( renderItem(filtered[i], inputVal, isSelected) );
         }
-
-        console.log(this.ul);
     }
 
     createInput() {
@@ -145,16 +142,16 @@ class Etto {
             this.actions.setInputVal(inputVal);
 
             if (inputVal && inputVal.trim().length >= this.minChars) {
-                if (this.source) this.fetchFromSource();
+                if (this.source) this.fetchFromSource(inputVal);
                 else this.onReceiveChoices(this.state.choices);
             } else {
                 this.renderList(inputVal, []);
-                this.setShowDropdownElement(false);
+                this.setShowDropdown(false);
             }
         });
 
         input.addEventListener('focus', () => {
-            this.setShowDropdownElement(this.state.filtered.length > 0);
+            this.setShowDropdown(this.state.filtered.length > 0);
         });
 
         input.addEventListener('blur', () => {
@@ -164,7 +161,7 @@ class Etto {
                 this.renderList(this.state.inputVal, this.state.filtered);
             }
 
-            this.setShowDropdownElement(false);
+            this.setShowDropdown(false);
         });
 
         input.addEventListener('keydown', e => {
@@ -190,7 +187,7 @@ class Etto {
                 }
 
                 this.renderList(this.state.inputVal, this.state.filtered);
-                this.setShowDropdownElement(this.state.filtered.length > 0);
+                this.setShowDropdown(this.state.filtered.length > 0);
             }
 
             // Enter or Tab
@@ -217,7 +214,7 @@ class Etto {
                         );
 
                         this.renderList(inputVal, filtered);
-                        this.setShowDropdownElement(false);
+                        this.setShowDropdown(false);
                     }
                 }
             }
@@ -254,7 +251,7 @@ class Etto {
             this.actions.setFiltered(filtered);
 
             this.renderList(choice.label, filtered);
-            this.setShowDropdownElement(filtered.length > 0);
+            this.setShowDropdown(filtered.length > 0);
 
             // Update DOM
             this.input.value = choiceValue;
@@ -378,17 +375,17 @@ const source = function(query, done) {
 
 new Etto(document.getElementById('demo-1'), { source });
 
-// new Etto(document.getElementById('demo-1'), {}, [
-//     { label: 'Alabama' },
-//     { label: 'Alaska' },
-//     { label: 'Michigan' },
-//     { label: 'Minnesota' },
-//     { label: 'Wyoming' },
-//     { label: 'Doug' },
-//     { label: 'Omigod Records' },
-//     { label: 'Ganon' },
-//     { label: 'Little Bambam' },
-//     { label: 'Ness from Earthbound' },
-//     { label: 'Ghoul' },
-//     { label: 'Banana' }
-// ]);
+new Etto(document.getElementById('demo-2'), {}, [
+    { label: 'Alabama' },
+    { label: 'Alaska' },
+    { label: 'Michigan' },
+    { label: 'Minnesota' },
+    { label: 'Wyoming' },
+    { label: 'Doug' },
+    { label: 'Omigod Records' },
+    { label: 'Ganon' },
+    { label: 'Little Bambam' },
+    { label: 'Ness from Earthbound' },
+    { label: 'Ghoul' },
+    { label: 'Banana' }
+]);
