@@ -1,10 +1,15 @@
+import Input from './components/Input';
+import Dropdown from './components/Dropdown';
+import Spinner from './components/Spinner';
+import UnorderedList from './components/UnorderedList';
+
 import EttoActions from './EttoActions';
 import { createEmText, filterChoices, choiceMap } from './util';
 
 const MIN_CHARS = 3;
 const MAX_RESULTS = 7;
 const REQUEST_DELAY = 350;
-const DOT_SIZE = 6;
+const SPINNER_DOT_SIZE = 6;
 const SPINNER_TIMER = 300;
 
 class Etto {
@@ -22,17 +27,27 @@ class Etto {
 
         this.actions = new EttoActions(this.state);
 
-        this.selectMode    = config.selectMode || false;
-        this.source        = config.source || null;
-        this.minChars      = config.minChars || MIN_CHARS;
-        this.maxResults    = config.maxResults || MAX_RESULTS;
+        this.selectMode    = config.selectMode    || false;
+        this.source        = config.source        || null;
+        this.minChars      = config.minChars      || MIN_CHARS;
+        this.maxResults    = config.maxResults    || MAX_RESULTS;
         this.matchFullWord = config.matchFullWord || false;
-        this.requestDelay  = config.requestDelay || REQUEST_DELAY;
+        this.requestDelay  = config.requestDelay  || REQUEST_DELAY;
+        this.createItemFn  = config.createItemFn  || this.createListItem.bind(this);
 
-        this.input    = this.createInput();
-        this.ul       = this.createUnorderedList();
-        this.dropdown = this.createDropdown();
-        this.dropdown.appendChild(this.ul);
+        this.Input = new Input(document.createElement('input'),
+            this.onInput.bind(this),
+            this.onFocus.bind(this),
+            this.onBlur.bind(this),
+            this.onKeydown.bind(this)
+        );
+
+        this.UnorderedList = new UnorderedList(document.createElement('ul'),
+            this.createItemFn
+        );
+
+        this.Dropdown = new Dropdown(document.createElement('div'));
+        this.Dropdown.appendChild(this.UnorderedList.el);
 
         // Containers
         this.container = document.createElement('div');
@@ -41,34 +56,40 @@ class Etto {
 
         const inputContainer = document.createElement('div');
         inputContainer.setAttribute('style', 'position: relative;');
-        inputContainer.appendChild(this.input);
+        inputContainer.appendChild(this.Input.el);
 
         this.container.appendChild(inputContainer);
-        this.container.appendChild(this.dropdown);
+        this.container.appendChild(this.Dropdown.el);
 
         this.root = root;
         this.root.appendChild(this.container);
 
-        // Append spinner after appending container to calculate appropriate offsetHeight
-        const spinnerTopPosition = ((this.input.offsetHeight / 2) - (DOT_SIZE / 2)) + 'px';
-        
-        this.spinner = this.createSpinner(DOT_SIZE, spinnerTopPosition);
-        this.container.appendChild(this.spinner.container);
+        // Append spinner after appending container to calc appropriate offsetHeight
+        const spinnerTopPosition = ((this.Input.offsetHeight / 2) - (SPINNER_DOT_SIZE / 2)) + 'px';
+
+        this.Spinner = new Spinner(document.createElement('div'),
+            SPINNER_DOT_SIZE,
+            spinnerTopPosition
+        );
+
+        this.container.appendChild(this.Spinner.el);
 
         // Initial Render
-        this.renderList(this.state.inputVal, this.state.filtered);
+        this.render(this.state.inputVal, this.state.filtered);
     }
 
-    setShowSpinner(showSpinner) {
-        this.spinner.container.style.display = showSpinner ? 'flex' : 'none';
+    render(inputVal, filtered) {
+        this.UnorderedList.populateList(inputVal, filtered, this.state.selected);
     }
 
     setShowDropdown(showDropdown) {
+        console.log(showDropdown);
         // DOM Update
-        this.dropdown.style.display = showDropdown ? 'block' : 'none';
+        this.Dropdown.setDisplay(showDropdown ? 'block' : 'none');
 
         // Reset Selected if Dropdown has been hidden
-        if (!showDropdown && this.state.selected) this.actions.setSelected(null);
+        if (!showDropdown && this.state.selected)
+            this.actions.setSelected(null);
     }
 
     fetchFromSource(inputVal) {
@@ -82,8 +103,8 @@ class Etto {
             this.actions.setFetchTimer(
                 setTimeout(() => {
                     this.actions.setIsFetching(true);
-                    this.setShowSpinner(true);
-                    this.actions.setSpinnerTimer(setInterval(this.spinner.animateDots, SPINNER_TIMER));
+                    this.actions.setSpinnerTimer(setInterval(this.Spinner.animateDots.bind(this.Spinner), SPINNER_TIMER));
+                    this.Spinner.setDisplay('flex');
 
                     this.source(inputVal, res => {
                         const choices = res ? res.map(choiceMap) : [];
@@ -91,7 +112,7 @@ class Etto {
                         this.actions.setCache({ ...this.state.cache, [key]: choices });
                         this.actions.setIsFetching(false);
 
-                        this.setShowSpinner(false);
+                        this.Spinner.setDisplay('none');
                         this.actions.clearSpinnerTimer();
 
                         this.onReceiveChoices(choices);
@@ -112,115 +133,8 @@ class Etto {
         this.actions.setChoices(choices);
         this.actions.setFiltered(filtered);
 
-        this.renderList(this.state.inputVal, filtered);
+        this.render(this.state.inputVal, filtered);
         this.setShowDropdown(filtered.length > 0);
-    }
-
-    renderList(inputVal, filtered) {
-        // Use custom renderItem function if exists
-        const renderItem = this.renderItem || this.createListItem.bind(this);
-
-        // Clear & Repopulate List
-        this.ul.innerHTML = '';
-
-        for (let i = 0; i < filtered.length; i++) {
-            const isSelected = i === this.state.selected;
-            this.ul.appendChild( renderItem(filtered[i], inputVal, isSelected) );
-        }
-    }
-
-    createInput() {
-        const input = document.createElement('input');
-        input.classList.add('etto-input');
-
-        input.setAttribute('autocomplete', 'off');
-        input.setAttribute('value', '');
-        input.setAttribute('style', 'box-sizing: border-box;');
-
-        input.addEventListener('input', e => {
-            const inputVal = e.target.value;
-            this.actions.setInputVal(inputVal);
-
-            if (inputVal && inputVal.trim().length >= this.minChars) {
-                if (this.source) this.fetchFromSource(inputVal);
-                else this.onReceiveChoices(this.state.choices);
-            } else {
-                this.renderList(inputVal, []);
-                this.setShowDropdown(false);
-            }
-        });
-
-        input.addEventListener('focus', () => {
-            this.setShowDropdown(this.state.filtered.length > 0);
-        });
-
-        input.addEventListener('blur', () => {
-            // Reset Selected
-            if (this.state.selected) {
-                this.actions.setSelected(null);
-                this.renderList(this.state.inputVal, this.state.filtered);
-            }
-
-            this.setShowDropdown(false);
-        });
-
-        input.addEventListener('keydown', e => {
-            let showDropdown = this.dropdown.style.display === 'block';
-
-            if ((e.keyCode == 38 || e.keyCode == 40) && showDropdown) {
-                e.preventDefault();
-
-                // Decrement (Go Up)
-                if (e.keyCode == 38) {
-                    if (this.state.selected === null)
-                        this.actions.setSelected(0);
-                    else if (this.state.selected !== 0)
-                        this.actions.setSelected(this.state.selected - 1);
-                }
-
-                // Increment (Go Down)
-                if (e.keyCode == 40) {
-                    if (this.state.selected === null)
-                        this.actions.setSelected(0);
-                    else if (this.state.selected !== this.state.filtered.length - 1)
-                        this.actions.setSelected(this.state.selected + 1);
-                }
-
-                this.renderList(this.state.inputVal, this.state.filtered);
-                this.setShowDropdown(this.state.filtered.length > 0);
-            }
-
-            // Enter or Tab
-            if (e.keyCode == 9 || e.keyCode == 13) {
-                if (showDropdown) {
-                    e.preventDefault();
-                    let inputVal = undefined;
-
-                    if (this.state.selected !== null) {
-                        const choice = this.state.filtered[this.state.selected];
-                        inputVal = choice.label;
-
-                        this.actions.setInputVal(inputVal);
-                        this.actions.setSelected(null);
-
-                        // Update DOM
-                        this.input.value = inputVal;
-
-                        const filtered = filterChoices(
-                            inputVal,
-                            this.state.choices,
-                            this.matchFullWord,
-                            this.maxResults
-                        );
-
-                        this.renderList(inputVal, filtered);
-                        this.setShowDropdown(false);
-                    }
-                }
-            }
-        });
-
-        return input;
     }
 
     createListItem(choice, inputVal, isSelected) {
@@ -250,91 +164,97 @@ class Etto {
             this.actions.setInputVal(choiceValue);
             this.actions.setFiltered(filtered);
 
-            this.renderList(choice.label, filtered);
+            this.render(choice.label, filtered);
             this.setShowDropdown(filtered.length > 0);
 
-            // Update DOM
-            this.input.value = choiceValue;
-            this.input.focus();
+            this.Input.setValue(choiceValue);
+            this.Input.focus();
         });
 
         return li;
     }
 
-    createDropdown() {
-        const dropdown = document.createElement('div');
-        dropdown.classList.add('etto-dropdown');
+    onInput(e) {
+        const inputVal = e.target.value;
+        this.actions.setInputVal(inputVal);
 
-        dropdown.setAttribute(
-            'style',
-            'position: absolute; width: 100%; background-color: white; overflow: hidden; z-index: 99;'
-        );
-
-        // Hidden by default
-        dropdown.style.display = 'none';
-
-        return dropdown;
+        if (inputVal && inputVal.trim().length >= this.minChars) {
+            if (this.source) this.fetchFromSource(inputVal);
+            else this.onReceiveChoices(this.state.choices);
+        } else {
+            this.render(inputVal, []);
+            this.setShowDropdown(false);
+        }
     }
 
-    createUnorderedList() {
-        const ul = document.createElement('ul');
-        ul.classList.add('etto-ul');
-
-        return ul;
+    onFocus() {
+        this.setShowDropdown(this.state.filtered.length > 0);
     }
 
-    createSpinner(dotSize, spinnerTopPosition) {
-        const loOpacity = '0.3';
-        const hiOpacity = '0.7';
-
-        const spinner = { container: document.createElement('div') };
-        spinner.container.classList.add('etto-spinner');
-        spinner.container.setAttribute(
-            'style',
-            'position: absolute; display: none; align-items: center; right: 1em;'
-        );
-
-        // Calculate Position from top
-        spinner.container.style.top = spinnerTopPosition;
-
-        // Create dots
-        const dots = [];
-        for (let i = 0; i < 3; i++) {
-            const dot = document.createElement('div');
-            dot.classList.add('etto-spinner-dot');
-            dot.setAttribute(
-                'style',
-                'border-radius: 2em; margin: 0 0.1em; display: inline-block; transition: all 0.3s ease;'
-            );
-
-            dot.style.height  = dotSize + 'px';
-            dot.style.width   = dotSize + 'px';
-
-            // Push Object references in Array
-            dots.push(dot);
-
-            // Append to DOM Container
-            spinner.container.appendChild(dot);
+    onBlur() {
+        // Reset Selected
+        if (this.state.selected) {
+            this.actions.setSelected(null);
+            this.render(this.state.inputVal, this.state.filtered);
         }
 
-        let current = 0;
-        spinner.animateDots = function() {
-            for (let i = 0; i < dots.length; i++) {
-                // Reset Opacities
-                dots[i].style.opacity = loOpacity;
+        this.setShowDropdown(false);
+    }
+
+    onKeydown(e) {
+        let isDropdownVisible = this.Dropdown.el.style.display === 'block';
+
+        if ((e.keyCode == 38 || e.keyCode == 40) && isDropdownVisible) {
+            e.preventDefault();
+
+            // Decrement (Go Up)
+            if (e.keyCode == 38) {
+                if (this.state.selected === null)
+                    this.actions.setSelected(0);
+                else if (this.state.selected !== 0)
+                    this.actions.setSelected(this.state.selected - 1);
             }
 
-            if (current == dots.length)
-                current = 0;
+            // Increment (Go Down)
+            if (e.keyCode == 40) {
+                if (this.state.selected === null)
+                    this.actions.setSelected(0);
+                else if (this.state.selected !== this.state.filtered.length - 1)
+                    this.actions.setSelected(this.state.selected + 1);
+            }
 
-            dots[current].style.opacity = hiOpacity;
-            current += 1;
-        };
+            this.render(this.state.inputVal, this.state.filtered);
+            this.setShowDropdown(this.state.filtered.length > 0);
+        }
 
-        // Animate once
-        spinner.animateDots();
+        // Enter or Tab
+        if (e.keyCode == 9 || e.keyCode == 13) {
+            if (isDropdownVisible) {
+                e.preventDefault();
+                let inputVal = undefined;
 
-        return spinner;
+                if (this.state.selected !== null) {
+                    const choice = this.state.filtered[this.state.selected];
+                    inputVal = choice.label;
+
+                    this.actions.setInputVal(inputVal);
+                    this.actions.setSelected(null);
+
+                    // Update DOM
+                    this.Input.setValue(inputVal);
+
+                    const filtered = filterChoices(
+                        inputVal,
+                        this.state.choices,
+                        this.matchFullWord,
+                        this.maxResults
+                    );
+
+                    this.render(inputVal, filtered);
+                    this.setShowDropdown(false);
+                }
+            }
+        }
     }
 }
 

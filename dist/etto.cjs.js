@@ -1,5 +1,194 @@
 'use strict';
 
+var Element = function Element(el) {
+    this.el = el;
+};
+
+Element.prototype.addEventListener = function addEventListener (event, callback) {
+    this.el.addEventListener(event, callback);
+};
+
+Element.prototype.applyClassList = function applyClassList (classList) {
+    for (var i = 0; i < classList.length; i++) {
+        this.el.classList.add(classList[i]);
+    }
+};
+
+Element.prototype.applyAttributes = function applyAttributes (attributes) {
+    for (var key in attributes) {
+        this.el.setAttribute(key, attributes[key]);
+    }
+};
+
+Element.prototype.appendChild = function appendChild (child) {
+    this.el.appendChild(child);
+};
+
+Element.prototype.setDisplay = function setDisplay (display) {
+    this.el.style.display = display;
+};
+
+var Input = /*@__PURE__*/(function (Element) {
+    function Input(
+        el,
+        onInput,
+        onFocus,
+        onBlur,
+        onKeydown
+    ) {
+        Element.call(this, el);
+
+        this.applyClassList(['etto-input']);
+        this.applyAttributes({
+            autocomplete: 'off',
+            value: '',
+            style: 'box-sizing: border-box;'
+        });
+
+        this.addEventListener('input', onInput);
+        this.addEventListener('focus', onFocus);
+        this.addEventListener('blur', onBlur);
+        this.addEventListener('keydown', onKeydown);
+    }
+
+    if ( Element ) Input.__proto__ = Element;
+    Input.prototype = Object.create( Element && Element.prototype );
+    Input.prototype.constructor = Input;
+
+    var prototypeAccessors = { offsetHeight: { configurable: true } };
+
+    prototypeAccessors.offsetHeight.get = function () {
+        return this.el.offsetHeight;
+    };
+
+    Input.prototype.setValue = function setValue (value) {
+        this.el.value = value;
+    };
+
+    Input.prototype.focus = function focus () {
+        this.el.focus();
+    };
+
+    Object.defineProperties( Input.prototype, prototypeAccessors );
+
+    return Input;
+}(Element));
+
+var Dropdown = /*@__PURE__*/(function (Element) {
+    function Dropdown(el) {
+        Element.call(this, el);
+
+        this.applyClassList(['etto-dropdown']);
+        this.applyAttributes({
+            style: 'position: absolute; width: 100%; background-color: white; overflow: hidden; z-index: 99;'
+        });
+
+        // Hide by default
+        this.setDisplay('none');
+    }
+
+    if ( Element ) Dropdown.__proto__ = Element;
+    Dropdown.prototype = Object.create( Element && Element.prototype );
+    Dropdown.prototype.constructor = Dropdown;
+
+    return Dropdown;
+}(Element));
+
+var Spinner = /*@__PURE__*/(function (Element) {
+    function Spinner(
+        el,
+        dotSize,
+        topPosition
+    ) {
+        Element.call(this, el);
+
+        this.dotSize = 6;
+        this.dots = [];
+        this.currentDot = 0;
+
+        this.loOpacity = '0.3';
+        this.hiOpacity = '0.7';
+
+        this.applyClassList(['etto-spinner']);
+        this.applyAttributes({
+            style: 'position: absolute; display: none; align-items: center; right: 1em;'
+        });
+
+        this.el.style.top = topPosition;
+
+        // Initialize Dots
+        this.createDots();
+        this.animateDots();
+    }
+
+    if ( Element ) Spinner.__proto__ = Element;
+    Spinner.prototype = Object.create( Element && Element.prototype );
+    Spinner.prototype.constructor = Spinner;
+
+    Spinner.prototype.createDots = function createDots () {
+        // Create Dots
+        for (var i = 0; i < 3; i++) {
+            var dot = document.createElement('div');
+            dot.classList.add('etto-spinner-dot');
+            dot.setAttribute(
+                'style',
+                'border-radius: 2em; margin: 0 0.1em; display: inline-block; transition: all 0.3s ease;'
+            );
+
+            dot.style.height = this.dotSize + 'px';
+            dot.style.width  = this.dotSize + 'px';
+
+            this.dots.push(dot);
+            this.el.appendChild(dot);
+        }
+
+        // Animate one step
+        this.animateDots();
+    };
+
+    Spinner.prototype.animateDots = function animateDots () {
+        for (var i = 0; i < this.dots.length; i++) {
+            this.dots[i].style.opacity = this.loOpacity;
+        }
+
+        if (this.currentDot == this.dots.length)
+            { this.currentDot = 0; }
+
+        this.dots[this.currentDot].style.opacity = this.hiOpacity;
+        this.currentDot += 1;
+    };
+
+    return Spinner;
+}(Element));
+
+var UnorderedList = /*@__PURE__*/(function (Element) {
+    function UnorderedList(el, createItemFn) {
+        Element.call(this, el);
+        this.createItemFn = createItemFn;
+
+        this.applyClassList(['etto-ul']);
+    }
+
+    if ( Element ) UnorderedList.__proto__ = Element;
+    UnorderedList.prototype = Object.create( Element && Element.prototype );
+    UnorderedList.prototype.constructor = UnorderedList;
+
+    UnorderedList.prototype.clearList = function clearList () {
+        this.el.innerHTML = '';
+    };
+
+    UnorderedList.prototype.populateList = function populateList (inputVal, list, selectedIndex) {
+        this.clearList();
+
+        for (var i = 0; i < list.length; i++) {
+            var isSelected = i === selectedIndex;
+            this.appendChild( this.createItemFn(list[i], inputVal, isSelected) );
+        }
+    };
+
+    return UnorderedList;
+}(Element));
+
 var EttoActions = function EttoActions(state) {
     this.state = state;
 };
@@ -91,7 +280,7 @@ function choiceMap(choice) {
 var MIN_CHARS = 3;
 var MAX_RESULTS = 7;
 var REQUEST_DELAY = 350;
-var DOT_SIZE = 6;
+var SPINNER_DOT_SIZE = 6;
 var SPINNER_TIMER = 300;
 
 var Etto = function Etto(root, config, choices) {
@@ -108,17 +297,27 @@ var Etto = function Etto(root, config, choices) {
 
     this.actions = new EttoActions(this.state);
 
-    this.selectMode= config.selectMode || false;
-    this.source    = config.source || null;
-    this.minChars  = config.minChars || MIN_CHARS;
-    this.maxResults= config.maxResults || MAX_RESULTS;
+    this.selectMode= config.selectMode|| false;
+    this.source    = config.source    || null;
+    this.minChars  = config.minChars  || MIN_CHARS;
+    this.maxResults= config.maxResults|| MAX_RESULTS;
     this.matchFullWord = config.matchFullWord || false;
-    this.requestDelay  = config.requestDelay || REQUEST_DELAY;
+    this.requestDelay  = config.requestDelay  || REQUEST_DELAY;
+    this.createItemFn  = config.createItemFn  || this.createListItem.bind(this);
 
-    this.input= this.createInput();
-    this.ul   = this.createUnorderedList();
-    this.dropdown = this.createDropdown();
-    this.dropdown.appendChild(this.ul);
+    this.Input = new Input(document.createElement('input'),
+        this.onInput.bind(this),
+        this.onFocus.bind(this),
+        this.onBlur.bind(this),
+        this.onKeydown.bind(this)
+    );
+
+    this.UnorderedList = new UnorderedList(document.createElement('ul'),
+        this.createItemFn
+    );
+
+    this.Dropdown = new Dropdown(document.createElement('div'));
+    this.Dropdown.appendChild(this.UnorderedList.el);
 
     // Containers
     this.container = document.createElement('div');
@@ -127,34 +326,40 @@ var Etto = function Etto(root, config, choices) {
 
     var inputContainer = document.createElement('div');
     inputContainer.setAttribute('style', 'position: relative;');
-    inputContainer.appendChild(this.input);
+    inputContainer.appendChild(this.Input.el);
 
     this.container.appendChild(inputContainer);
-    this.container.appendChild(this.dropdown);
+    this.container.appendChild(this.Dropdown.el);
 
     this.root = root;
     this.root.appendChild(this.container);
 
-    // Append spinner after appending container to calculate appropriate offsetHeight
-    var spinnerTopPosition = ((this.input.offsetHeight / 2) - (DOT_SIZE / 2)) + 'px';
-        
-    this.spinner = this.createSpinner(DOT_SIZE, spinnerTopPosition);
-    this.container.appendChild(this.spinner.container);
+    // Append spinner after appending container to calc appropriate offsetHeight
+    var spinnerTopPosition = ((this.Input.offsetHeight / 2) - (SPINNER_DOT_SIZE / 2)) + 'px';
+
+    this.Spinner = new Spinner(document.createElement('div'),
+        SPINNER_DOT_SIZE,
+        spinnerTopPosition
+    );
+
+    this.container.appendChild(this.Spinner.el);
 
     // Initial Render
-    this.renderList(this.state.inputVal, this.state.filtered);
+    this.render(this.state.inputVal, this.state.filtered);
 };
 
-Etto.prototype.setShowSpinner = function setShowSpinner (showSpinner) {
-    this.spinner.container.style.display = showSpinner ? 'flex' : 'none';
+Etto.prototype.render = function render (inputVal, filtered) {
+    this.UnorderedList.populateList(inputVal, filtered, this.state.selected);
 };
 
 Etto.prototype.setShowDropdown = function setShowDropdown (showDropdown) {
+    console.log(showDropdown);
     // DOM Update
-    this.dropdown.style.display = showDropdown ? 'block' : 'none';
+    this.Dropdown.setDisplay(showDropdown ? 'block' : 'none');
 
     // Reset Selected if Dropdown has been hidden
-    if (!showDropdown && this.state.selected) { this.actions.setSelected(null); }
+    if (!showDropdown && this.state.selected)
+        { this.actions.setSelected(null); }
 };
 
 Etto.prototype.fetchFromSource = function fetchFromSource (inputVal) {
@@ -170,8 +375,8 @@ Etto.prototype.fetchFromSource = function fetchFromSource (inputVal) {
         this.actions.setFetchTimer(
             setTimeout(function () {
                 this$1.actions.setIsFetching(true);
-                this$1.setShowSpinner(true);
-                this$1.actions.setSpinnerTimer(setInterval(this$1.spinner.animateDots, SPINNER_TIMER));
+                this$1.actions.setSpinnerTimer(setInterval(this$1.Spinner.animateDots.bind(this$1.Spinner), SPINNER_TIMER));
+                this$1.Spinner.setDisplay('flex');
 
                 this$1.source(inputVal, function (res) {
                         var obj;
@@ -181,7 +386,7 @@ Etto.prototype.fetchFromSource = function fetchFromSource (inputVal) {
                     this$1.actions.setCache(Object.assign({}, this$1.state.cache, ( obj = {}, obj[key] = choices, obj )));
                     this$1.actions.setIsFetching(false);
 
-                    this$1.setShowSpinner(false);
+                    this$1.Spinner.setDisplay('none');
                     this$1.actions.clearSpinnerTimer();
 
                     this$1.onReceiveChoices(choices);
@@ -202,117 +407,8 @@ Etto.prototype.onReceiveChoices = function onReceiveChoices (choices) {
     this.actions.setChoices(choices);
     this.actions.setFiltered(filtered);
 
-    this.renderList(this.state.inputVal, filtered);
+    this.render(this.state.inputVal, filtered);
     this.setShowDropdown(filtered.length > 0);
-};
-
-Etto.prototype.renderList = function renderList (inputVal, filtered) {
-    // Use custom renderItem function if exists
-    var renderItem = this.renderItem || this.createListItem.bind(this);
-
-    // Clear & Repopulate List
-    this.ul.innerHTML = '';
-
-    for (var i = 0; i < filtered.length; i++) {
-        var isSelected = i === this.state.selected;
-        this.ul.appendChild( renderItem(filtered[i], inputVal, isSelected) );
-    }
-};
-
-Etto.prototype.createInput = function createInput () {
-        var this$1 = this;
-
-    var input = document.createElement('input');
-    input.classList.add('etto-input');
-
-    input.setAttribute('autocomplete', 'off');
-    input.setAttribute('value', '');
-    input.setAttribute('style', 'box-sizing: border-box;');
-
-    input.addEventListener('input', function (e) {
-        var inputVal = e.target.value;
-        this$1.actions.setInputVal(inputVal);
-
-        if (inputVal && inputVal.trim().length >= this$1.minChars) {
-            if (this$1.source) { this$1.fetchFromSource(inputVal); }
-            else { this$1.onReceiveChoices(this$1.state.choices); }
-        } else {
-            this$1.renderList(inputVal, []);
-            this$1.setShowDropdown(false);
-        }
-    });
-
-    input.addEventListener('focus', function () {
-        this$1.setShowDropdown(this$1.state.filtered.length > 0);
-    });
-
-    input.addEventListener('blur', function () {
-        // Reset Selected
-        if (this$1.state.selected) {
-            this$1.actions.setSelected(null);
-            this$1.renderList(this$1.state.inputVal, this$1.state.filtered);
-        }
-
-        this$1.setShowDropdown(false);
-    });
-
-    input.addEventListener('keydown', function (e) {
-        var showDropdown = this$1.dropdown.style.display === 'block';
-
-        if ((e.keyCode == 38 || e.keyCode == 40) && showDropdown) {
-            e.preventDefault();
-
-            // Decrement (Go Up)
-            if (e.keyCode == 38) {
-                if (this$1.state.selected === null)
-                    { this$1.actions.setSelected(0); }
-                else if (this$1.state.selected !== 0)
-                    { this$1.actions.setSelected(this$1.state.selected - 1); }
-            }
-
-            // Increment (Go Down)
-            if (e.keyCode == 40) {
-                if (this$1.state.selected === null)
-                    { this$1.actions.setSelected(0); }
-                else if (this$1.state.selected !== this$1.state.filtered.length - 1)
-                    { this$1.actions.setSelected(this$1.state.selected + 1); }
-            }
-
-            this$1.renderList(this$1.state.inputVal, this$1.state.filtered);
-            this$1.setShowDropdown(this$1.state.filtered.length > 0);
-        }
-
-        // Enter or Tab
-        if (e.keyCode == 9 || e.keyCode == 13) {
-            if (showDropdown) {
-                e.preventDefault();
-                var inputVal = undefined;
-
-                if (this$1.state.selected !== null) {
-                    var choice = this$1.state.filtered[this$1.state.selected];
-                    inputVal = choice.label;
-
-                    this$1.actions.setInputVal(inputVal);
-                    this$1.actions.setSelected(null);
-
-                    // Update DOM
-                    this$1.input.value = inputVal;
-
-                    var filtered = filterChoices(
-                        inputVal,
-                        this$1.state.choices,
-                        this$1.matchFullWord,
-                        this$1.maxResults
-                    );
-
-                    this$1.renderList(inputVal, filtered);
-                    this$1.setShowDropdown(false);
-                }
-            }
-        }
-    });
-
-    return input;
 };
 
 Etto.prototype.createListItem = function createListItem (choice, inputVal, isSelected) {
@@ -344,91 +440,97 @@ Etto.prototype.createListItem = function createListItem (choice, inputVal, isSel
         this$1.actions.setInputVal(choiceValue);
         this$1.actions.setFiltered(filtered);
 
-        this$1.renderList(choice.label, filtered);
+        this$1.render(choice.label, filtered);
         this$1.setShowDropdown(filtered.length > 0);
 
-        // Update DOM
-        this$1.input.value = choiceValue;
-        this$1.input.focus();
+        this$1.Input.setValue(choiceValue);
+        this$1.Input.focus();
     });
 
     return li;
 };
 
-Etto.prototype.createDropdown = function createDropdown () {
-    var dropdown = document.createElement('div');
-    dropdown.classList.add('etto-dropdown');
+Etto.prototype.onInput = function onInput (e) {
+    var inputVal = e.target.value;
+    this.actions.setInputVal(inputVal);
 
-    dropdown.setAttribute(
-        'style',
-        'position: absolute; width: 100%; background-color: white; overflow: hidden; z-index: 99;'
-    );
-
-    // Hidden by default
-    dropdown.style.display = 'none';
-
-    return dropdown;
+    if (inputVal && inputVal.trim().length >= this.minChars) {
+        if (this.source) { this.fetchFromSource(inputVal); }
+        else { this.onReceiveChoices(this.state.choices); }
+    } else {
+        this.render(inputVal, []);
+        this.setShowDropdown(false);
+    }
 };
 
-Etto.prototype.createUnorderedList = function createUnorderedList () {
-    var ul = document.createElement('ul');
-    ul.classList.add('etto-ul');
-
-    return ul;
+Etto.prototype.onFocus = function onFocus () {
+    this.setShowDropdown(this.state.filtered.length > 0);
 };
 
-Etto.prototype.createSpinner = function createSpinner (dotSize, spinnerTopPosition) {
-    var loOpacity = '0.3';
-    var hiOpacity = '0.7';
-
-    var spinner = { container: document.createElement('div') };
-    spinner.container.classList.add('etto-spinner');
-    spinner.container.setAttribute(
-        'style',
-        'position: absolute; display: none; align-items: center; right: 1em;'
-    );
-
-    // Calculate Position from top
-    spinner.container.style.top = spinnerTopPosition;
-
-    // Create dots
-    var dots = [];
-    for (var i = 0; i < 3; i++) {
-        var dot = document.createElement('div');
-        dot.classList.add('etto-spinner-dot');
-        dot.setAttribute(
-            'style',
-            'border-radius: 2em; margin: 0 0.1em; display: inline-block; transition: all 0.3s ease;'
-        );
-
-        dot.style.height  = dotSize + 'px';
-        dot.style.width   = dotSize + 'px';
-
-        // Push Object references in Array
-        dots.push(dot);
-
-        // Append to DOM Container
-        spinner.container.appendChild(dot);
+Etto.prototype.onBlur = function onBlur () {
+    // Reset Selected
+    if (this.state.selected) {
+        this.actions.setSelected(null);
+        this.render(this.state.inputVal, this.state.filtered);
     }
 
-    var current = 0;
-    spinner.animateDots = function() {
-        for (var i = 0; i < dots.length; i++) {
-            // Reset Opacities
-            dots[i].style.opacity = loOpacity;
+    this.setShowDropdown(false);
+};
+
+Etto.prototype.onKeydown = function onKeydown (e) {
+    var isDropdownVisible = this.Dropdown.el.style.display === 'block';
+
+    if ((e.keyCode == 38 || e.keyCode == 40) && isDropdownVisible) {
+        e.preventDefault();
+
+        // Decrement (Go Up)
+        if (e.keyCode == 38) {
+            if (this.state.selected === null)
+                { this.actions.setSelected(0); }
+            else if (this.state.selected !== 0)
+                { this.actions.setSelected(this.state.selected - 1); }
         }
 
-        if (current == dots.length)
-            { current = 0; }
+        // Increment (Go Down)
+        if (e.keyCode == 40) {
+            if (this.state.selected === null)
+                { this.actions.setSelected(0); }
+            else if (this.state.selected !== this.state.filtered.length - 1)
+                { this.actions.setSelected(this.state.selected + 1); }
+        }
 
-        dots[current].style.opacity = hiOpacity;
-        current += 1;
-    };
+        this.render(this.state.inputVal, this.state.filtered);
+        this.setShowDropdown(this.state.filtered.length > 0);
+    }
 
-    // Animate once
-    spinner.animateDots();
+    // Enter or Tab
+    if (e.keyCode == 9 || e.keyCode == 13) {
+        if (isDropdownVisible) {
+            e.preventDefault();
+            var inputVal = undefined;
 
-    return spinner;
+            if (this.state.selected !== null) {
+                var choice = this.state.filtered[this.state.selected];
+                inputVal = choice.label;
+
+                this.actions.setInputVal(inputVal);
+                this.actions.setSelected(null);
+
+                // Update DOM
+                this.Input.setValue(inputVal);
+
+                var filtered = filterChoices(
+                    inputVal,
+                    this.state.choices,
+                    this.matchFullWord,
+                    this.maxResults
+                );
+
+                this.render(inputVal, filtered);
+                this.setShowDropdown(false);
+            }
+        }
+    }
 };
 
 var xhr = null;

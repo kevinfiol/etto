@@ -21,6 +21,10 @@ class Spinner extends Element {
         });
 
         this.el.style.top = topPosition;
+
+        // Initialize Dots
+        this.createDots();
+        this.animateDots();
     }
 
     createDots() {
