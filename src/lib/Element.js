@@ -18,6 +18,14 @@ class Element {
             this.el.setAttribute(key, attributes[key]);
         }
     }
+
+    appendChild(child) {
+        this.el.appendChild(child);
+    }
+
+    setDisplay(display) {
+        this.el.style.display = display;
+    }
 }
 
 export default Element;

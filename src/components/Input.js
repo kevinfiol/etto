@@ -3,8 +3,6 @@ import Element from '../lib/Element';
 class Input extends Element {
     constructor(
         el,
-        classList,
-        attributes,
         onInput,
         onFocus,
         onBlur,
@@ -12,8 +10,12 @@ class Input extends Element {
     ) {
         super(el);
 
-        this.applyClassList(classList);
-        this.applyAttributes(attributes);
+        this.applyClassList(['etto-input']);
+        this.applyAttributes({
+            autocomplete: 'off',
+            value: '',
+            style: 'box-sizing: border-box;'
+        });
 
         this.addEventListener('input', onInput);
         this.addEventListener('focus', onFocus);
@@ -21,8 +23,16 @@ class Input extends Element {
         this.addEventListener('keydown', onKeydown);
     }
 
+    get offsetHeight() {
+        return this.el.offsetHeight;
+    }
+
     setValue(value) {
         this.el.value = value;
+    }
+
+    focus() {
+        this.el.focus();
     }
 }
 

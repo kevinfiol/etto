@@ -1,18 +1,17 @@
 import Element from '../lib/Element';
 
 class Dropdown extends Element {
-    constructor(el, classList, attributes) {
+    constructor(el) {
         super(el);
 
-        this.applyClassList(classList);
-        this.applyAttributes(attributes);
-    }
+        this.applyClassList(['etto-dropdown']);
+        this.applyAttributes({
+            style: 'position: absolute; width: 100%; background-color: white; overflow: hidden; z-index: 99;'
+        });
 
-    hide() {
-        this.el.style.display = 'none';
-    }
-
-    show() {
-        this.el.style.display = 'block';
+        // Hide by default
+        this.setDisplay('none');
     }
 }
+
+export default Dropdown;

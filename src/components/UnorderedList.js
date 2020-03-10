@@ -1,27 +1,23 @@
 import Element from '../lib/Element';
 
 class UnorderedList extends Element {
-    constructor(el, classList, renderItemFn) {
+    constructor(el, createItemFn) {
         super(el);
-        this.renderItem = renderItemFn;
+        this.createItemFn = createItemFn;
 
-        this.applyClassList(classList);
+        this.applyClassList(['etto-ul']);
     }
 
     clearList() {
         this.el.innerHTML = '';
     }
 
-    appendItem(li) {
-        this.el.appendChild(li);
-    }
-
-    renderList(inputVal, list, selectedIndex) {
+    populateList(inputVal, list, selectedIndex) {
         this.clearList();
 
         for (let i = 0; i < list.length; i++) {
             const isSelected = i === selectedIndex;
-            this.appendItem( this.renderItem(list[i], inputVal, isSelected) );
+            this.appendChild( this.createItemFn(list[i], inputVal, isSelected) );
         }
     }
 }
