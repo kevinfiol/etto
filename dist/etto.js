@@ -164,10 +164,57 @@
         return Spinner;
     }(Element));
 
+    function removeHtml(s) {
+        return s.replace(/&/g, '').replace(/</g, '').replace(/>/g, '');
+    }
+
+    function createEmText(choiceLabel, inputVal) {
+        var label = removeHtml(choiceLabel);
+        var len = inputVal.length;
+        var emIndex = choiceLabel.toUpperCase().indexOf(inputVal.toUpperCase());
+
+        var beg = label.slice(0, emIndex);
+        var mid = label.slice(emIndex, emIndex + len);
+        var end = label.slice(emIndex + len);
+
+        return (beg + "<b>" + mid + "</b>" + end);
+    }
+
+    function filterChoices(inputVal, choices, matchFullWord, maxResults) {
+        var v = inputVal.toUpperCase();
+
+        var filtered = choices.filter(function (c) {
+            var label = c.label;
+            var index = label.toUpperCase().indexOf(v);
+
+            var passes = matchFullWord || false
+                ? label[index - 1] === undefined || label[index - 1] === ' '
+                : true
+            ;
+
+            return index > -1 && passes;
+        });
+
+        if (maxResults !== undefined)
+            { filtered = filtered.slice(0, maxResults); }
+
+        return filtered;
+    }
+
+    function choiceMap(choice) {
+        return Object.assign({}, choice, {
+            label: choice.label,
+            value: choice.value || choice.label
+        });
+    }
+
     var UnorderedList = /*@__PURE__*/(function (Element) {
-        function UnorderedList(el, createItemFn) {
+        function UnorderedList(el, createItemMousedownEvt, createItemFn) {
             Element.call(this, el);
-            this.createItemFn = createItemFn;
+            this.createItemMousedownEvt = createItemMousedownEvt;
+
+            // Use custom createItemFn or default to this.createListItem
+            this.createItemFn = createItemFn || this.createListItem;
 
             this.applyClassList(['etto-ul']);
         }
@@ -180,12 +227,35 @@
             this.el.innerHTML = '';
         };
 
+        UnorderedList.prototype.createListItem = function createListItem (choice, inputVal, isSelected) {
+            var li = document.createElement('li');
+            li.classList.add('etto-li');
+
+            if (isSelected) { li.classList.add('etto-selected'); }
+            else { li.classList.remove('etto-selected'); }
+
+            li.setAttribute('style', 'list-style-type: none; cursor: default;');
+            li.innerHTML = createEmText(choice.label, inputVal);
+
+            // Set HTML5 data-* attributes
+            li.dataset.label = choice.label;
+            li.dataset.value = choice.value;
+
+            return li;
+        };
+
         UnorderedList.prototype.populateList = function populateList (inputVal, list, selectedIndex) {
             this.clearList();
 
             for (var i = 0; i < list.length; i++) {
+                var choice = list[i];
                 var isSelected = i === selectedIndex;
-                this.appendChild( this.createItemFn(list[i], inputVal, isSelected) );
+
+                var li = this.createItemFn(choice, inputVal, isSelected);
+                var onMousedownEvt = this.createItemMousedownEvt(choice.label, choice.value);
+
+                li.addEventListener('mousedown', onMousedownEvt);
+                this.appendChild(li);
             }
         };
 
@@ -236,50 +306,6 @@
         clearTimeout(this.state.fetchTimer);
     };
 
-    function removeHtml(s) {
-        return s.replace(/&/g, '').replace(/</g, '').replace(/>/g, '');
-    }
-
-    function createEmText(choiceLabel, inputVal) {
-        var label = removeHtml(choiceLabel);
-        var len = inputVal.length;
-        var emIndex = choiceLabel.toUpperCase().indexOf(inputVal.toUpperCase());
-
-        var beg = label.slice(0, emIndex);
-        var mid = label.slice(emIndex, emIndex + len);
-        var end = label.slice(emIndex + len);
-
-        return (beg + "<b>" + mid + "</b>" + end);
-    }
-
-    function filterChoices(inputVal, choices, matchFullWord, maxResults) {
-        var v = inputVal.toUpperCase();
-
-        var filtered = choices.filter(function (c) {
-            var label = c.label;
-            var index = label.toUpperCase().indexOf(v);
-
-            var passes = matchFullWord || false
-                ? label[index - 1] === undefined || label[index - 1] === ' '
-                : true
-            ;
-
-            return index > -1 && passes;
-        });
-
-        if (maxResults !== undefined)
-            { filtered = filtered.slice(0, maxResults); }
-
-        return filtered;
-    }
-
-    function choiceMap(choice) {
-        return Object.assign({}, choice, {
-            label: choice.label,
-            value: choice.value || choice.label
-        });
-    }
-
     var MIN_CHARS = 3;
     var MAX_RESULTS = 7;
     var REQUEST_DELAY = 350;
@@ -301,12 +327,12 @@
         this.actions = new EttoActions(this.state);
 
         this.selectMode= config.selectMode|| false;
-        this.source    = config.source    || null;
+        this.source    = config.source    || undefined;
         this.minChars  = config.minChars  || MIN_CHARS;
         this.maxResults= config.maxResults|| MAX_RESULTS;
-        this.matchFullWord = config.matchFullWord || false;
         this.requestDelay  = config.requestDelay  || REQUEST_DELAY;
-        this.createItemFn  = config.createItemFn  || this.createListItem.bind(this);
+        this.matchFullWord = config.matchFullWord || false;
+        this.createItemFn  = config.createItemFn  || undefined;
 
         this.Input = new Input(document.createElement('input'),
             this.onInput.bind(this),
@@ -316,6 +342,7 @@
         );
 
         this.UnorderedList = new UnorderedList(document.createElement('ul'),
+            this.createItemMousedownEvt.bind(this),
             this.createItemFn
         );
 
@@ -356,7 +383,6 @@
     };
 
     Etto.prototype.setShowDropdown = function setShowDropdown (showDropdown) {
-        console.log(showDropdown);
         // DOM Update
         this.Dropdown.setDisplay(showDropdown ? 'block' : 'none');
 
@@ -414,25 +440,10 @@
         this.setShowDropdown(filtered.length > 0);
     };
 
-    Etto.prototype.createListItem = function createListItem (choice, inputVal, isSelected) {
+    Etto.prototype.createItemMousedownEvt = function createItemMousedownEvt (choiceLabel, choiceValue) {
             var this$1 = this;
 
-        var choiceValue = choice.value || choice.label;
-
-        var li = document.createElement('li');
-        li.classList.add('etto-li');
-
-        if (isSelected) { li.classList.add('etto-selected'); }
-        else { li.classList.remove('etto-selected'); }
-
-        li.setAttribute('style', 'list-style-type: none; cursor: default;');
-        li.innerHTML = createEmText(choice.label, inputVal);
-
-        // Set HTML5 data-* attributes
-        li.dataset.label = choice.label;
-        li.dataset.value = choiceValue;
-
-        li.addEventListener('mousedown', function () {
+        return function () {
             var filtered = filterChoices(
                 choiceValue,
                 this$1.state.choices,
@@ -443,14 +454,12 @@
             this$1.actions.setInputVal(choiceValue);
             this$1.actions.setFiltered(filtered);
 
-            this$1.render(choice.label, filtered);
+            this$1.render(choiceLabel, filtered);
             this$1.setShowDropdown(filtered.length > 0);
 
             this$1.Input.setValue(choiceValue);
             this$1.Input.focus();
-        });
-
-        return li;
+        };
     };
 
     Etto.prototype.onInput = function onInput (e) {

@@ -4,7 +4,7 @@ import Spinner from './components/Spinner';
 import UnorderedList from './components/UnorderedList';
 
 import EttoActions from './EttoActions';
-import { createEmText, filterChoices, choiceMap } from './util';
+import { filterChoices, choiceMap } from './util';
 
 const MIN_CHARS = 3;
 const MAX_RESULTS = 7;
@@ -28,12 +28,12 @@ class Etto {
         this.actions = new EttoActions(this.state);
 
         this.selectMode    = config.selectMode    || false;
-        this.source        = config.source        || null;
+        this.source        = config.source        || undefined;
         this.minChars      = config.minChars      || MIN_CHARS;
         this.maxResults    = config.maxResults    || MAX_RESULTS;
-        this.matchFullWord = config.matchFullWord || false;
         this.requestDelay  = config.requestDelay  || REQUEST_DELAY;
-        this.createItemFn  = config.createItemFn  || this.createListItem.bind(this);
+        this.matchFullWord = config.matchFullWord || false;
+        this.createItemFn  = config.createItemFn  || undefined;
 
         this.Input = new Input(document.createElement('input'),
             this.onInput.bind(this),
@@ -43,6 +43,7 @@ class Etto {
         );
 
         this.UnorderedList = new UnorderedList(document.createElement('ul'),
+            this.createItemMousedownEvt.bind(this),
             this.createItemFn
         );
 
@@ -83,7 +84,6 @@ class Etto {
     }
 
     setShowDropdown(showDropdown) {
-        console.log(showDropdown);
         // DOM Update
         this.Dropdown.setDisplay(showDropdown ? 'block' : 'none');
 
@@ -137,23 +137,8 @@ class Etto {
         this.setShowDropdown(filtered.length > 0);
     }
 
-    createListItem(choice, inputVal, isSelected) {
-        const choiceValue = choice.value || choice.label;
-
-        const li = document.createElement('li');
-        li.classList.add('etto-li');
-
-        if (isSelected) li.classList.add('etto-selected');
-        else li.classList.remove('etto-selected');
-
-        li.setAttribute('style', 'list-style-type: none; cursor: default;');
-        li.innerHTML = createEmText(choice.label, inputVal);
-
-        // Set HTML5 data-* attributes
-        li.dataset.label = choice.label;
-        li.dataset.value = choiceValue;
-
-        li.addEventListener('mousedown', () => {
+    createItemMousedownEvt(choiceLabel, choiceValue) {
+        return () => {
             const filtered = filterChoices(
                 choiceValue,
                 this.state.choices,
@@ -164,14 +149,12 @@ class Etto {
             this.actions.setInputVal(choiceValue);
             this.actions.setFiltered(filtered);
 
-            this.render(choice.label, filtered);
+            this.render(choiceLabel, filtered);
             this.setShowDropdown(filtered.length > 0);
 
             this.Input.setValue(choiceValue);
             this.Input.focus();
-        });
-
-        return li;
+        };
     }
 
     onInput(e) {
