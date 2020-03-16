@@ -16,6 +16,11 @@ const filenames = {
     cjs: './dist/etto.cjs.js'
 };
 
+const bubleConfig = {
+    objectAssign: 'Object.assign',
+    // transforms: { dangerousTaggedTemplateString: true }
+};
+
 const configs = [
     {
         input,
@@ -28,7 +33,7 @@ const configs = [
         plugins: [
             resolve(),
             cjs(),
-            buble({ objectAssign: 'Object.assign' }),
+            buble(bubleConfig),
             isProd && uglify(),
             isDev && serve({ contentBase: 'dist', port: 8090 }),
             isDev && livereload('dist')
@@ -45,7 +50,7 @@ const configs = [
         plugins: [
             resolve(),
             cjs(),
-            buble({ objectAssign: 'Object.assign' })
+            buble(bubleConfig)
         ]
     }
 ];

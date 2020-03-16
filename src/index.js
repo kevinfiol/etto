@@ -278,7 +278,7 @@ const source = function(query, done) {
 
 new Etto(document.getElementById('demo-1'), { source });
 
-new Etto(document.getElementById('demo-2'), {}, [
+const etto_list = [
     { label: 'Alabama' },
     { label: 'Alaska' },
     { label: 'Michigan' },
@@ -291,4 +291,10 @@ new Etto(document.getElementById('demo-2'), {}, [
     { label: 'Ness from Earthbound' },
     { label: 'Ghoul' },
     { label: 'Banana' }
-]);
+];
+
+// for (let i = 0; i < 10000; i++) {
+//     etto_list.push({ label: 'Alabama' });
+// }
+
+new Etto(document.getElementById('demo-2'), {}, etto_list);

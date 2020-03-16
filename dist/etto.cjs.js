@@ -220,8 +220,8 @@ var UnorderedList = /*@__PURE__*/(function (Element) {
     UnorderedList.prototype = Object.create( Element && Element.prototype );
     UnorderedList.prototype.constructor = UnorderedList;
 
-    UnorderedList.prototype.clearList = function clearList () {
-        this.el.innerHTML = '';
+    UnorderedList.prototype.setInnerHtml = function setInnerHtml (html) {
+        this.el.innerHTML = html;
     };
 
     UnorderedList.prototype.createListItem = function createListItem (choice, inputVal, isSelected) {
@@ -241,19 +241,39 @@ var UnorderedList = /*@__PURE__*/(function (Element) {
         return li;
     };
 
+    UnorderedList.prototype.li = function li (choice, inputVal, isSelected) {
+        return '<li ' +
+                "class=\"" + (isSelected ? 'etto-selected ' : '') + "etto-li\" " +
+                'style="list-style-type: none; cursor: default" ' +
+                "data-label=\"" + (choice.label) + "\" " +
+                "data-value=\"" + (choice.value) + "\"" +
+            '>' +
+                "" + (createEmText(choice.label, inputVal)) +
+            '</li>'
+        ;
+    };
+
     UnorderedList.prototype.populateList = function populateList (inputVal, list, selectedIndex) {
-        this.clearList();
+        this.setInnerHtml('');
+        console.time('populate');
+        var html = '';
 
         for (var i = 0; i < list.length; i++) {
             var choice = list[i];
             var isSelected = i === selectedIndex;
 
-            var li = this.createItemFn(choice, inputVal, isSelected);
-            var onMousedownEvt = this.createItemMousedownEvt(choice.label, choice.value);
+            // const li = this.createItemFn(choice, inputVal, isSelected);
+            // const onMousedownEvt = this.createItemMousedownEvt(choice.label, choice.value);
 
-            li.addEventListener('mousedown', onMousedownEvt);
-            this.appendChild(li);
+            // li.addEventListener('mousedown', onMousedownEvt);
+            // this.appendChild(li);
+
+            html += this.li(choice, inputVal, isSelected);
         }
+
+        this.setInnerHtml(html);
+        console.log(this.el.children);
+        console.timeEnd('populate');
     };
 
     return UnorderedList;
@@ -542,4 +562,61 @@ Etto.prototype.onKeydown = function onKeydown (e) {
     }
 };
 
-module.exports = Etto;
+var xhr = null;
+var source = function(query, done) {
+    // Abort last request
+    if (xhr) {
+        xhr.abort();
+    }
+
+    xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://swapi.co/api/people/?search=' + query, true);
+
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 400) {
+            // Parse the response here...
+            var choices = [];
+            var json = JSON.parse(xhr.responseText);
+
+            json.results.forEach(function(person) {
+                choices.push({ label: person.name });
+            });
+
+            done(choices);
+        } else {
+            // Else return empty array
+            done([]);
+        }
+    };
+
+    // Returns empty array onerror
+    xhr.onerror = function() { 
+        done([]);
+    };
+    
+    xhr.send();
+};
+
+new Etto(document.getElementById('demo-1'), { source: source });
+
+var etto_list = [
+    { label: 'Alabama' },
+    { label: 'Alaska' },
+    { label: 'Michigan' },
+    { label: 'Minnesota' },
+    { label: 'Wyoming' },
+    { label: 'Doug' },
+    { label: 'Omigod Records' },
+    { label: 'Ganon' },
+    { label: 'Little Bambam' },
+    { label: 'Ness from Earthbound' },
+    { label: 'Ghoul' },
+    { label: 'Banana' }
+];
+
+// for (let i = 0; i < 10000; i++) {
+//     etto_list.push({ label: 'Alabama' });
+// }
+
+new Etto(document.getElementById('demo-2'), {}, etto_list);
+//# sourceMappingURL=etto.cjs.js.map

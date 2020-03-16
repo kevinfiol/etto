@@ -12,8 +12,8 @@ class UnorderedList extends Element {
         this.applyClassList(['etto-ul']);
     }
 
-    clearList() {
-        this.el.innerHTML = '';
+    setInnerHtml(html) {
+        this.el.innerHTML = html;
     }
 
     createListItem(choice, inputVal, isSelected) {
@@ -33,19 +33,39 @@ class UnorderedList extends Element {
         return li;
     }
 
+    li(choice, inputVal, isSelected) {
+        return '<li ' +
+                `class="${ isSelected ? 'etto-selected ' : '' }etto-li" ` +
+                'style="list-style-type: none; cursor: default" ' +
+                `data-label="${choice.label}" ` +
+                `data-value="${choice.value}"` +
+            '>' +
+                `${createEmText(choice.label, inputVal)}` +
+            '</li>'
+        ;
+    }
+
     populateList(inputVal, list, selectedIndex) {
-        this.clearList();
+        this.setInnerHtml('');
+        console.time('populate');
+        let html = '';
 
         for (let i = 0; i < list.length; i++) {
             const choice = list[i];
             const isSelected = i === selectedIndex;
 
-            const li = this.createItemFn(choice, inputVal, isSelected);
-            const onMousedownEvt = this.createItemMousedownEvt(choice.label, choice.value);
+            // const li = this.createItemFn(choice, inputVal, isSelected);
+            // const onMousedownEvt = this.createItemMousedownEvt(choice.label, choice.value);
 
-            li.addEventListener('mousedown', onMousedownEvt);
-            this.appendChild(li);
+            // li.addEventListener('mousedown', onMousedownEvt);
+            // this.appendChild(li);
+
+            html += this.li(choice, inputVal, isSelected);
         }
+
+        this.setInnerHtml(html);
+        console.log(this.el.children);
+        console.timeEnd('populate');
     }
 }
 
