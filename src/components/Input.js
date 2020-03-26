@@ -6,7 +6,8 @@ class Input extends Element {
         onInput,
         onFocus,
         onBlur,
-        onKeydown
+        onKeydown,
+        isSelectMode
     ) {
         super(el);
 
@@ -14,7 +15,7 @@ class Input extends Element {
         this.applyAttributes({
             autocomplete: 'off',
             value: '',
-            style: 'box-sizing: border-box;'
+            style: `box-sizing: border-box; cursor: ${isSelectMode ? 'default' : 'text'};`
         });
 
         this.addEventListener('input', onInput);

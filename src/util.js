@@ -7,6 +7,9 @@ export function createEmText(choiceLabel, inputVal) {
     const len = inputVal.length;
     const emIndex = choiceLabel.toUpperCase().indexOf(inputVal.toUpperCase());
 
+    if (emIndex < 0)
+        return label;
+
     const beg = label.slice(0, emIndex);
     const mid = label.slice(emIndex, emIndex + len);
     const end = label.slice(emIndex + len);

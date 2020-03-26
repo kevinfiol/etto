@@ -1,4 +1,4 @@
-class EttoActions {
+class Actions {
     constructor(state) {
         this.state = state;
     }
@@ -44,4 +44,4 @@ class EttoActions {
     }
 }
 
-export default EttoActions;
+export default Actions;

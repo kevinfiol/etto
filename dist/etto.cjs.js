@@ -34,7 +34,8 @@ var Input = /*@__PURE__*/(function (Element) {
         onInput,
         onFocus,
         onBlur,
-        onKeydown
+        onKeydown,
+        isSelectMode
     ) {
         Element.call(this, el);
 
@@ -42,7 +43,7 @@ var Input = /*@__PURE__*/(function (Element) {
         this.applyAttributes({
             autocomplete: 'off',
             value: '',
-            style: 'box-sizing: border-box;'
+            style: ("box-sizing: border-box; cursor: " + (isSelectMode ? 'default' : 'text') + ";")
         });
 
         this.addEventListener('input', onInput);
@@ -170,6 +171,9 @@ function createEmText(choiceLabel, inputVal) {
     var len = inputVal.length;
     var emIndex = choiceLabel.toUpperCase().indexOf(inputVal.toUpperCase());
 
+    if (emIndex < 0)
+        { return label; }
+
     var beg = label.slice(0, emIndex);
     var mid = label.slice(emIndex, emIndex + len);
     var end = label.slice(emIndex + len);
@@ -262,47 +266,47 @@ var UnorderedList = /*@__PURE__*/(function (Element) {
     return UnorderedList;
 }(Element));
 
-var EttoActions = function EttoActions(state) {
+var Actions = function Actions(state) {
     this.state = state;
 };
 
-EttoActions.prototype.setSelected = function setSelected (selected) {
+Actions.prototype.setSelected = function setSelected (selected) {
     this.state.selected = selected;
 };
 
-EttoActions.prototype.setCache = function setCache (cache) {
+Actions.prototype.setCache = function setCache (cache) {
     this.state.cache = cache;
 };
 
-EttoActions.prototype.setInputVal = function setInputVal (inputVal) {
+Actions.prototype.setInputVal = function setInputVal (inputVal) {
     this.state.inputVal = inputVal;
 };
 
-EttoActions.prototype.setChoices = function setChoices (choices) {
+Actions.prototype.setChoices = function setChoices (choices) {
     this.state.choices = choices;
 };
 
-EttoActions.prototype.setFiltered = function setFiltered (filtered) {
+Actions.prototype.setFiltered = function setFiltered (filtered) {
     this.state.filtered = filtered;
 };
 
-EttoActions.prototype.setIsFetching = function setIsFetching (isFetching) {
+Actions.prototype.setIsFetching = function setIsFetching (isFetching) {
     this.state.isFetching = isFetching;
 };
 
-EttoActions.prototype.setSpinnerTimer = function setSpinnerTimer (spinnerTimer) {
+Actions.prototype.setSpinnerTimer = function setSpinnerTimer (spinnerTimer) {
     this.state.spinnerTimer = spinnerTimer;
 };
 
-EttoActions.prototype.clearSpinnerTimer = function clearSpinnerTimer () {
+Actions.prototype.clearSpinnerTimer = function clearSpinnerTimer () {
     clearInterval(this.state.spinnerTimer);
 };
 
-EttoActions.prototype.setFetchTimer = function setFetchTimer (fetchTimer) {
+Actions.prototype.setFetchTimer = function setFetchTimer (fetchTimer) {
     this.state.fetchTimer = fetchTimer;
 };
 
-EttoActions.prototype.clearFetchTimer = function clearFetchTimer () {
+Actions.prototype.clearFetchTimer = function clearFetchTimer () {
     clearTimeout(this.state.fetchTimer);
 };
 
@@ -310,35 +314,49 @@ var MIN_CHARS = 3;
 var MAX_RESULTS = 7;
 var REQUEST_DELAY = 350;
 var SPINNER_DOT_SIZE = 6;
-var SPINNER_TIMER = 300;
 
-var Etto = function Etto(root, config, choices) {
+var EttoService = function EttoService(root, config, choices) {
+    /**
+    * Configuration
+    **/
+    this.selectMode= config.selectMode|| false;
+    this.source    = config.source    || undefined;
+    this.minChars  = this.selectMode ? 0 : (config.minChars || MIN_CHARS);
+    this.maxResults= config.maxResults|| MAX_RESULTS;
+    this.requestDelay  = config.requestDelay  || REQUEST_DELAY;
+    this.matchFullWord = config.matchFullWord || false;
+
+    // Custom Functions
+    this.createItemFn  = config.createItemFn  || undefined;
+    this.filterFn  = config.filterFn  || filterChoices;
+
+    /**
+    * State Management
+    **/
+    var initialChoices = choices ? choices.map(choiceMap) : [];
+
     this.state = {
         isFetching: false,
         cache: config.initialCache || {},
-        choices: choices ? choices.map(choiceMap) : [],
-        filtered: [],
+        choices: initialChoices,
+        filtered: this.selectMode ? initialChoices : [],
         inputVal: '',
         selected: null,
         spinnerTimer: null,
         fetchTimer: null
     };
 
-    this.actions = new EttoActions(this.state);
+    this.actions = new Actions(this.state);
 
-    this.selectMode= config.selectMode|| false;
-    this.source    = config.source    || undefined;
-    this.minChars  = config.minChars  || MIN_CHARS;
-    this.maxResults= config.maxResults|| MAX_RESULTS;
-    this.requestDelay  = config.requestDelay  || REQUEST_DELAY;
-    this.matchFullWord = config.matchFullWord || false;
-    this.createItemFn  = config.createItemFn  || undefined;
-
+    /**
+    * Elements
+    **/
     this.Input = new Input(document.createElement('input'),
         this.onInput.bind(this),
         this.onFocus.bind(this),
         this.onBlur.bind(this),
-        this.onKeydown.bind(this)
+        this.onKeydown.bind(this),
+        this.selectMode
     );
 
     this.UnorderedList = new UnorderedList(document.createElement('ul'),
@@ -375,175 +393,216 @@ var Etto = function Etto(root, config, choices) {
     this.container.appendChild(this.Spinner.el);
 
     // Initial Render
-    this.render(this.state.inputVal, this.state.filtered);
+    // this.render(this.state.inputVal, this.state.filtered);
 };
 
-Etto.prototype.render = function render (inputVal, filtered) {
-    this.UnorderedList.populateList(inputVal, filtered, this.state.selected);
-};
+var SPINNER_TIMER = 300;
 
-Etto.prototype.setShowDropdown = function setShowDropdown (showDropdown) {
-    // DOM Update
-    this.Dropdown.setDisplay(showDropdown ? 'block' : 'none');
+var InputService = /*@__PURE__*/(function (EttoService) {
+    function InputService(root, config, choices) {
+        EttoService.call(this, root, config, choices);
 
-    // Reset Selected if Dropdown has been hidden
-    if (!showDropdown && this.state.selected)
-        { this.actions.setSelected(null); }
-};
+        // Initial Render
+        this.render(this.state.inputVal, this.state.filtered);
+    }
 
-Etto.prototype.fetchFromSource = function fetchFromSource (inputVal) {
+    if ( EttoService ) InputService.__proto__ = EttoService;
+    InputService.prototype = Object.create( EttoService && EttoService.prototype );
+    InputService.prototype.constructor = InputService;
+
+    InputService.prototype.render = function render (inputVal, filtered) {
+        this.UnorderedList.populateList(inputVal, filtered, this.state.selected);
+    };
+
+    InputService.prototype.setShowDropdown = function setShowDropdown (showDropdown) {
+        // DOM Update
+        this.Dropdown.setDisplay(showDropdown ? 'block' : 'none');
+
+        // Reset Selected if Dropdown has been hidden
+        if (!showDropdown && this.state.selected)
+            { this.actions.setSelected(null); }
+    };
+
+    InputService.prototype.fetchFromSource = function fetchFromSource (inputVal) {
         var this$1 = this;
 
-    var key = inputVal.toUpperCase().trim();
+        var key = inputVal.toUpperCase().trim();
 
-    if (this.state.cache[key]) {
-        this.onReceiveChoices(this.state.cache[key]);
-    } else {
-        if (this.state.fetchTimer) { this.actions.clearFetchTimer(); }
+        if (this.state.cache[key]) {
+            this.onReceiveChoices(this.state.cache[key]);
+        } else {
+            if (this.state.fetchTimer) { this.actions.clearFetchTimer(); }
 
-        this.actions.setFetchTimer(
-            setTimeout(function () {
-                this$1.actions.setIsFetching(true);
-                this$1.actions.setSpinnerTimer(setInterval(this$1.Spinner.animateDots.bind(this$1.Spinner), SPINNER_TIMER));
-                this$1.Spinner.setDisplay('flex');
+            this.actions.setFetchTimer(
+                setTimeout(function () {
+                    this$1.actions.setIsFetching(true);
+                    this$1.actions.setSpinnerTimer(
+                        setInterval(this$1.Spinner.animateDots.bind(this$1.Spinner), SPINNER_TIMER)
+                    );
 
-                this$1.source(inputVal, function (res) {
+                    this$1.Spinner.setDisplay('flex');
+
+                    this$1.source(inputVal, function (res) {
                         var obj;
 
-                    var choices = res ? res.map(choiceMap) : [];
+                        var choices = res ? res.map(choiceMap) : [];
 
-                    this$1.actions.setCache(Object.assign({}, this$1.state.cache, ( obj = {}, obj[key] = choices, obj )));
-                    this$1.actions.setIsFetching(false);
+                        this$1.actions.setCache(Object.assign({}, this$1.state.cache, ( obj = {}, obj[key] = choices, obj )));
+                        this$1.actions.setIsFetching(false);
 
-                    this$1.Spinner.setDisplay('none');
-                    this$1.actions.clearSpinnerTimer();
+                        this$1.Spinner.setDisplay('none');
+                        this$1.actions.clearSpinnerTimer();
 
-                    this$1.onReceiveChoices(choices);
-                });
-            }, this.requestDelay)
+                        this$1.onReceiveChoices(choices);
+                    });
+                }, this.requestDelay)
+            );
+        }
+    };
+
+    InputService.prototype.onReceiveChoices = function onReceiveChoices (choices) {
+        var filtered = this.filterFn(
+            this.state.inputVal,
+            choices,
+            this.matchFullWord,
+            this.maxResults
         );
-    }
-};
 
-Etto.prototype.onReceiveChoices = function onReceiveChoices (choices) {
-    var filtered = filterChoices(
-        this.state.inputVal,
-        choices,
-        this.matchFullWord,
-        this.maxResults
-    );
+        this.actions.setChoices(choices);
+        this.actions.setFiltered(filtered);
 
-    this.actions.setChoices(choices);
-    this.actions.setFiltered(filtered);
+        this.render(this.state.inputVal, filtered);
+        this.setShowDropdown(filtered.length > 0);
+    };
 
-    this.render(this.state.inputVal, filtered);
-    this.setShowDropdown(filtered.length > 0);
-};
-
-Etto.prototype.createItemMousedownEvt = function createItemMousedownEvt (choiceLabel, choiceValue) {
+    InputService.prototype.createItemMousedownEvt = function createItemMousedownEvt (choiceLabel, choiceValue) {
         var this$1 = this;
 
-    return function () {
-        var filtered = filterChoices(
-            choiceValue,
-            this$1.state.choices,
-            this$1.matchFullWord,
-            this$1.maxResults
-        );
+        return function () {
+            var filtered = this$1.filterFn(
+                choiceValue,
+                this$1.state.choices,
+                this$1.matchFullWord,
+                this$1.maxResults
+            );
 
-        this$1.actions.setInputVal(choiceValue);
-        this$1.actions.setFiltered(filtered);
+            this$1.actions.setInputVal(choiceValue);
+            this$1.actions.setFiltered(filtered);
 
-        this$1.render(choiceLabel, filtered);
-        this$1.setShowDropdown(filtered.length > 0);
+            this$1.render(choiceLabel, filtered);
+            this$1.setShowDropdown(filtered.length > 0);
 
-        this$1.Input.setValue(choiceValue);
-        this$1.Input.focus();
+            this$1.Input.setValue(choiceValue);
+            this$1.Input.focus();
+        };
     };
-};
 
-Etto.prototype.onInput = function onInput (e) {
-    var inputVal = e.target.value;
-    this.actions.setInputVal(inputVal);
+    InputService.prototype.onInput = function onInput (e) {
+        var inputVal = e.target.value;
+        this.actions.setInputVal(inputVal);
 
-    if (inputVal && inputVal.trim().length >= this.minChars) {
-        if (this.source) { this.fetchFromSource(inputVal); }
-        else { this.onReceiveChoices(this.state.choices); }
-    } else {
-        this.render(inputVal, []);
-        this.setShowDropdown(false);
-    }
-};
-
-Etto.prototype.onFocus = function onFocus () {
-    this.setShowDropdown(this.state.filtered.length > 0);
-};
-
-Etto.prototype.onBlur = function onBlur () {
-    // Reset Selected
-    if (this.state.selected) {
-        this.actions.setSelected(null);
-        this.render(this.state.inputVal, this.state.filtered);
-    }
-
-    this.setShowDropdown(false);
-};
-
-Etto.prototype.onKeydown = function onKeydown (e) {
-    var isDropdownVisible = this.Dropdown.el.style.display === 'block';
-
-    if ((e.keyCode == 38 || e.keyCode == 40) && isDropdownVisible) {
-        e.preventDefault();
-
-        // Decrement (Go Up)
-        if (e.keyCode == 38) {
-            if (this.state.selected === null)
-                { this.actions.setSelected(0); }
-            else if (this.state.selected !== 0)
-                { this.actions.setSelected(this.state.selected - 1); }
+        if (inputVal && inputVal.trim().length >= this.minChars) {
+            if (this.source) { this.fetchFromSource(inputVal); }
+            else { this.onReceiveChoices(this.state.choices); }
+        } else {
+            this.actions.setFiltered([]);
+            this.render(inputVal, []);
+            this.setShowDropdown(false);
         }
+    };
 
-        // Increment (Go Down)
-        if (e.keyCode == 40) {
-            if (this.state.selected === null)
-                { this.actions.setSelected(0); }
-            else if (this.state.selected !== this.state.filtered.length - 1)
-                { this.actions.setSelected(this.state.selected + 1); }
-        }
-
-        this.render(this.state.inputVal, this.state.filtered);
+    InputService.prototype.onFocus = function onFocus () {
         this.setShowDropdown(this.state.filtered.length > 0);
-    }
+    };
 
-    // Enter or Tab
-    if (e.keyCode == 9 || e.keyCode == 13) {
-        if (isDropdownVisible) {
+    InputService.prototype.onBlur = function onBlur () {
+        // Reset Selected
+        if (this.state.selected) {
+            this.actions.setSelected(null);
+            this.render(this.state.inputVal, this.state.filtered);
+        }
+
+        this.setShowDropdown(false);
+    };
+
+    InputService.prototype.onKeydown = function onKeydown (e) {
+        var isDropdownVisible = this.Dropdown.el.style.display === 'block';
+
+        if ((e.keyCode == 38 || e.keyCode == 40) && isDropdownVisible) {
             e.preventDefault();
-            var inputVal = undefined;
 
-            if (this.state.selected !== null) {
-                var choice = this.state.filtered[this.state.selected];
-                inputVal = choice.label;
+            // Decrement (Go Up)
+            if (e.keyCode == 38) {
+                if (this.state.selected === null)
+                    { this.actions.setSelected(0); }
+                else if (this.state.selected !== 0)
+                    { this.actions.setSelected(this.state.selected - 1); }
+            }
 
-                this.actions.setInputVal(inputVal);
-                this.actions.setSelected(null);
+            // Increment (Go Down)
+            if (e.keyCode == 40) {
+                if (this.state.selected === null)
+                    { this.actions.setSelected(0); }
+                else if (this.state.selected !== this.state.filtered.length - 1)
+                    { this.actions.setSelected(this.state.selected + 1); }
+            }
 
-                // Update DOM
-                this.Input.setValue(inputVal);
+            this.render(this.state.inputVal, this.state.filtered);
+            this.setShowDropdown(this.state.filtered.length > 0);
+        }
 
-                var filtered = filterChoices(
-                    inputVal,
-                    this.state.choices,
-                    this.matchFullWord,
-                    this.maxResults
-                );
+        // Enter or Tab
+        if (e.keyCode == 9 || e.keyCode == 13) {
+            if (isDropdownVisible) {
+                e.preventDefault();
+                var inputVal = undefined;
 
-                this.render(inputVal, filtered);
-                this.setShowDropdown(false);
+                if (this.state.selected !== null) {
+                    var choice = this.state.filtered[this.state.selected];
+                    inputVal = choice.label;
+
+                    this.actions.setInputVal(inputVal);
+                    this.actions.setSelected(null);
+
+                    // Update DOM
+                    this.Input.setValue(inputVal);
+
+                    var filtered = this.filterFn(
+                        inputVal,
+                        this.state.choices,
+                        this.matchFullWord,
+                        this.maxResults
+                    );
+
+                    this.render(inputVal, filtered);
+                    this.setShowDropdown(false);
+                }
             }
         }
+    };
+
+    return InputService;
+}(EttoService));
+
+var SelectService = /*@__PURE__*/(function (EttoService) {
+    function SelectService(root, config, choices) {
+        EttoService.call(this, root, config, choices);
     }
+
+    if ( EttoService ) SelectService.__proto__ = EttoService;
+    SelectService.prototype = Object.create( EttoService && EttoService.prototype );
+    SelectService.prototype.constructor = SelectService;
+
+    return SelectService;
+}(EttoService));
+
+var Etto = function Etto(root, config, choices) {
+    if (config.selectMode)
+        { this.etto = new SelectService(root, config, choices); }
+    else
+        { this.etto = new InputService(root, config, choices); }
 };
+
 
 var xhr = null;
 var source = function(query, done) {
@@ -601,5 +660,12 @@ var etto_list = [
 //     etto_list.push({ label: 'Alabama' });
 // }
 
-new Etto(document.getElementById('demo-2'), {}, etto_list);
+new Etto(document.getElementById('demo-2'), {
+    // filterFn: (inputVal, choices, matchFullWord, maxResults) => {
+    //     return [
+    //         { label: 'banana', value: 'banana' },
+    //         { label: 'apple', value: 'apple' }
+    //     ];
+    // }
+}, etto_list);
 //# sourceMappingURL=etto.cjs.js.map
