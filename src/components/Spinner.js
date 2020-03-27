@@ -27,6 +27,14 @@ class Spinner extends Element {
         this.animateDots();
     }
 
+    hide() {
+        this.setDisplay('none');
+    }
+
+    show() {
+        this.setDisplay('flex');
+    }
+
     createDots() {
         // Create Dots
         for (let i = 0; i < 3; i++) {

@@ -16,8 +16,12 @@ class UnorderedList extends Element {
         this.el.innerHTML = html;
     }
 
-    createListItem(choice, inputVal, isSelected) {
-        return `<li class="${ isSelected ? 'etto-selected ' : '' }etto-li"` +
+    createListItem(choice, inputVal, isHighlighted, isSelected) {
+        let liClass = 'etto-li';
+        if (isHighlighted) liClass += ' etto-highlighted';
+        if (isSelected) liClass += ' etto-selected';
+
+        return `<li class="${liClass}"` +
                 ' style="list-style-type: none; cursor: default"' +
                 ` data-label="${choice.label}"` +
                 ` data-value="${choice.value}"` +
@@ -27,15 +31,16 @@ class UnorderedList extends Element {
         ;
     }
 
-    populateList(inputVal, list, selectedIndex) {
+    populateList(inputVal, list, highlightedIndex, selected) {
         this.setInnerHtml('');
         let html = '';
 
         // Build HTML
         for (let i = 0; i < list.length; i++) {
             const choice = list[i];
-            const isSelected = i === selectedIndex;
-            html += this.createItemFn(choice, inputVal, isSelected);
+            const isSelected = selected ? (choice.value === selected.value) : false;
+            const isHighlighted = i === highlightedIndex;
+            html += this.createItemFn(choice, inputVal, isHighlighted, isSelected);
         }
 
         this.setInnerHtml(html);
@@ -44,9 +49,12 @@ class UnorderedList extends Element {
         // Requires HTML5 data attributes
         for (let i = 0; i < this.el.children.length; i++) {
             const li = this.el.children[i];
-            const choiceLabel = li.dataset.label;
-            const choiceValue = li.dataset.value;
-            const onMousedownEvt = this.createItemMousedownEvt(choiceLabel, choiceValue);
+
+            const onMousedownEvt = this.createItemMousedownEvt({
+                label: li.dataset.label,
+                value: li.dataset.value
+            });
+
             li.addEventListener('mousedown', onMousedownEvt);
         }
     }

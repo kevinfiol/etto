@@ -10,7 +10,19 @@ class Dropdown extends Element {
         });
 
         // Hide by default
+        this.hide();
+    }
+
+    isVisible() {
+        return this.el.style.display === 'block';
+    }
+
+    hide() {
         this.setDisplay('none');
+    }
+
+    show() {
+        this.setDisplay('block');
     }
 }
 

@@ -1,6 +1,7 @@
 .etto-input { width: 100%; height: 2em; padding: 1.5em 1em; font-family: monospace; }
 .etto-ul { padding: 0; margin: 0; }
 .etto-li { padding: 6px; margin: 0; }
-.etto-selected, .etto-li:hover { background-color: #f2f2f2; }
+.etto-highlighted, .etto-li:hover { background-color: #f2f2f2; }
+.etto-selected { background-color: yellow; }
 .etto-dropdown { border: 1px solid lightgrey; transition: all 0.5s; }
 .etto-spinner-dot { background-color: black; }

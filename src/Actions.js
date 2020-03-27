@@ -3,6 +3,10 @@ class Actions {
         this.state = state;
     }
 
+    setHighlighted(highlighted) {
+        this.state.highlighted = highlighted;
+    }
+
     setSelected(selected) {
         this.state.selected = selected;
     }

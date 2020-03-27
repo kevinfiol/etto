@@ -4,9 +4,9 @@ import SelectService from './SelectService';
 class Etto {
     constructor(root, config, choices) {
         if (config.selectMode)
-            this.etto = new SelectService(root, config, choices);
+            this.service = new SelectService(root, config, choices);
         else
-            this.etto = new InputService(root, config, choices);
+            this.service = new InputService(root, config, choices);
     }
 }
 
@@ -68,6 +68,7 @@ const etto_list = [
 // }
 
 new Etto(document.getElementById('demo-2'), {
+    selectMode: true
     // filterFn: (inputVal, choices, matchFullWord, maxResults) => {
     //     return [
     //         { label: 'banana', value: 'banana' },
