@@ -20,7 +20,7 @@ class Spinner extends Element {
             style: 'position: absolute; display: none; align-items: center; right: 1em;'
         });
 
-        this.el.style.top = topPosition;
+        this.el.style.top = `${topPosition}px`;
 
         // Initialize Dots
         this.createDots();

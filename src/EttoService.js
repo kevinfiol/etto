@@ -1,6 +1,7 @@
 import Input from './components/Input';
 import Dropdown from './components/Dropdown';
 import Spinner from './components/Spinner';
+import ClearBtn from './components/ClearBtn';
 import UnorderedList from './components/UnorderedList';
 import Actions from './Actions';
 import { filterChoices, choiceMap } from './util';
@@ -9,6 +10,7 @@ const MIN_CHARS = 3;
 const MAX_RESULTS = 7;
 const REQUEST_DELAY = 350;
 const SPINNER_DOT_SIZE = 6;
+const CLEAR_BTN_HEIGHT = 22;
 
 class EttoService {
     constructor(root, config, choices) {
@@ -61,7 +63,7 @@ class EttoService {
             this.createItemFn
         );
 
-        this.Dropdown = new Dropdown(document.createElement('div'));
+        this.Dropdown = new Dropdown(document.createElement('div'), this.selectMode);
         this.Dropdown.appendChild(this.UnorderedList.el);
 
         // Containers
@@ -79,8 +81,8 @@ class EttoService {
         this.root = root;
         this.root.appendChild(this.container);
 
-        // Append spinner after appending container to calc appropriate offsetHeight
-        const spinnerTopPosition = ((this.Input.offsetHeight / 2) - (SPINNER_DOT_SIZE / 2)) + 'px';
+        // Append Spinner
+        const spinnerTopPosition = ((this.Input.offsetHeight / 2) - (SPINNER_DOT_SIZE / 2));
 
         this.Spinner = new Spinner(document.createElement('div'),
             SPINNER_DOT_SIZE,
@@ -88,6 +90,17 @@ class EttoService {
         );
 
         this.container.appendChild(this.Spinner.el);
+
+        // Append Clear Btn
+        const clearBtnTopPosition = ((this.Input.offsetHeight / 2) - (CLEAR_BTN_HEIGHT / 2));
+
+        this.ClearBtn = new ClearBtn(document.createElement('div'),
+            CLEAR_BTN_HEIGHT,
+            clearBtnTopPosition,
+            this.clear.bind(this)
+        );
+
+        this.container.appendChild(this.ClearBtn.el);
     }
 
     render(inputVal, filtered) {
@@ -97,6 +110,13 @@ class EttoService {
             this.state.highlighted,
             this.state.selected
         );
+    }
+
+    clear() {
+        this.actions.setInputVal('');
+        this.actions.setSelected(null);
+        this.Input.setValue('');
+        this.render(this.state.inputVal, this.state.filtered);
     }
 
     setShowDropdown(showDropdown) {

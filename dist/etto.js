@@ -79,12 +79,17 @@
     }(Element));
 
     var Dropdown = /*@__PURE__*/(function (Element) {
-        function Dropdown(el) {
+        function Dropdown(el, isSelectMode) {
             Element.call(this, el);
 
             this.applyClassList(['etto-dropdown']);
             this.applyAttributes({
-                style: 'position: absolute; width: 100%; background-color: white; overflow: hidden; z-index: 99;'
+                style: "" + (isSelectMode ? 'max-height: 300px; ' : '') +
+                "" + (isSelectMode ? 'oveflow-x: hidden; overflow-y: auto; ' : 'overflow: hidden; ') +
+                'position: absolute; ' +
+                'width: 100%; ' +
+                'background-color: white; ' +
+                'z-index: 99;'
             });
 
             // Hide by default
@@ -130,7 +135,7 @@
                 style: 'position: absolute; display: none; align-items: center; right: 1em;'
             });
 
-            this.el.style.top = topPosition;
+            this.el.style.top = topPosition + "px";
 
             // Initialize Dots
             this.createDots();
@@ -183,6 +188,42 @@
         };
 
         return Spinner;
+    }(Element));
+
+    var ClearBtn = /*@__PURE__*/(function (Element) {
+        function ClearBtn(
+            el,
+            btnHeight,
+            clearBtnTopPosition,
+            clickEvt
+        ) {
+            Element.call(this, el);
+
+            this.applyClassList(['etto-clear-btn']);
+            this.applyAttributes({
+                style: 'opacity: 0.7; ' +
+                    'position: absolute; ' +
+                    'display: flex; ' + 
+                    'align-items: center; ' +
+                    'right: 0.6em; ' +
+                    'cursor: pointer; ' +
+                    'font-family: sans-serif; ' +
+                    'font-size: 20px; ' +
+                    'font-weight: 400; ' +
+                    "height: " + btnHeight + "px; " +
+                    "top: " + clearBtnTopPosition + "px;"
+            });
+
+            this.addEventListener('click', clickEvt);
+
+            this.el.innerHTML = '&times;';
+        }
+
+        if ( Element ) ClearBtn.__proto__ = Element;
+        ClearBtn.prototype = Object.create( Element && Element.prototype );
+        ClearBtn.prototype.constructor = ClearBtn;
+
+        return ClearBtn;
     }(Element));
 
     function removeHtml(s) {
@@ -349,6 +390,7 @@
     var MAX_RESULTS = 7;
     var REQUEST_DELAY = 350;
     var SPINNER_DOT_SIZE = 6;
+    var CLEAR_BTN_HEIGHT = 22;
 
     var EttoService = function EttoService(root, config, choices) {
         /**
@@ -400,7 +442,7 @@
             this.createItemFn
         );
 
-        this.Dropdown = new Dropdown(document.createElement('div'));
+        this.Dropdown = new Dropdown(document.createElement('div'), this.selectMode);
         this.Dropdown.appendChild(this.UnorderedList.el);
 
         // Containers
@@ -418,8 +460,8 @@
         this.root = root;
         this.root.appendChild(this.container);
 
-        // Append spinner after appending container to calc appropriate offsetHeight
-        var spinnerTopPosition = ((this.Input.offsetHeight / 2) - (SPINNER_DOT_SIZE / 2)) + 'px';
+        // Append Spinner
+        var spinnerTopPosition = ((this.Input.offsetHeight / 2) - (SPINNER_DOT_SIZE / 2));
 
         this.Spinner = new Spinner(document.createElement('div'),
             SPINNER_DOT_SIZE,
@@ -427,6 +469,17 @@
         );
 
         this.container.appendChild(this.Spinner.el);
+
+        // Append Clear Btn
+        var clearBtnTopPosition = ((this.Input.offsetHeight / 2) - (CLEAR_BTN_HEIGHT / 2));
+
+        this.ClearBtn = new ClearBtn(document.createElement('div'),
+            CLEAR_BTN_HEIGHT,
+            clearBtnTopPosition,
+            this.clear.bind(this)
+        );
+
+        this.container.appendChild(this.ClearBtn.el);
     };
 
     EttoService.prototype.render = function render (inputVal, filtered) {
@@ -436,6 +489,13 @@
             this.state.highlighted,
             this.state.selected
         );
+    };
+
+    EttoService.prototype.clear = function clear () {
+        this.actions.setInputVal('');
+        this.actions.setSelected(null);
+        this.Input.setValue('');
+        this.render(this.state.inputVal, this.state.filtered);
     };
 
     EttoService.prototype.setShowDropdown = function setShowDropdown (showDropdown) {

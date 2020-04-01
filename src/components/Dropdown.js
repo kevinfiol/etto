@@ -1,12 +1,17 @@
 import Element from '../lib/Element';
 
 class Dropdown extends Element {
-    constructor(el) {
+    constructor(el, isSelectMode) {
         super(el);
 
         this.applyClassList(['etto-dropdown']);
         this.applyAttributes({
-            style: 'position: absolute; width: 100%; background-color: white; overflow: hidden; z-index: 99;'
+            style: `${isSelectMode ? 'max-height: 300px; ' : ''}` +
+            `${isSelectMode ? 'oveflow-x: hidden; overflow-y: auto; ' : 'overflow: hidden; '}` +
+            'position: absolute; ' +
+            'width: 100%; ' +
+            'background-color: white; ' +
+            'z-index: 99;'
         });
 
         // Hide by default
