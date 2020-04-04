@@ -17,7 +17,7 @@ class Spinner extends Element {
 
         this.applyClassList(['etto-spinner']);
         this.applyAttributes({
-            style: 'position: absolute; display: none; align-items: center; right: 1em;'
+            style: 'position: absolute; display: none; align-items: center; right: 2em;'
         });
 
         this.el.style.top = `${topPosition}px`;

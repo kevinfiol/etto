@@ -35,27 +35,25 @@ class UnorderedList extends Element {
         this.setInnerHtml('');
         let html = '';
 
-        // Build HTML
-        for (let i = 0; i < list.length; i++) {
-            const choice = list[i];
-            const isSelected = selected ? (choice.value === selected.value) : false;
-            const isHighlighted = i === highlightedIndex;
-            html += this.createItemFn(choice, inputVal, isHighlighted, isSelected);
-        }
+        const listLen = list.length;
+        if (listLen > 0) {
+            // Build HTML
+            for (let i = 0; i < listLen; i++) {
+                const isSelected = selected ? (list[i].value === selected.value) : false;
+                const isHighlighted = i === highlightedIndex;
+                html += this.createItemFn(list[i], inputVal, isHighlighted, isSelected);
+            }
 
-        this.setInnerHtml(html);
+            this.setInnerHtml(html);
 
-        // Dynamically creates and adds event listeners to list items
-        // Requires HTML5 data attributes
-        for (let i = 0; i < this.el.children.length; i++) {
-            const li = this.el.children[i];
-
-            const onMousedownEvt = this.createItemMousedownEvt({
-                label: li.dataset.label,
-                value: li.dataset.value
-            });
-
-            li.addEventListener('mousedown', onMousedownEvt);
+            // Iterate on newly creates list items
+            for (let i = 0; i < listLen; i++) {
+                const li = this.el.children[i];
+                li.addEventListener('mousedown', this.createItemMousedownEvt(list[i]));
+            }
+        } else {
+            html += '<li class="etto-li etto-empty"><em>No results.</em></li>';
+            this.setInnerHtml(html);
         }
     }
 }

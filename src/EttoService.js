@@ -10,6 +10,7 @@ const MIN_CHARS = 3;
 const MAX_RESULTS = 7;
 const REQUEST_DELAY = 350;
 const SPINNER_DOT_SIZE = 6;
+const SPINNER_TIMER = 300;
 const CLEAR_BTN_HEIGHT = 22;
 
 class EttoService {
@@ -23,10 +24,12 @@ class EttoService {
         this.maxResults    = config.maxResults    || MAX_RESULTS;
         this.requestDelay  = config.requestDelay  || REQUEST_DELAY;
         this.matchFullWord = config.matchFullWord || false;
+        this.showEmptyMsg  = (config.showEmptyMsg !== undefined ? config.showEmptyMsg : true);
 
         // Custom Functions
-        this.createItemFn  = config.createItemFn  || undefined;
-        this.filterFn      = config.filterFn      || filterChoices;
+        this.createItemFn  = config.createItemFn || undefined;
+        this.filterFn      = config.filterFn     || filterChoices;
+        this.onSelect      = config.onSelect     || undefined;
 
         /**
         * State Management
@@ -115,7 +118,11 @@ class EttoService {
     clear() {
         this.actions.setInputVal('');
         this.actions.setSelected(null);
+        if (!this.selectMode) this.actions.setFiltered([]);
+        if (this.selectMode) this.Input.setPlaceholder('');
+
         this.Input.setValue('');
+        this.ClearBtn.hide();
         this.render(this.state.inputVal, this.state.filtered);
     }
 
@@ -174,7 +181,11 @@ class EttoService {
         this.actions.setFiltered(filtered);
 
         this.render(this.state.inputVal, filtered);
-        this.setShowDropdown(filtered.length > 0);
+
+        if (this.showEmptyMsg)
+            this.setShowDropdown(true);
+        else
+            this.setShowDropdown(filtered.length > 0);
     }
 
     onKeydown(e) {
@@ -207,27 +218,10 @@ class EttoService {
         if (e.keyCode == 9 || e.keyCode == 13) {
             if (isDropdownVisible) {
                 e.preventDefault();
-                let inputVal = undefined;
 
                 if (this.state.highlighted !== null) {
                     const choice = this.state.filtered[this.state.highlighted];
-                    inputVal = choice.label;
-
-                    this.actions.setInputVal(inputVal);
-                    this.actions.setHighlighted(null);
-
-                    // Update DOM
-                    this.Input.setValue(inputVal);
-
-                    const filtered = this.filterFn(
-                        inputVal,
-                        this.state.choices,
-                        this.matchFullWord,
-                        this.maxResults
-                    );
-
-                    this.render(inputVal, filtered);
-                    this.setShowDropdown(false);
+                    this.onSelection(choice);
                 }
             }
         }

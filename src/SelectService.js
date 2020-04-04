@@ -12,6 +12,9 @@ class SelectService extends EttoService {
         const inputVal = e.target.value;
         this.actions.setInputVal(inputVal);
 
+        if (inputVal) this.ClearBtn.show();
+        else this.ClearBtn.hide();
+
         if (inputVal) {
             if (this.source) this.fetchFromSource(inputVal);
             else this.onReceiveChoices(this.state.choices);
@@ -23,6 +26,7 @@ class SelectService extends EttoService {
     }
 
     onFocus() {
+        this.Input.setValue('');
         this.setShowDropdown(true);
     }
 
@@ -30,9 +34,11 @@ class SelectService extends EttoService {
         if (!this.state.selected) {
             this.actions.setInputVal('');
             this.Input.setValue('');
+            this.ClearBtn.hide();
         } else {
             this.actions.setInputVal(this.state.selected.value);
-            this.Input.setValue(this.state.selected.label);
+            this.Input.setValue(this.state.selected.value);
+            this.ClearBtn.show();
         }
 
         // Reset List
@@ -41,19 +47,30 @@ class SelectService extends EttoService {
         this.setShowDropdown(false);
     }
 
-    createItemMousedownEvt({ label, value }) {
+    onSelection(choice) {
+        setTimeout(() => {
+            this.actions.setInputVal(choice.value);
+            this.Input.setValue(choice.value);
+            this.Input.setPlaceholder(choice.value);
+        });
+
+        this.actions.setFiltered(this.state.choices);
+        this.actions.setHighlighted(null);
+        this.actions.setSelected(choice);
+
+        this.render(choice.label, this.state.filtered);
+        this.setShowDropdown(false);
+
+        this.ClearBtn.show();
+        this.Input.blur();
+
+        // Custom onSelect callback
+        if (this.onSelect) this.onSelect(choice);
+    }
+
+    createItemMousedownEvt(choice) {
         return () => {
-            this.actions.setSelected({ label, value });
-            this.actions.setInputVal(value);
-            this.actions.setFiltered(this.state.choices);
-
-            this.render(label, this.state.choices);
-            this.setShowDropdown(false);
-
-            setTimeout(() => {
-                this.actions.setInputVal(value);
-                this.Input.setValue(value);
-            });
+            this.onSelection(choice);
         };
     }
 }

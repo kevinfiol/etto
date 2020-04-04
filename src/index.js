@@ -46,8 +46,6 @@ const source = function(query, done) {
     xhr.send();
 };
 
-new Etto(document.getElementById('demo-1'), { source });
-
 const etto_list = [
     { label: 'Alabama' },
     { label: 'Alaska' },
@@ -63,11 +61,11 @@ const etto_list = [
     { label: 'Banana' }
 ];
 
-// for (let i = 0; i < 10000; i++) {
-//     etto_list.push({ label: 'Alabama' });
-// }
+new Etto(document.getElementById('demo-1'), {}, etto_list);
+new Etto(document.getElementById('demo-2'), { source });
 
-new Etto(document.getElementById('demo-2'), {
+
+new Etto(document.getElementById('demo-3'), {
     selectMode: true
     // filterFn: (inputVal, choices, matchFullWord, maxResults) => {
     //     return [
@@ -76,3 +74,17 @@ new Etto(document.getElementById('demo-2'), {
     //     ];
     // }
 }, etto_list);
+
+new Etto(document.getElementById('demo-4'), {
+    selectMode: true,
+    source
+});
+
+
+
+// for (let i = 0; i < 10000; i++) {
+//     etto_list.push({ label: 'Alabama' });
+// }
+
+
+

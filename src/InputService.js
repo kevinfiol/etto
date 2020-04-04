@@ -1,7 +1,4 @@
 import EttoService from './EttoService';
-import { choiceMap } from './util';
-
-const SPINNER_TIMER = 300;
 
 class InputService extends EttoService {
     constructor(root, config, choices) {
@@ -14,6 +11,9 @@ class InputService extends EttoService {
     onInput(e) {
         const inputVal = e.target.value;
         this.actions.setInputVal(inputVal);
+
+        if (inputVal) this.ClearBtn.show();
+        else this.ClearBtn.hide();
 
         if (inputVal && inputVal.trim().length >= this.minChars) {
             if (this.source) this.fetchFromSource(inputVal);
@@ -39,22 +39,30 @@ class InputService extends EttoService {
         this.setShowDropdown(false);
     }
 
-    createItemMousedownEvt({ label, value }) {
+    onSelection(choice) {
+        const filtered = this.filterFn(
+            choice.label,
+            this.state.choices,
+            this.matchFullWord,
+            this.maxResults
+        );
+
+        this.actions.setInputVal(choice.value);
+        this.Input.setValue(choice.value);
+
+        this.actions.setFiltered(filtered);
+        this.actions.setHighlighted(null);
+
+        this.render(choice.label, filtered);
+        this.setShowDropdown(filtered.length > 0);
+
+        // Custom onSelect callback
+        if (this.onSelect) this.onSelect(choice);
+    }
+
+    createItemMousedownEvt(choice) {
         return () => {
-            const filtered = this.filterFn(
-                value,
-                this.state.choices,
-                this.matchFullWord,
-                this.maxResults
-            );
-
-            this.actions.setInputVal(label);
-            this.actions.setFiltered(filtered);
-
-            this.render(label, filtered);
-            this.setShowDropdown(filtered.length > 0);
-
-            this.Input.setValue(value);
+            this.onSelection(choice);
             this.Input.focus();
         };
     }

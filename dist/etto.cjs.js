@@ -66,8 +66,16 @@ var Input = /*@__PURE__*/(function (Element) {
         this.el.value = value;
     };
 
+    Input.prototype.setPlaceholder = function setPlaceholder (placeholder) {
+        this.el.placeholder = placeholder;
+    };
+
     Input.prototype.focus = function focus () {
         this.el.focus();
+    };
+
+    Input.prototype.blur = function blur () {
+        this.el.blur();
     };
 
     Object.defineProperties( Input.prototype, prototypeAccessors );
@@ -129,7 +137,7 @@ var Spinner = /*@__PURE__*/(function (Element) {
 
         this.applyClassList(['etto-spinner']);
         this.applyAttributes({
-            style: 'position: absolute; display: none; align-items: center; right: 1em;'
+            style: 'position: absolute; display: none; align-items: center; right: 2em;'
         });
 
         this.el.style.top = topPosition + "px";
@@ -200,7 +208,7 @@ var ClearBtn = /*@__PURE__*/(function (Element) {
         this.applyAttributes({
             style: 'opacity: 0.7; ' +
                 'position: absolute; ' +
-                'display: flex; ' + 
+                'display: none; ' + 
                 'align-items: center; ' +
                 'right: 0.6em; ' +
                 'cursor: pointer; ' +
@@ -219,6 +227,14 @@ var ClearBtn = /*@__PURE__*/(function (Element) {
     if ( Element ) ClearBtn.__proto__ = Element;
     ClearBtn.prototype = Object.create( Element && Element.prototype );
     ClearBtn.prototype.constructor = ClearBtn;
+
+    ClearBtn.prototype.show = function show () {
+        this.el.style.display = 'flex';
+    };
+
+    ClearBtn.prototype.hide = function hide () {
+        this.el.style.display = 'none';
+    };
 
     return ClearBtn;
 }(Element));
@@ -308,27 +324,25 @@ var UnorderedList = /*@__PURE__*/(function (Element) {
         this.setInnerHtml('');
         var html = '';
 
-        // Build HTML
-        for (var i = 0; i < list.length; i++) {
-            var choice = list[i];
-            var isSelected = selected ? (choice.value === selected.value) : false;
-            var isHighlighted = i === highlightedIndex;
-            html += this.createItemFn(choice, inputVal, isHighlighted, isSelected);
-        }
+        var listLen = list.length;
+        if (listLen > 0) {
+            // Build HTML
+            for (var i = 0; i < listLen; i++) {
+                var isSelected = selected ? (list[i].value === selected.value) : false;
+                var isHighlighted = i === highlightedIndex;
+                html += this.createItemFn(list[i], inputVal, isHighlighted, isSelected);
+            }
 
-        this.setInnerHtml(html);
+            this.setInnerHtml(html);
 
-        // Dynamically creates and adds event listeners to list items
-        // Requires HTML5 data attributes
-        for (var i$1 = 0; i$1 < this.el.children.length; i$1++) {
-            var li = this.el.children[i$1];
-
-            var onMousedownEvt = this.createItemMousedownEvt({
-                label: li.dataset.label,
-                value: li.dataset.value
-            });
-
-            li.addEventListener('mousedown', onMousedownEvt);
+            // Iterate on newly creates list items
+            for (var i$1 = 0; i$1 < listLen; i$1++) {
+                var li = this.el.children[i$1];
+                li.addEventListener('mousedown', this.createItemMousedownEvt(list[i$1]));
+            }
+        } else {
+            html += '<li class="etto-li etto-empty"><em>No results.</em></li>';
+            this.setInnerHtml(html);
         }
     };
 
@@ -344,6 +358,7 @@ Actions.prototype.setHighlighted = function setHighlighted (highlighted) {
 };
 
 Actions.prototype.setSelected = function setSelected (selected) {
+    console.log('current selected: ', selected);
     this.state.selected = selected;
 };
 
@@ -387,6 +402,7 @@ var MIN_CHARS = 3;
 var MAX_RESULTS = 7;
 var REQUEST_DELAY = 350;
 var SPINNER_DOT_SIZE = 6;
+var SPINNER_TIMER = 300;
 var CLEAR_BTN_HEIGHT = 22;
 
 var EttoService = function EttoService(root, config, choices) {
@@ -399,10 +415,12 @@ var EttoService = function EttoService(root, config, choices) {
     this.maxResults= config.maxResults|| MAX_RESULTS;
     this.requestDelay  = config.requestDelay  || REQUEST_DELAY;
     this.matchFullWord = config.matchFullWord || false;
+    this.showEmptyMsg  = (config.showEmptyMsg !== undefined ? config.showEmptyMsg : true);
 
     // Custom Functions
-    this.createItemFn  = config.createItemFn  || undefined;
-    this.filterFn  = config.filterFn  || filterChoices;
+    this.createItemFn  = config.createItemFn || undefined;
+    this.filterFn  = config.filterFn || filterChoices;
+    this.onSelect  = config.onSelect || undefined;
 
     /**
     * State Management
@@ -491,7 +509,11 @@ EttoService.prototype.render = function render (inputVal, filtered) {
 EttoService.prototype.clear = function clear () {
     this.actions.setInputVal('');
     this.actions.setSelected(null);
+    if (!this.selectMode) { this.actions.setFiltered([]); }
+    if (this.selectMode) { this.Input.setPlaceholder(''); }
+
     this.Input.setValue('');
+    this.ClearBtn.hide();
     this.render(this.state.inputVal, this.state.filtered);
 };
 
@@ -554,7 +576,11 @@ EttoService.prototype.onReceiveChoices = function onReceiveChoices (choices) {
     this.actions.setFiltered(filtered);
 
     this.render(this.state.inputVal, filtered);
-    this.setShowDropdown(filtered.length > 0);
+
+    if (this.showEmptyMsg)
+        { this.setShowDropdown(true); }
+    else
+        { this.setShowDropdown(filtered.length > 0); }
 };
 
 EttoService.prototype.onKeydown = function onKeydown (e) {
@@ -587,27 +613,10 @@ EttoService.prototype.onKeydown = function onKeydown (e) {
     if (e.keyCode == 9 || e.keyCode == 13) {
         if (isDropdownVisible) {
             e.preventDefault();
-            var inputVal = undefined;
 
             if (this.state.highlighted !== null) {
                 var choice = this.state.filtered[this.state.highlighted];
-                inputVal = choice.label;
-
-                this.actions.setInputVal(inputVal);
-                this.actions.setHighlighted(null);
-
-                // Update DOM
-                this.Input.setValue(inputVal);
-
-                var filtered = this.filterFn(
-                    inputVal,
-                    this.state.choices,
-                    this.matchFullWord,
-                    this.maxResults
-                );
-
-                this.render(inputVal, filtered);
-                this.setShowDropdown(false);
+                this.onSelection(choice);
             }
         }
     }
@@ -628,6 +637,9 @@ var InputService = /*@__PURE__*/(function (EttoService) {
     InputService.prototype.onInput = function onInput (e) {
         var inputVal = e.target.value;
         this.actions.setInputVal(inputVal);
+
+        if (inputVal) { this.ClearBtn.show(); }
+        else { this.ClearBtn.hide(); }
 
         if (inputVal && inputVal.trim().length >= this.minChars) {
             if (this.source) { this.fetchFromSource(inputVal); }
@@ -653,26 +665,32 @@ var InputService = /*@__PURE__*/(function (EttoService) {
         this.setShowDropdown(false);
     };
 
-    InputService.prototype.createItemMousedownEvt = function createItemMousedownEvt (ref) {
+    InputService.prototype.onSelection = function onSelection (choice) {
+        var filtered = this.filterFn(
+            choice.label,
+            this.state.choices,
+            this.matchFullWord,
+            this.maxResults
+        );
+
+        this.actions.setInputVal(choice.value);
+        this.Input.setValue(choice.value);
+
+        this.actions.setFiltered(filtered);
+        this.actions.setHighlighted(null);
+
+        this.render(choice.label, filtered);
+        this.setShowDropdown(filtered.length > 0);
+
+        // Custom onSelect callback
+        if (this.onSelect) { this.onSelect(choice); }
+    };
+
+    InputService.prototype.createItemMousedownEvt = function createItemMousedownEvt (choice) {
         var this$1 = this;
-        var label = ref.label;
-        var value = ref.value;
 
         return function () {
-            var filtered = this$1.filterFn(
-                value,
-                this$1.state.choices,
-                this$1.matchFullWord,
-                this$1.maxResults
-            );
-
-            this$1.actions.setInputVal(label);
-            this$1.actions.setFiltered(filtered);
-
-            this$1.render(label, filtered);
-            this$1.setShowDropdown(filtered.length > 0);
-
-            this$1.Input.setValue(value);
+            this$1.onSelection(choice);
             this$1.Input.focus();
         };
     };
@@ -696,6 +714,9 @@ var SelectService = /*@__PURE__*/(function (EttoService) {
         var inputVal = e.target.value;
         this.actions.setInputVal(inputVal);
 
+        if (inputVal) { this.ClearBtn.show(); }
+        else { this.ClearBtn.hide(); }
+
         if (inputVal) {
             if (this.source) { this.fetchFromSource(inputVal); }
             else { this.onReceiveChoices(this.state.choices); }
@@ -707,6 +728,7 @@ var SelectService = /*@__PURE__*/(function (EttoService) {
     };
 
     SelectService.prototype.onFocus = function onFocus () {
+        this.Input.setValue('');
         this.setShowDropdown(true);
     };
 
@@ -714,9 +736,11 @@ var SelectService = /*@__PURE__*/(function (EttoService) {
         if (!this.state.selected) {
             this.actions.setInputVal('');
             this.Input.setValue('');
+            this.ClearBtn.hide();
         } else {
             this.actions.setInputVal(this.state.selected.value);
-            this.Input.setValue(this.state.selected.label);
+            this.Input.setValue(this.state.selected.value);
+            this.ClearBtn.show();
         }
 
         // Reset List
@@ -725,23 +749,34 @@ var SelectService = /*@__PURE__*/(function (EttoService) {
         this.setShowDropdown(false);
     };
 
-    SelectService.prototype.createItemMousedownEvt = function createItemMousedownEvt (ref) {
+    SelectService.prototype.onSelection = function onSelection (choice) {
         var this$1 = this;
-        var label = ref.label;
-        var value = ref.value;
+
+        setTimeout(function () {
+            this$1.actions.setInputVal(choice.value);
+            this$1.Input.setValue(choice.value);
+            this$1.Input.setPlaceholder(choice.value);
+        });
+
+        this.actions.setFiltered(this.state.choices);
+        this.actions.setHighlighted(null);
+        this.actions.setSelected(choice);
+
+        this.render(choice.label, this.state.filtered);
+        this.setShowDropdown(false);
+
+        this.ClearBtn.show();
+        this.Input.blur();
+
+        // Custom onSelect callback
+        if (this.onSelect) { this.onSelect(choice); }
+    };
+
+    SelectService.prototype.createItemMousedownEvt = function createItemMousedownEvt (choice) {
+        var this$1 = this;
 
         return function () {
-            this$1.actions.setSelected({ label: label, value: value });
-            this$1.actions.setInputVal(value);
-            this$1.actions.setFiltered(this$1.state.choices);
-
-            this$1.render(label, this$1.state.choices);
-            this$1.setShowDropdown(false);
-
-            setTimeout(function () {
-                this$1.actions.setInputVal(value);
-                this$1.Input.setValue(value);
-            });
+            this$1.onSelection(choice);
         };
     };
 
@@ -791,8 +826,6 @@ var source = function(query, done) {
     xhr.send();
 };
 
-new Etto(document.getElementById('demo-1'), { source: source });
-
 var etto_list = [
     { label: 'Alabama' },
     { label: 'Alaska' },
@@ -808,11 +841,11 @@ var etto_list = [
     { label: 'Banana' }
 ];
 
-// for (let i = 0; i < 10000; i++) {
-//     etto_list.push({ label: 'Alabama' });
-// }
+new Etto(document.getElementById('demo-1'), {}, etto_list);
+new Etto(document.getElementById('demo-2'), { source: source });
 
-new Etto(document.getElementById('demo-2'), {
+
+new Etto(document.getElementById('demo-3'), {
     selectMode: true
     // filterFn: (inputVal, choices, matchFullWord, maxResults) => {
     //     return [
@@ -821,4 +854,15 @@ new Etto(document.getElementById('demo-2'), {
     //     ];
     // }
 }, etto_list);
+
+new Etto(document.getElementById('demo-4'), {
+    selectMode: true,
+    source: source
+});
+
+
+
+// for (let i = 0; i < 10000; i++) {
+//     etto_list.push({ label: 'Alabama' });
+// }
 //# sourceMappingURL=etto.cjs.js.map

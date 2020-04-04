@@ -13,7 +13,7 @@ class ClearBtn extends Element {
         this.applyAttributes({
             style: 'opacity: 0.7; ' +
                 'position: absolute; ' +
-                'display: flex; ' + 
+                'display: none; ' + 
                 'align-items: center; ' +
                 'right: 0.6em; ' +
                 'cursor: pointer; ' +
@@ -27,6 +27,14 @@ class ClearBtn extends Element {
         this.addEventListener('click', clickEvt);
 
         this.el.innerHTML = '&times;';
+    }
+
+    show() {
+        this.el.style.display = 'flex';
+    }
+
+    hide() {
+        this.el.style.display = 'none';
     }
 }
 

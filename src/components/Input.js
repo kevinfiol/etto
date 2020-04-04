@@ -32,8 +32,16 @@ class Input extends Element {
         this.el.value = value;
     }
 
+    setPlaceholder(placeholder) {
+        this.el.placeholder = placeholder;
+    }
+
     focus() {
         this.el.focus();
+    }
+
+    blur() {
+        this.el.blur();
     }
 }
 
