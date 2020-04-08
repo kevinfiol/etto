@@ -610,6 +610,9 @@
 
             this.render(this.state.inputVal, this.state.filtered);
             this.setShowDropdown(this.state.filtered.length > 0);
+
+            var highlightedItem = document.getElementsByClassName('etto-highlighted')[0];
+            if (highlightedItem !== undefined) { highlightedItem.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
         }
 
         // Enter or Tab
@@ -683,7 +686,7 @@
             this.actions.setHighlighted(null);
 
             this.render(choice.label, filtered);
-            this.setShowDropdown(filtered.length > 0);
+            this.setShowDropdown(false);
 
             // Custom onSelect callback
             if (this.onSelect) { this.onSelect(choice); }
@@ -841,7 +844,26 @@
         { label: 'Little Bambam' },
         { label: 'Ness from Earthbound' },
         { label: 'Ghoul' },
-        { label: 'Banana' }
+        { label: 'Banana' },
+        { label: 'Bananza' },
+        { label: 'Marty' },
+        { label: 'BOAT' },
+        { label: 'Turtle' },
+        { label: 'Tortoise' },
+        { label: 'TNT' },
+        { label: 'Toister Oven' },
+        { label: 'Urtle the Old Lady' },
+        { label: 'Grand Canyon' },
+        { label: 'Bird' },
+        { label: 'Florida' },
+        { label: 'Cindy' },
+        { label: 'Ettore' }
+    ];
+
+    var etto_list_2 = [
+        { label: 'bananas', value: 'cherries' },
+        { label: 'kevin fiol', value: 'the coolest guy ever'},
+        { label: 'nah', age: 25 }
     ];
 
     new Etto(document.getElementById('demo-1'), {}, etto_list);
@@ -862,6 +884,8 @@
         selectMode: true,
         source: source
     });
+
+    new Etto(document.getElementById('demo-5'), { selectMode: true }, etto_list_2);
 
 
 

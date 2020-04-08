@@ -54,7 +54,7 @@ class InputService extends EttoService {
         this.actions.setHighlighted(null);
 
         this.render(choice.label, filtered);
-        this.setShowDropdown(filtered.length > 0);
+        this.setShowDropdown(false);
 
         // Custom onSelect callback
         if (this.onSelect) this.onSelect(choice);
