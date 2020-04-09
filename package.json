@@ -1,7 +1,7 @@
 {
   "name": "etto",
   "version": "0.1.0",
-  "description": "small agnostic typeahead",
+  "description": "small, agnostic autocomplete & select component",
   "main": "index.js",
   "author": "kevinfiol",
   "license": "MIT",
@@ -9,7 +9,7 @@
     "dev": "rollup -c -w --environment DEV",
     "build": "rollup -c --environment PROD",
     "cypress:open": "cypress open",
-    "test": "ospec --require reify"
+    "test": "ospec"
   },
   "devDependencies": {
     "@rollup/plugin-buble": "^0.21.0",

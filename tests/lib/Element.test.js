@@ -1,33 +1,19 @@
-import o from 'ospec/ospec';
-import dom from '../dom';
-
-import Element from '../../src/lib/Element';
+const o = require('ospec');
+const dom = require('../dom');
+const Element = require('../../src/lib/Element');
 
 o.spec('Element Object', () => {
     let li;
-    
-    o.beforeEach(() => {
-        li = Object.create(Element);
-        li.init('li', 'testClassName');
+    let element;
+    let domEl;
+
+    o.before(() => {
+        domEl = document.createElement('li');
+        li = new Element(domEl);
     });
 
-    o('Element init', () => {
-        o(li.el.tagName).equals('LI');
-        o(li.el.className).equals('testClassName');
-    });
-
-    o('Element classNames', () => {
-        li.setClassName('lorem ipsum');
-        o(li.el.className).equals('lorem ipsum');
-
-        li.addClass('kevin');
-        o(li.el.className.indexOf('kevin') > -1).equals(true);
-
-        li.removeClass('kevin');
-        o(li.containsClass('kevin')).equals(false);
-
-        li.toggleClass('ipsum');
-        o(li.containsClass('ipsum')).equals(false);
+    o('Element constructor', () => {
+        o(li.el).equals(domEl);
     });
 
     o('Element addEventListener', () => {
@@ -42,8 +28,35 @@ o.spec('Element Object', () => {
         o(val).equals(1);
     });
 
-    o('Element setAttr', () => {
-        li.setAttr('id', 'row-1');
-        o(li.el.getAttribute('id')).equals('row-1');
+    o('Element applyAttributes', () => {
+        li.applyAttributes({
+            name: 'kevin',
+            style: 'color: red;',
+            foo: 15 // dom turns this to string
+        });
+
+        const attrs = li.el.attributes;
+
+        o(attrs.name.value).equals('kevin');
+        o(attrs.style.value).equals('color: red;');
+        o(attrs.foo.value).equals('15');
+        o(li.el.style.color).equals('red');
+    });
+
+    o('Element appendChild', () => {
+        const em = document.createElement('em');
+        em.innerHTML = 'words';
+
+        o(li.el.children.length).equals(0);
+        o(li.el.children[0]).equals(undefined);
+
+        li.appendChild(em);
+        o(li.el.children.length).equals(1);
+        o(li.el.children[0]).equals(em);
+    });
+
+    o('Element setDisplay', () => {
+        li.setDisplay('none');
+        o(li.el.style.display).equals('none');
     });
 });
