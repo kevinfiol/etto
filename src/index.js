@@ -1,5 +1,5 @@
-import InputService from './InputService';
-import SelectService from './SelectService';
+const InputService = require('./InputService');
+const SelectService = require('./SelectService');
 
 class Etto {
     constructor(root, config, choices) {

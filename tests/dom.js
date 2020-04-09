@@ -1,7 +1,8 @@
-import { JSDOM } from 'jsdom';
+const jsdom = require('jsdom');
+const { JSDOM } = jsdom;
 
 const dom = new JSDOM('<!DOCTYPE html><body></body></html>');
 global.window = dom.window;
 global.document = window.document;
 
-export default dom;
+module.exports = dom;

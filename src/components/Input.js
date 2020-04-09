@@ -1,4 +1,4 @@
-import Element from '../lib/Element';
+const Element = require('../lib/Element');
 
 class Input extends Element {
     constructor(
@@ -45,4 +45,4 @@ class Input extends Element {
     }
 }
 
-export default Input;
+module.exports = Input;
