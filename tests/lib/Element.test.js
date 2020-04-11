@@ -1,5 +1,5 @@
 const o = require('ospec');
-const dom = require('../dom');
+const { dom, evt } = require('../dom');
 const Element = require('../../src/lib/Element');
 
 o.spec('Element Object', () => {
@@ -19,12 +19,7 @@ o.spec('Element Object', () => {
     o('Element addEventListener', () => {
         let val = 0;
         li.addEventListener('click', () => val = 1);
-
-        // Create event
-        let ev = document.createEvent('HTMLEvents');
-        ev.initEvent('click', false, true);
-        li.el.dispatchEvent(ev);
-
+        evt('click', li.el);
         o(val).equals(1);
     });
 

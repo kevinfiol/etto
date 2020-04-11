@@ -7,7 +7,7 @@ class Dropdown extends Element {
         this.applyClassList(['etto-dropdown']);
         this.applyAttributes({
             style: `${isSelectMode ? 'max-height: 300px; ' : ''}` +
-            `${isSelectMode ? 'oveflow-x: hidden; overflow-y: auto; ' : 'overflow: hidden; '}` +
+            `${isSelectMode ? 'overflow: hidden auto; ' : 'overflow: hidden; '}` +
             'position: absolute; ' +
             'width: 100%; ' +
             'background-color: white; ' +

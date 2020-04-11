@@ -28,6 +28,8 @@ Element.prototype.setDisplay = function setDisplay (display) {
     this.el.style.display = display;
 };
 
+var Element_1 = Element;
+
 var Input = /*@__PURE__*/(function (Element) {
     function Input(
         el,
@@ -81,7 +83,9 @@ var Input = /*@__PURE__*/(function (Element) {
     Object.defineProperties( Input.prototype, prototypeAccessors );
 
     return Input;
-}(Element));
+}(Element_1));
+
+var Input_1 = Input;
 
 var Dropdown = /*@__PURE__*/(function (Element) {
     function Dropdown(el, isSelectMode) {
@@ -90,7 +94,7 @@ var Dropdown = /*@__PURE__*/(function (Element) {
         this.applyClassList(['etto-dropdown']);
         this.applyAttributes({
             style: "" + (isSelectMode ? 'max-height: 300px; ' : '') +
-            "" + (isSelectMode ? 'oveflow-x: hidden; overflow-y: auto; ' : 'overflow: hidden; ') +
+            "" + (isSelectMode ? 'overflow: hidden auto; ' : 'overflow: hidden; ') +
             'position: absolute; ' +
             'width: 100%; ' +
             'background-color: white; ' +
@@ -118,7 +122,9 @@ var Dropdown = /*@__PURE__*/(function (Element) {
     };
 
     return Dropdown;
-}(Element));
+}(Element_1));
+
+var Dropdown_1 = Dropdown;
 
 var Spinner = /*@__PURE__*/(function (Element) {
     function Spinner(
@@ -193,7 +199,9 @@ var Spinner = /*@__PURE__*/(function (Element) {
     };
 
     return Spinner;
-}(Element));
+}(Element_1));
+
+var Spinner_1 = Spinner;
 
 var ClearBtn = /*@__PURE__*/(function (Element) {
     function ClearBtn(
@@ -237,7 +245,9 @@ var ClearBtn = /*@__PURE__*/(function (Element) {
     };
 
     return ClearBtn;
-}(Element));
+}(Element_1));
+
+var ClearBtn_1 = ClearBtn;
 
 function removeHtml(s) {
     return s.replace(/&/g, '').replace(/</g, '').replace(/>/g, '');
@@ -286,6 +296,10 @@ function choiceMap(choice) {
     });
 }
 
+var util = { removeHtml: removeHtml, createEmText: createEmText, filterChoices: filterChoices, choiceMap: choiceMap };
+
+var createEmText$1 = util.createEmText;
+
 var UnorderedList = /*@__PURE__*/(function (Element) {
     function UnorderedList(el, createItemMousedownEvt, createItemFn) {
         Element.call(this, el);
@@ -315,7 +329,7 @@ var UnorderedList = /*@__PURE__*/(function (Element) {
                 " data-label=\"" + (choice.label) + "\"" +
                 " data-value=\"" + (choice.value) + "\"" +
             '>' +
-                createEmText(choice.label, inputVal) +
+                createEmText$1(choice.label, inputVal) +
             '</li>'
         ;
     };
@@ -347,7 +361,9 @@ var UnorderedList = /*@__PURE__*/(function (Element) {
     };
 
     return UnorderedList;
-}(Element));
+}(Element_1));
+
+var UnorderedList_1 = UnorderedList;
 
 var Actions = function Actions(state) {
     this.state = state;
@@ -398,6 +414,11 @@ Actions.prototype.clearFetchTimer = function clearFetchTimer () {
     clearTimeout(this.state.fetchTimer);
 };
 
+var Actions_1 = Actions;
+
+var filterChoices$1 = util.filterChoices;
+var choiceMap$1 = util.choiceMap;
+
 var MIN_CHARS = 3;
 var MAX_RESULTS = 7;
 var REQUEST_DELAY = 350;
@@ -419,13 +440,13 @@ var EttoService = function EttoService(root, config, choices) {
 
     // Custom Functions
     this.createItemFn  = config.createItemFn || undefined;
-    this.filterFn  = config.filterFn || filterChoices;
+    this.filterFn  = config.filterFn || filterChoices$1;
     this.onSelect  = config.onSelect || undefined;
 
     /**
     * State Management
     **/
-    var initialChoices = choices ? choices.map(choiceMap) : [];
+    var initialChoices = choices ? choices.map(choiceMap$1) : [];
 
     this.state = {
         isFetching: false,
@@ -439,12 +460,12 @@ var EttoService = function EttoService(root, config, choices) {
         fetchTimer: null
     };
 
-    this.actions = new Actions(this.state);
+    this.actions = new Actions_1(this.state);
 
     /**
     * Elements
     **/
-    this.Input = new Input(document.createElement('input'),
+    this.Input = new Input_1(document.createElement('input'),
         this.onInput.bind(this),
         this.onFocus.bind(this),
         this.onBlur.bind(this),
@@ -452,12 +473,12 @@ var EttoService = function EttoService(root, config, choices) {
         this.selectMode
     );
 
-    this.UnorderedList = new UnorderedList(document.createElement('ul'),
+    this.UnorderedList = new UnorderedList_1(document.createElement('ul'),
         this.createItemMousedownEvt.bind(this),
         this.createItemFn
     );
 
-    this.Dropdown = new Dropdown(document.createElement('div'), this.selectMode);
+    this.Dropdown = new Dropdown_1(document.createElement('div'), this.selectMode);
     this.Dropdown.appendChild(this.UnorderedList.el);
 
     // Containers
@@ -478,7 +499,7 @@ var EttoService = function EttoService(root, config, choices) {
     // Append Spinner
     var spinnerTopPosition = ((this.Input.offsetHeight / 2) - (SPINNER_DOT_SIZE / 2));
 
-    this.Spinner = new Spinner(document.createElement('div'),
+    this.Spinner = new Spinner_1(document.createElement('div'),
         SPINNER_DOT_SIZE,
         spinnerTopPosition
     );
@@ -488,7 +509,7 @@ var EttoService = function EttoService(root, config, choices) {
     // Append Clear Btn
     var clearBtnTopPosition = ((this.Input.offsetHeight / 2) - (CLEAR_BTN_HEIGHT / 2));
 
-    this.ClearBtn = new ClearBtn(document.createElement('div'),
+    this.ClearBtn = new ClearBtn_1(document.createElement('div'),
         CLEAR_BTN_HEIGHT,
         clearBtnTopPosition,
         this.clear.bind(this)
@@ -549,7 +570,7 @@ EttoService.prototype.fetchFromSource = function fetchFromSource (inputVal) {
                 this$1.source(inputVal, function (res) {
                         var obj;
 
-                    var choices = res ? res.map(choiceMap) : [];
+                    var choices = res ? res.map(choiceMap$1) : [];
 
                     this$1.actions.setCache(Object.assign({}, this$1.state.cache, ( obj = {}, obj[key] = choices, obj )));
                     this$1.actions.setIsFetching(false);
@@ -625,6 +646,8 @@ EttoService.prototype.onKeydown = function onKeydown (e) {
     }
 };
 
+var EttoService_1 = EttoService;
+
 var InputService = /*@__PURE__*/(function (EttoService) {
     function InputService(root, config, choices) {
         EttoService.call(this, root, config, choices);
@@ -699,7 +722,9 @@ var InputService = /*@__PURE__*/(function (EttoService) {
     };
 
     return InputService;
-}(EttoService));
+}(EttoService_1));
+
+var InputService_1 = InputService;
 
 var SelectService = /*@__PURE__*/(function (EttoService) {
     function SelectService(root, config, choices) {
@@ -784,13 +809,15 @@ var SelectService = /*@__PURE__*/(function (EttoService) {
     };
 
     return SelectService;
-}(EttoService));
+}(EttoService_1));
+
+var SelectService_1 = SelectService;
 
 var Etto = function Etto(root, config, choices) {
     if (config.selectMode)
-        { this.service = new SelectService(root, config, choices); }
+        { this.service = new SelectService_1(root, config, choices); }
     else
-        { this.service = new InputService(root, config, choices); }
+        { this.service = new InputService_1(root, config, choices); }
 };
 
 
