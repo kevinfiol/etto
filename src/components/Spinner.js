@@ -51,9 +51,6 @@ class Spinner extends Element {
             this.dots.push(dot);
             this.el.appendChild(dot);
         }
-
-        // Animate one step
-        this.animateDots();
     }
 
     animateDots() {

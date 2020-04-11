@@ -1,39 +1,42 @@
 const o = require('ospec');
 const { dom } = require('../dom');
-const Input = require('../../src/components/Input');
+const Spinner = require('../../src/components/Spinner');
 
-o.spec('Input Component', () => {
-    let input;
-
-    focusVal = 0;
-    blurVal = 0;
+o.spec('Spinner Component', () => {
+    let spinner;
+    let domEl;
 
     o.before(() => {
-        input = new Input(document.createElement('input'),
-            undefined,
-            () => focusVal = 1,
-            () => blurVal = 1,
-            undefined
-        );
+        spinner = new Spinner(document.createElement('div'), 6, 10);
     });
 
-    o('Input setValue', () => {
-        input.setValue('bar');
-        o(input.el.value).equals('bar');
+    o('Spinner init', () => {
+        o(spinner.el.style.display).equals('none');
     });
 
-    o('Input setPlaceholder', () => {
-        input.setPlaceholder('temp');
-        o(input.el.placeholder).equals('temp');
+    o('Spinner initial createDots call', () => {
+        o(spinner.el.children.length).equals(3);
+
+        let litDot = spinner.el.children[0];
+        o(litDot.style.opacity).equals(spinner.hiOpacity);
     });
 
-    o('Input focus', () => {
-        input.focus();
-        o(focusVal).equals(1);
+    o('Spinner show & hide', () => {
+        spinner.show();
+        o(spinner.el.style.display).equals('flex');
+
+        spinner.hide();
+        o(spinner.el.style.display).equals('none');
     });
 
-    o('Input blur', () => {
-        input.blur();
-        o(blurVal).equals(1);
+    o('Spinner animateDots', () => {
+        spinner.animateDots();
+
+        let litDot = spinner.el.children[1];
+        o(litDot.style.opacity).equals(spinner.hiOpacity);
+
+        // check other dots
+        o(spinner.el.children[0].style.opacity).equals(spinner.loOpacity);
+        o(spinner.el.children[2].style.opacity).equals(spinner.loOpacity);
     });
 });
