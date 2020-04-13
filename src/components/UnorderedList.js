@@ -46,7 +46,7 @@ class UnorderedList extends Element {
 
             this.setInnerHtml(html);
 
-            // Iterate on newly creates list items
+            // Iterate on newly created list items
             for (let i = 0; i < listLen; i++) {
                 const li = this.el.children[i];
                 li.addEventListener('mousedown', this.createItemMousedownEvt(list[i]));
