@@ -16,6 +16,13 @@ const CLEAR_BTN_HEIGHT = 22;
 class EttoService {
     constructor(root, config, choices) {
         /**
+        * Abstract Class Checks
+        */
+        if (new.target === EttoService) {
+            throw new TypeError('Cannot construct abstract instances directly');
+        }
+
+        /**
         * Configuration
         **/
         this.selectMode    = config.selectMode    || false;
@@ -53,6 +60,7 @@ class EttoService {
         /**
         * Elements
         **/
+        console.log(this);
         this.Input = new Input(document.createElement('input'),
             this.onInput.bind(this),
             this.onFocus.bind(this),
