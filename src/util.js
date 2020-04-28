@@ -1,8 +1,8 @@
-function removeHtml(s) {
+export function removeHtml(s) {
     return s.replace(/&/g, '').replace(/</g, '').replace(/>/g, '');
 }
 
-function createEmText(choiceLabel, inputVal) {
+export function createEmText(choiceLabel, inputVal) {
     const label = removeHtml(choiceLabel);
     const len = inputVal.length;
     const emIndex = choiceLabel.toUpperCase().indexOf(inputVal.toUpperCase());
@@ -17,7 +17,7 @@ function createEmText(choiceLabel, inputVal) {
     return `${ beg }<b>${ mid }</b>${ end }`;
 }
 
-function filterChoices(inputVal, choices, matchFullWord, maxResults) {
+export function filterChoices(inputVal, choices, matchFullWord, maxResults) {
     const v = inputVal.toUpperCase();
 
     let filtered = choices.filter(c => {
@@ -38,11 +38,9 @@ function filterChoices(inputVal, choices, matchFullWord, maxResults) {
     return filtered;
 }
 
-function choiceMap(choice) {
+export function choiceMap(choice) {
     return Object.assign({}, choice, {
         label: choice.label,
         value: choice.value || choice.label
     });
 }
-
-module.exports = { removeHtml, createEmText, filterChoices, choiceMap };
