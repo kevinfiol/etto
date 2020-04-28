@@ -1,5 +1,6 @@
 const InputService = require('./InputService');
 const SelectService = require('./SelectService');
+const { list_1, list_2 } = require('../example_choices');
 
 class Etto {
     constructor(root, config, choices) {
@@ -46,41 +47,7 @@ const source = function(query, done) {
     xhr.send();
 };
 
-const etto_list = [
-    { label: 'Alabama' },
-    { label: 'Alaska' },
-    { label: 'Michigan' },
-    { label: 'Minnesota' },
-    { label: 'Wyoming' },
-    { label: 'Doug' },
-    { label: 'Omigod Records' },
-    { label: 'Ganon' },
-    { label: 'Little Bambam' },
-    { label: 'Ness from Earthbound' },
-    { label: 'Ghoul' },
-    { label: 'Banana' },
-    { label: 'Bananza' },
-    { label: 'Marty' },
-    { label: 'BOAT' },
-    { label: 'Turtle' },
-    { label: 'Tortoise' },
-    { label: 'TNT' },
-    { label: 'Toister Oven' },
-    { label: 'Urtle the Old Lady' },
-    { label: 'Grand Canyon' },
-    { label: 'Bird' },
-    { label: 'Florida' },
-    { label: 'Cindy' },
-    { label: 'Ettore' }
-];
-
-const etto_list_2 = [
-    { label: 'bananas', value: 'cherries' },
-    { label: 'kevin fiol', value: 'the coolest guy ever'},
-    { label: 'nah', age: 25 }
-];
-
-new Etto(document.getElementById('demo-1'), {}, etto_list);
+new Etto(document.getElementById('demo-1'), {}, list_1);
 new Etto(document.getElementById('demo-2'), { source });
 
 
@@ -92,14 +59,14 @@ new Etto(document.getElementById('demo-3'), {
     //         { label: 'apple', value: 'apple' }
     //     ];
     // }
-}, etto_list);
+}, list_1);
 
 new Etto(document.getElementById('demo-4'), {
     selectMode: true,
     source
 });
 
-new Etto(document.getElementById('demo-5'), { selectMode: true }, etto_list_2);
+new Etto(document.getElementById('demo-5'), { selectMode: true }, list_2);
 
 
 

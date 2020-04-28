@@ -2,45 +2,24 @@
 // const { dom } = require('./dom');
 // const EttoService = require('../src/EttoService');
 
-// o.spec('InputService service', () => {
-//     let service;
-//     let root;
-//     let choices;
+import o from 'ospec/ospec';
+import { dom } from './dom.js';
+import InputService from '../src/InputService.js';
+import { list_1 } from '../example_choices.js';
 
-//     o.before(() => {
-//         choices = [
-//             { label: 'Alabama' },
-//             { label: 'Alaska' },
-//             { label: 'Michigan' },
-//             { label: 'Minnesota' },
-//             { label: 'Wyoming' },
-//             { label: 'Doug' },
-//             { label: 'Omigod Records' },
-//             { label: 'Ganon' },
-//             { label: 'Little Bambam' },
-//             { label: 'Ness from Earthbound' },
-//             { label: 'Ghoul' },
-//             { label: 'Banana' },
-//             { label: 'Bananza' },
-//             { label: 'Marty' },
-//             { label: 'BOAT' },
-//             { label: 'Turtle' },
-//             { label: 'Tortoise' },
-//             { label: 'TNT' },
-//             { label: 'Toister Oven' },
-//             { label: 'Urtle the Old Lady' },
-//             { label: 'Grand Canyon' },
-//             { label: 'Bird' },
-//             { label: 'Florida' },
-//             { label: 'Cindy' },
-//             { label: 'Ettore' }
-//         ];
-//     });
+o.spec('InputService service', () => {
+    let service;
+    let root;
+    let choices;
 
-//     o('EttoService constructor', () => {
-//         root = document.createElement('div');
-//         service = new EttoService(root, {}, choices);
+    o.before(() => {
+        choices = [ ...list_1 ];
+    });
 
-//         o(service.Input.el.tagName).equals('INPUT');
-//     })
-// });
+    o('InputService constructor', () => {
+        root = document.createElement('div');
+        service = new InputService(root, {}, choices);
+
+        o(1).equals(1);
+    })
+});
