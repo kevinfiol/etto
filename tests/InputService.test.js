@@ -4,8 +4,8 @@
 
 import o from 'ospec/ospec';
 import { dom } from './dom.js';
-import InputService from '../src/InputService.js';
-import { list_1 } from '../example_choices.js';
+import InputService from '../src/InputService';
+import { list_1 } from '../example_choices';
 
 o.spec('InputService service', () => {
     let service;

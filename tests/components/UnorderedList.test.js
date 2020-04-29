@@ -1,6 +1,6 @@
-const o = require('ospec');
-const { dom } = require('../dom');
-const UnorderedList = require('../../src/components/UnorderedList');
+import o from 'ospec/ospec';
+import { dom } from '../dom';
+import UnorderedList from '../../src/components/UnorderedList';
 
 o.spec('UnorderedList Component', () => {
     let ul;

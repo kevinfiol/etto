@@ -1,6 +1,6 @@
-const o = require('ospec');
-const { dom } = require('../dom');
-const Input = require('../../src/components/Input');
+import o from 'ospec/ospec';
+import { dom } from '../dom';
+import Input from '../../src/components/Input';
 
 o.spec('Input Component', () => {
     let input;

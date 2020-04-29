@@ -1,6 +1,6 @@
-const o = require('ospec');
-const { dom } = require('./dom');
-const EttoService = require('../src/EttoService');
+import o from 'ospec/ospec';
+import { dom } from './dom';
+import EttoService from '../src/EttoService';
 
 o.spec('EttoService service', () => {
     let rootEl;

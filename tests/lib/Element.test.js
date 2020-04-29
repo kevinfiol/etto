@@ -1,6 +1,6 @@
-const o = require('ospec');
-const { dom, evt } = require('../dom');
-const Element = require('../../src/lib/Element');
+import o from 'ospec/ospec';
+import { dom, evt } from '../dom';
+import Element from '../../src/lib/Element';
 
 o.spec('Element Object', () => {
     let li;
