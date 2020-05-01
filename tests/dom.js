@@ -10,4 +10,4 @@ function evt(action, el) {
     el.dispatchEvent(ev);
 };
 
-export { dom, evt }; 
+export { dom, evt };
