@@ -28,4 +28,4 @@ class Element {
     }
 }
 
-export default Element;
+module.exports = Element;

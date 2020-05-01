@@ -1,10 +1,10 @@
-import Input from './components/Input';
-import Dropdown from './components/Dropdown';
-import Spinner from './components/Spinner';
-import ClearBtn from './components/ClearBtn';
-import UnorderedList from './components/UnorderedList';
-import Actions from './Actions';
-import { filterChoices, choiceMap } from './util';
+const Input = require('./components/Input');
+const Dropdown = require('./components/Dropdown');
+const Spinner = require('./components/Spinner');
+const ClearBtn = require('./components/ClearBtn');
+const UnorderedList = require('./components/UnorderedList');
+const Actions = require('./Actions');
+const { filterChoices, choiceMap } = require('./util');
 
 const MIN_CHARS = 3;
 const MAX_RESULTS = 7;
@@ -239,4 +239,4 @@ class EttoService {
     }
 }
 
-export default EttoService;
+module.exports = EttoService;

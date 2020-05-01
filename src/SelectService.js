@@ -1,4 +1,4 @@
-import EttoService from './EttoService';
+const EttoService = require('./EttoService');
 
 class SelectService extends EttoService {
     constructor(root, config, choices) {
@@ -75,4 +75,4 @@ class SelectService extends EttoService {
     }
 }
 
-export default SelectService;
+module.exports = SelectService;

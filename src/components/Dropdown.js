@@ -1,4 +1,4 @@
-import Element from '../lib/Element';
+const Element = require('../lib/Element');
 
 class Dropdown extends Element {
     constructor(el, isSelectMode) {
@@ -31,4 +31,4 @@ class Dropdown extends Element {
     }
 }
 
-export default Dropdown;
+module.exports = Dropdown;

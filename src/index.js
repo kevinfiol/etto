@@ -1,6 +1,6 @@
-import InputService from './InputService';
-import SelectService from './SelectService';
-import { list_1, list_2 } from '../example_choices'; 
+const InputService = require('./InputService');
+const SelectService = require('./SelectService');
+const { list_1, list_2 } = require('../example_choices');
 
 class Etto {
     constructor(root, config, choices) {

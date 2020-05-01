@@ -1,4 +1,5 @@
-import { JSDOM } from 'jsdom';
+const jsdom = require('jsdom');
+const { JSDOM } = jsdom;
 
 const dom = new JSDOM('<!DOCTYPE html><body></body></html>');
 global.window = dom.window;
@@ -10,4 +11,4 @@ function evt(action, el) {
     el.dispatchEvent(ev);
 };
 
-export { dom, evt };
+module.exports = { dom, evt };
