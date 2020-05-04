@@ -60,7 +60,6 @@ class EttoService {
         /**
         * Elements
         **/
-        console.log(this);
         this.Input = new Input(document.createElement('input'),
             this.onInput.bind(this),
             this.onFocus.bind(this),
@@ -202,7 +201,7 @@ class EttoService {
         if ((e.keyCode == 38 || e.keyCode == 40) && isDropdownVisible) {
             e.preventDefault();
 
-            // Decrement (Go Up)
+            // Decrement (Up Key)
             if (e.keyCode == 38) {
                 if (this.state.highlighted === null)
                     this.actions.setHighlighted(0);
@@ -210,7 +209,7 @@ class EttoService {
                     this.actions.setHighlighted(this.state.highlighted - 1);
             }
 
-            // Increment (Go Down)
+            // Increment (Down Key)
             if (e.keyCode == 40) {
                 if (this.state.highlighted === null)
                     this.actions.setHighlighted(0);

@@ -1,11 +1,7 @@
-// const o = require('ospec');
-// const { dom } = require('./dom');
-// const EttoService = require('../src/EttoService');
-
-import o from 'ospec/ospec';
-import { dom } from './dom.js';
-import InputService from '../src/InputService';
-import { list_1 } from '../example_choices';
+const o = require('ospec');
+const { dom, keydownEvt } = require('./dom.js');
+const InputService = require('../src/InputService');
+const { list_1 } = require('../example_choices');
 
 o.spec('InputService service', () => {
     let service;
@@ -19,7 +15,34 @@ o.spec('InputService service', () => {
     o('InputService constructor', () => {
         root = document.createElement('div');
         service = new InputService(root, {}, choices);
-
-        o(1).equals(1);
     })
+
+    o('InputService onInput', () => {
+        service.onInput({ target: { value: 'eart' } });
+
+        o(service.state.inputVal).equals('eart');
+        o(service.ClearBtn.el.style.display).notEquals('none');
+
+        // minChars is set to 3 by default
+        o(service.state.filtered).deepEquals([{ label: 'Ness from Earthbound', value: 'Ness from Earthbound' }]);
+        o(service.Dropdown.isVisible()).equals(true);
+
+        // no match
+        service.onInput({ target: { value: 'text that does not have a match' } });
+        o(service.state.filtered).deepEquals([]);
+        o(service.Dropdown.isVisible()).equals(true);
+    });
+
+    o('InputService onFocus', () => {
+        service.onFocus();
+        o(service.Dropdown.isVisible()).equals(false);
+    });
+
+    o('InputService Keyboard Input', () => {
+        // make dropdown visible first
+        service.setShowDropdown(true);
+
+        keydownEvt(40, service.Input.el);
+        o(service.state.highlighted).notEquals(null);
+    });
 });

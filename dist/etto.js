@@ -184,9 +184,6 @@
                 this.dots.push(dot);
                 this.el.appendChild(dot);
             }
-
-            // Animate one step
-            this.animateDots();
         };
 
         Spinner.prototype.animateDots = function animateDots () {
@@ -352,7 +349,7 @@
 
                 this.setInnerHtml(html);
 
-                // Iterate on newly creates list items
+                // Iterate on newly created list items
                 for (var i$1 = 0; i$1 < listLen; i$1++) {
                     var li = this.el.children[i$1];
                     li.addEventListener('mousedown', this.createItemMousedownEvt(list[i$1]));
@@ -377,7 +374,6 @@
     };
 
     Actions.prototype.setSelected = function setSelected (selected) {
-        console.log('current selected: ', selected);
         this.state.selected = selected;
     };
 
@@ -430,6 +426,13 @@
     var CLEAR_BTN_HEIGHT = 22;
 
     var EttoService = function EttoService(root, config, choices) {
+        /**
+        * Abstract Class Checks
+        */
+        if (new.target === EttoService) {
+            throw new TypeError('Cannot construct abstract instances directly');
+        }
+
         /**
         * Configuration
         **/
@@ -613,7 +616,7 @@
         if ((e.keyCode == 38 || e.keyCode == 40) && isDropdownVisible) {
             e.preventDefault();
 
-            // Decrement (Go Up)
+            // Decrement (Up Key)
             if (e.keyCode == 38) {
                 if (this.state.highlighted === null)
                     { this.actions.setHighlighted(0); }
@@ -621,7 +624,7 @@
                     { this.actions.setHighlighted(this.state.highlighted - 1); }
             }
 
-            // Increment (Go Down)
+            // Increment (Down Key)
             if (e.keyCode == 40) {
                 if (this.state.highlighted === null)
                     { this.actions.setHighlighted(0); }
@@ -816,6 +819,45 @@
 
     var SelectService_1 = SelectService;
 
+    var list_1 = [
+        { label: 'Alabama' },
+        { label: 'Alaska' },
+        { label: 'Michigan' },
+        { label: 'Minnesota' },
+        { label: 'Wyoming' },
+        { label: 'Doug' },
+        { label: 'Omigod Records' },
+        { label: 'Ganon' },
+        { label: 'Little Bambam' },
+        { label: 'Ness from Earthbound' },
+        { label: 'Ghoul' },
+        { label: 'Banana' },
+        { label: 'Bananza' },
+        { label: 'Marty' },
+        { label: 'BOAT' },
+        { label: 'Turtle' },
+        { label: 'Tortoise' },
+        { label: 'TNT' },
+        { label: 'Toister Oven' },
+        { label: 'Urtle the Old Lady' },
+        { label: 'Grand Canyon' },
+        { label: 'Bird' },
+        { label: 'Florida' },
+        { label: 'Cindy' },
+        { label: 'Ettore' }
+    ];
+
+    var list_2 = [
+        { label: 'bananas', value: 'cherries' },
+        { label: 'kevin fiol', value: 'the coolest guy ever'},
+        { label: 'nah', age: 25 }
+    ];
+
+    var example_choices = { list_1: list_1, list_2: list_2 };
+
+    var list_1$1 = example_choices.list_1;
+    var list_2$1 = example_choices.list_2;
+
     var Etto = function Etto(root, config, choices) {
         if (config.selectMode)
             { this.service = new SelectService_1(root, config, choices); }
@@ -859,41 +901,7 @@
         xhr.send();
     };
 
-    var etto_list = [
-        { label: 'Alabama' },
-        { label: 'Alaska' },
-        { label: 'Michigan' },
-        { label: 'Minnesota' },
-        { label: 'Wyoming' },
-        { label: 'Doug' },
-        { label: 'Omigod Records' },
-        { label: 'Ganon' },
-        { label: 'Little Bambam' },
-        { label: 'Ness from Earthbound' },
-        { label: 'Ghoul' },
-        { label: 'Banana' },
-        { label: 'Bananza' },
-        { label: 'Marty' },
-        { label: 'BOAT' },
-        { label: 'Turtle' },
-        { label: 'Tortoise' },
-        { label: 'TNT' },
-        { label: 'Toister Oven' },
-        { label: 'Urtle the Old Lady' },
-        { label: 'Grand Canyon' },
-        { label: 'Bird' },
-        { label: 'Florida' },
-        { label: 'Cindy' },
-        { label: 'Ettore' }
-    ];
-
-    var etto_list_2 = [
-        { label: 'bananas', value: 'cherries' },
-        { label: 'kevin fiol', value: 'the coolest guy ever'},
-        { label: 'nah', age: 25 }
-    ];
-
-    new Etto(document.getElementById('demo-1'), {}, etto_list);
+    new Etto(document.getElementById('demo-1'), {}, list_1$1);
     new Etto(document.getElementById('demo-2'), { source: source });
 
 
@@ -905,14 +913,14 @@
         //         { label: 'apple', value: 'apple' }
         //     ];
         // }
-    }, etto_list);
+    }, list_1$1);
 
     new Etto(document.getElementById('demo-4'), {
         selectMode: true,
         source: source
     });
 
-    new Etto(document.getElementById('demo-5'), { selectMode: true }, etto_list_2);
+    new Etto(document.getElementById('demo-5'), { selectMode: true }, list_2$1);
 
 
 

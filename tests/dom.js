@@ -11,4 +11,9 @@ function evt(action, el) {
     el.dispatchEvent(ev);
 };
 
-module.exports = { dom, evt };
+function keydownEvt(keyCode, el) {
+    const ev = new window.KeyboardEvent('keydown', { keyCode: keyCode });
+    el.dispatchEvent(ev);
+};
+
+module.exports = { dom, evt, keydownEvt };

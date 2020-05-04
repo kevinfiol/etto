@@ -8,7 +8,6 @@ class Actions {
     }
 
     setSelected(selected) {
-        console.log('current selected: ', selected);
         this.state.selected = selected;
     }
 

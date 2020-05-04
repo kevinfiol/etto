@@ -5,7 +5,6 @@
   "main": "index.js",
   "author": "kevinfiol",
   "license": "MIT",
-  "type": "module",
   "scripts": {
     "dev": "rollup -c -w --environment DEV",
     "build": "rollup -c --environment PROD",

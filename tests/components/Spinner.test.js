@@ -1,6 +1,6 @@
-import o from 'ospec/ospec';
-import { dom } from '../dom';
-import Spinner from '../../src/components/Spinner';
+const o = require('ospec');
+const { dom } = require('../dom');
+const Spinner = require('../../src/components/Spinner');
 
 o.spec('Spinner Component', () => {
     let spinner;

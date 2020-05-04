@@ -1,6 +1,6 @@
-import o from 'ospec/ospec';
-import { dom, evt } from '../dom';
-import ClearBtn from '../../src/components/ClearBtn';
+const o = require('ospec');
+const { dom, evt } = require('../dom');
+const ClearBtn = require('../../src/components/ClearBtn');
 
 o.spec('ClearBtn Component', () => {
     let clearBtn;

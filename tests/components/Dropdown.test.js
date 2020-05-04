@@ -1,6 +1,6 @@
-import o from 'ospec/ospec';
-import dom from '../dom';
-import Dropdown from '../../src/components/Dropdown';
+const o = require('ospec');
+const { dom } = require('../dom');
+const Dropdown = require('../../src/components/Dropdown');
 
 o.spec('Dropdown Component', () => {
     let dropdown;
