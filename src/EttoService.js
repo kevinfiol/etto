@@ -220,8 +220,11 @@ class EttoService {
             this.render(this.state.inputVal, this.state.filtered);
             this.setShowDropdown(this.state.filtered.length > 0);
 
-            const highlightedItem = document.getElementsByClassName('etto-highlighted')[0];
-            if (highlightedItem !== undefined) highlightedItem.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            const highlightedItem = this.UnorderedList.el.getElementsByClassName('etto-highlighted')[0];
+            if (highlightedItem !== undefined && highlightedItem !== null) {
+                try { highlightedItem.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+                catch (TypeError) { /** jsdom **/ }
+            }
         }
 
         // Enter or Tab

@@ -61,10 +61,12 @@ new Etto(document.getElementById('demo-3'), {
     // }
 }, list_1);
 
-new Etto(document.getElementById('demo-4'), {
-    selectMode: true,
-    source
-});
+new Etto(document.getElementById('demo-4'), { selectMode: true }, list_1);
+
+// new Etto(document.getElementById('demo-4'), {
+//     selectMode: true,
+//     source
+// });
 
 new Etto(document.getElementById('demo-5'), { selectMode: true }, list_2);
 

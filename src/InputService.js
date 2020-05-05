@@ -31,7 +31,7 @@ class InputService extends EttoService {
 
     onBlur() {
         // Reset Highlighted
-        if (this.state.highlighted) {
+        if (this.state.highlighted !== null) {
             this.actions.setHighlighted(null);
             this.render(this.state.inputVal, this.state.filtered);
         }

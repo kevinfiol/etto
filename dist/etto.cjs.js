@@ -632,8 +632,11 @@ EttoService.prototype.onKeydown = function onKeydown (e) {
         this.render(this.state.inputVal, this.state.filtered);
         this.setShowDropdown(this.state.filtered.length > 0);
 
-        var highlightedItem = document.getElementsByClassName('etto-highlighted')[0];
-        if (highlightedItem !== undefined) { highlightedItem.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+        var highlightedItem = this.UnorderedList.el.getElementsByClassName('etto-highlighted')[0];
+        if (highlightedItem !== undefined && highlightedItem !== null) {
+            try { highlightedItem.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+            catch (TypeError) { /** jsdom **/ }
+        }
     }
 
     // Enter or Tab
@@ -686,7 +689,7 @@ var InputService = /*@__PURE__*/(function (EttoService) {
 
     InputService.prototype.onBlur = function onBlur () {
         // Reset Highlighted
-        if (this.state.highlighted) {
+        if (this.state.highlighted !== null) {
             this.actions.setHighlighted(null);
             this.render(this.state.inputVal, this.state.filtered);
         }
@@ -912,10 +915,12 @@ new Etto(document.getElementById('demo-3'), {
     // }
 }, list_1$1);
 
-new Etto(document.getElementById('demo-4'), {
-    selectMode: true,
-    source: source
-});
+new Etto(document.getElementById('demo-4'), { selectMode: true }, list_1$1);
+
+// new Etto(document.getElementById('demo-4'), {
+//     selectMode: true,
+//     source
+// });
 
 new Etto(document.getElementById('demo-5'), { selectMode: true }, list_2$1);
 
