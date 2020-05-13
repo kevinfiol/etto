@@ -12,9 +12,9 @@ const isDev = process.env.DEV === 'true';
 const input = './src/index.js';
 
 const filenames = {
-    iife: isProd ? './dist/etto.min.js' : './dist/etto-dev.js',
-    cjs:  isProd ? './dist/etto.cjs.js' : './dist/etto-dev.cjs.js',
-    es:   isProd ? './dist/etto.es.js'    : './dist/etto-dev.es.js'
+    iife: isProd ? './dist/etto.min.js' : './dist/js/etto-dev.js',
+    cjs:  isProd ? './dist/etto.cjs' : './dist/js/etto-dev.cjs',
+    es:   isProd ? './dist/etto.mjs' : './dist/js/etto-dev.mjs'
 };
 
 const bubleConfig = {
@@ -49,6 +49,7 @@ const configs = [
         },
         plugins: [
             resolve(),
+            cjs(),
             buble(bubleConfig)
         ]
     },
@@ -62,6 +63,7 @@ const configs = [
         },
         plugins: [
             resolve(),
+            cjs(),
             buble(bubleConfig)
         ]
     }

@@ -1,6 +1,6 @@
-const EttoService = require('./EttoService');
+const AbstractEttoService = require('./AbstractEttoService');
 
-class InputService extends EttoService {
+class InputService extends AbstractEttoService {
     constructor(root, config, choices) {
         super(root, config, choices);
 

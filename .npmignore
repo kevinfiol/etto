@@ -1,3 +1,6 @@
+dist/js/
+dist/index.html
+dist/examples.js
 node_modules/
 src/
 tests/

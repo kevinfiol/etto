@@ -2,12 +2,15 @@ const Element = require('../lib/Element');
 const { createEmText } = require('../util');
 
 class UnorderedList extends Element {
-    constructor(el, createItemMousedownEvt, createItemFn) {
+    constructor(el, createItemMousedownEvt, createItemFn, customEmptyHtml) {
         super(el);
         this.createItemMousedownEvt = createItemMousedownEvt;
 
         // Use custom createItemFn or default to this.createListItem
         this.createItemFn = createItemFn || this.createListItem;
+
+        // Use custom emptyMsg
+        this.emptyHtml = customEmptyHtml || '<em>No results.</em>';
 
         this.applyClassList(['etto-ul']);
     }
@@ -52,7 +55,7 @@ class UnorderedList extends Element {
                 li.addEventListener('mousedown', this.createItemMousedownEvt(list[i]));
             }
         } else {
-            html += '<li class="etto-li etto-empty"><em>No results.</em></li>';
+            html += '<li class="etto-li etto-empty">' + this.emptyHtml + '</li>';
             this.setInnerHtml(html);
         }
     }

@@ -13,15 +13,8 @@ const SPINNER_DOT_SIZE = 6;
 const SPINNER_TIMER = 300;
 const CLEAR_BTN_HEIGHT = 22;
 
-class EttoService {
+class AbstractEttoService {
     constructor(root, config, choices) {
-        /**
-        * Abstract Class Checks
-        */
-        if (new.target === EttoService) {
-            throw new TypeError('Cannot construct abstract instances directly');
-        }
-
         /**
         * Configuration
         **/
@@ -33,10 +26,11 @@ class EttoService {
         this.matchFullWord = config.matchFullWord || false;
         this.showEmptyMsg  = (config.showEmptyMsg !== undefined ? config.showEmptyMsg : true);
 
-        // Custom Functions
-        this.createItemFn  = config.createItemFn || undefined;
-        this.filterFn      = config.filterFn     || filterChoices;
-        this.onSelect      = config.onSelect     || undefined;
+        // Custom Properties
+        this.emptyHtml    = config.emptyHtml    || undefined;
+        this.createItemFn = config.createItemFn || undefined;
+        this.filterFn     = config.filterFn     || filterChoices;
+        this.onSelect     = config.onSelect     || undefined;
 
         /**
         * State Management
@@ -69,7 +63,8 @@ class EttoService {
 
         this.UnorderedList = new UnorderedList(document.createElement('ul'),
             this.createItemMousedownEvt.bind(this),
-            this.createItemFn
+            this.createItemFn,
+            this.emptyHtml
         );
 
         this.Dropdown = new Dropdown(document.createElement('div'), this.selectMode);
@@ -229,4 +224,4 @@ class EttoService {
     }
 }
 
-module.exports = EttoService;
+module.exports = AbstractEttoService;

@@ -1,2 +1,4 @@
+dist/js/
+dist/etto-dev.*
 node_modules/
 *.map
