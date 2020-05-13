@@ -11,7 +11,7 @@
     "test": "ospec"
   },
   "devDependencies": {
-    "@rollup/plugin-buble": "^0.21.0",
+    "@rollup/plugin-buble": "^0.21.3",
     "@rollup/plugin-commonjs": "^11.0.1",
     "@rollup/plugin-node-resolve": "^7.0.0",
     "eslint": "^7.0.0",
