@@ -12,8 +12,13 @@ const isDev = process.env.DEV === 'true';
 const input = './src/index.js';
 
 const filenames = {
-    iife: isProd ? './dist/etto.min.js' : './dist/etto.js',
-    cjs: './dist/etto.cjs.js'
+    iife: isProd ? './dist/etto.min.js' : './dist/js/etto-dev.js',
+    cjs:  isProd ? './dist/etto.cjs' : './dist/js/etto-dev.cjs',
+    es:   isProd ? './dist/etto.mjs' : './dist/js/etto-dev.mjs'
+};
+
+const bubleConfig = {
+    objectAssign: 'Object.assign'
 };
 
 const configs = [
@@ -28,7 +33,7 @@ const configs = [
         plugins: [
             resolve(),
             cjs(),
-            buble({ objectAssign: 'Object.assign' }),
+            buble(bubleConfig),
             isProd && uglify(),
             isDev && serve({ contentBase: 'dist', port: 8090 }),
             isDev && livereload('dist')
@@ -45,7 +50,21 @@ const configs = [
         plugins: [
             resolve(),
             cjs(),
-            buble({ objectAssign: 'Object.assign' })
+            buble(bubleConfig)
+        ]
+    },
+    {
+        input,
+        output: {
+            name: 'Etto',
+            file: filenames.es,
+            format: 'es',
+            sourcemap: !isProd
+        },
+        plugins: [
+            resolve(),
+            cjs(),
+            buble(bubleConfig)
         ]
     }
 ];

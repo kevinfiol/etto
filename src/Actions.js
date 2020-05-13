@@ -1,6 +1,10 @@
-class EttoActions {
+class Actions {
     constructor(state) {
         this.state = state;
+    }
+
+    setHighlighted(highlighted) {
+        this.state.highlighted = highlighted;
     }
 
     setSelected(selected) {
@@ -9,10 +13,6 @@ class EttoActions {
 
     setCache(cache) {
         this.state.cache = cache;
-    }
-
-    setInputVal(inputVal) {
-        this.state.inputVal = inputVal;
     }
 
     setChoices(choices) {
@@ -44,4 +44,4 @@ class EttoActions {
     }
 }
 
-export default EttoActions;
+module.exports = Actions;
