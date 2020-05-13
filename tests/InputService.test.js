@@ -18,9 +18,11 @@ o.spec('InputService service', () => {
     })
 
     o('InputService onInput', () => {
-        service.onInput({ target: { value: 'eart' } });
+        // Must fill Input.value to simulate input
+        let value = 'eart';
+        service.Input.setValue(value);
+        service.onInput({ target: { value } });
 
-        o(service.state.inputVal).equals('eart');
         o(service.ClearBtn.el.style.display).notEquals('none');
 
         // minChars is set to 3 by default
@@ -28,7 +30,9 @@ o.spec('InputService service', () => {
         o(service.Dropdown.isVisible()).equals(true);
 
         // no match
-        service.onInput({ target: { value: 'text that does not have a match' } });
+        value = 'text that does not have a match';
+        service.Input.setValue(value);
+        service.onInput({ target: { value } });
         o(service.state.filtered).deepEquals([]);
         o(service.Dropdown.isVisible()).equals(true);
     });
@@ -53,7 +57,7 @@ o.spec('InputService service', () => {
         service.setShowDropdown(true);
         service.onSelection({ label: 'min', value: 'min' });
 
-        o(service.state.inputVal).equals('min');
+        o(service.Input.value).equals('min');
         o(service.state.filtered).deepEquals([
             { label: 'Minnesota', value: 'Minnesota' },
             { label: 'Wyoming', value: 'Wyoming' }
@@ -87,7 +91,7 @@ o.spec('InputService service', () => {
         // enter key
         enterKey();
         o(service.state.highlighted).equals(null);
-        o(service.state.inputVal).equals('Wyoming');
+        o(service.Input.value).equals('Wyoming');
 
         // need to refocus
         service.Input.focus();

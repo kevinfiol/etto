@@ -48,7 +48,6 @@ class EttoService {
             cache: config.initialCache || {},
             choices: initialChoices,
             filtered: [],
-            inputVal: '',
             selected: null,
             highlighted: null,
             spinnerTimer: null,
@@ -167,7 +166,7 @@ class EttoService {
 
     onReceiveChoices(choices) {
         const filtered = this.filterFn(
-            this.state.inputVal,
+            this.Input.value,
             choices,
             this.matchFullWord,
             this.maxResults
@@ -176,7 +175,7 @@ class EttoService {
         this.actions.setChoices(choices);
         this.actions.setFiltered(filtered);
 
-        this.render(this.state.inputVal, filtered);
+        this.render(this.Input.value, filtered);
 
         if (this.showEmptyMsg)
             this.setShowDropdown(true);
@@ -206,7 +205,7 @@ class EttoService {
                     this.actions.setHighlighted(this.state.highlighted + 1);
             }
 
-            this.render(this.state.inputVal, this.state.filtered);
+            this.render(this.Input.value, this.state.filtered);
             this.setShowDropdown(this.state.filtered.length > 0);
 
             const highlightedItem = this.UnorderedList.el.getElementsByClassName('etto-highlighted')[0];

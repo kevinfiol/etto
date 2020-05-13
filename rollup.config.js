@@ -12,13 +12,13 @@ const isDev = process.env.DEV === 'true';
 const input = './src/index.js';
 
 const filenames = {
-    iife: isProd ? './dist/etto.min.js' : './dist/etto.js',
-    cjs: './dist/etto.cjs.js'
+    iife: isProd ? './dist/etto.min.js' : './dist/etto-dev.js',
+    cjs:  isProd ? './dist/etto.cjs.js' : './dist/etto-dev.cjs.js',
+    es:   isProd ? './dist/etto.es.js'    : './dist/etto-dev.es.js'
 };
 
 const bubleConfig = {
-    objectAssign: 'Object.assign',
-    // transforms: { dangerousTaggedTemplateString: true }
+    objectAssign: 'Object.assign'
 };
 
 const configs = [
@@ -49,7 +49,19 @@ const configs = [
         },
         plugins: [
             resolve(),
-            cjs(),
+            buble(bubleConfig)
+        ]
+    },
+    {
+        input,
+        output: {
+            name: 'Etto',
+            file: filenames.es,
+            format: 'es',
+            sourcemap: !isProd
+        },
+        plugins: [
+            resolve(),
             buble(bubleConfig)
         ]
     }

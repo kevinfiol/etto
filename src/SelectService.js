@@ -8,22 +8,19 @@ class SelectService extends EttoService {
         this.actions.setFiltered(this.state.choices);
 
         // Initial Render
-        this.render(this.state.inputVal, this.state.filtered);
+        this.render(this.Input.value, this.state.filtered);
     }
 
     clear() {
-        this.actions.setInputVal('');
         this.actions.setSelected(null);
         this.Input.setPlaceholder('');
-
         this.Input.setValue('');
         this.ClearBtn.hide();
-        this.render(this.state.inputVal, this.state.filtered);
+        this.render(this.Input.value, this.state.filtered);
     }
 
     onInput(e) {
         const inputVal = e.target.value;
-        this.actions.setInputVal(inputVal);
 
         if (inputVal) this.ClearBtn.show();
         else this.ClearBtn.hide();
@@ -45,24 +42,21 @@ class SelectService extends EttoService {
 
     onBlur() {
         if (!this.state.selected) {
-            this.actions.setInputVal('');
             this.Input.setValue('');
             this.ClearBtn.hide();
         } else {
-            this.actions.setInputVal(this.state.selected.value);
             this.Input.setValue(this.state.selected.value);
             this.ClearBtn.show();
         }
 
         // Reset List
         this.actions.setFiltered(this.state.choices);
-        this.render(this.state.inputVal, this.state.filtered);
+        this.render(this.Input.value, this.state.filtered);
         this.setShowDropdown(false);
     }
 
     onSelection(choice) {
         setTimeout(() => {
-            this.actions.setInputVal(choice.value);
             this.Input.setValue(choice.value);
             this.Input.setPlaceholder(choice.value);
         });

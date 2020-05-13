@@ -5,22 +5,20 @@ class InputService extends EttoService {
         super(root, config, choices);
 
         // Initial Render
-        this.render(this.state.inputVal, this.state.filtered);
+        this.render(this.Input.value, this.state.filtered);
     }
 
     clear() {
-        this.actions.setInputVal('');
         this.actions.setSelected(null);
         this.actions.setFiltered([]);
 
         this.Input.setValue('');
         this.ClearBtn.hide();
-        this.render(this.state.inputVal, this.state.filtered);
+        this.render(this.Input.value, this.state.filtered);
     }
 
     onInput(e) {
         const inputVal = e.target.value;
-        this.actions.setInputVal(inputVal);
 
         if (inputVal) this.ClearBtn.show();
         else this.ClearBtn.hide();
@@ -43,7 +41,7 @@ class InputService extends EttoService {
         // Reset Highlighted
         if (this.state.highlighted !== null) {
             this.actions.setHighlighted(null);
-            this.render(this.state.inputVal, this.state.filtered);
+            this.render(this.Input.value, this.state.filtered);
         }
 
         this.setShowDropdown(false);
@@ -57,7 +55,6 @@ class InputService extends EttoService {
             this.maxResults
         );
 
-        this.actions.setInputVal(choice.value);
         this.Input.setValue(choice.value);
 
         this.actions.setFiltered(filtered);

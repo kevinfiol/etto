@@ -15,10 +15,6 @@ class Actions {
         this.state.cache = cache;
     }
 
-    setInputVal(inputVal) {
-        this.state.inputVal = inputVal;
-    }
-
     setChoices(choices) {
         this.state.choices = choices;
     }
