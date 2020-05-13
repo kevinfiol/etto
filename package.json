@@ -8,16 +8,14 @@
   "scripts": {
     "dev": "rollup -c -w --environment DEV",
     "build": "rollup -c --environment PROD",
-    "cypress:open": "cypress open",
     "test": "ospec"
   },
   "devDependencies": {
     "@rollup/plugin-buble": "^0.21.0",
     "@rollup/plugin-commonjs": "^11.0.1",
     "@rollup/plugin-node-resolve": "^7.0.0",
-    "cypress": "^4.3.0",
     "eslint": "^6.8.0",
-    "jsdom": "^16.0.1",
+    "jsdom": "15.1.1",
     "ospec": "^4.0.1",
     "rambda": "^4.5.0",
     "reify": "^0.20.12",

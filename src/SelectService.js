@@ -4,7 +4,20 @@ class SelectService extends EttoService {
     constructor(root, config, choices) {
         super(root, config, choices);
 
+        // SelectService filtered should be populated by default
+        this.actions.setFiltered(this.state.choices);
+
         // Initial Render
+        this.render(this.state.inputVal, this.state.filtered);
+    }
+
+    clear() {
+        this.actions.setInputVal('');
+        this.actions.setSelected(null);
+        this.Input.setPlaceholder('');
+
+        this.Input.setValue('');
+        this.ClearBtn.hide();
         this.render(this.state.inputVal, this.state.filtered);
     }
 

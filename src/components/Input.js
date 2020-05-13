@@ -15,7 +15,8 @@ class Input extends Element {
         this.applyAttributes({
             autocomplete: 'off',
             value: '',
-            style: `box-sizing: border-box; cursor: ${isSelectMode ? 'default' : 'text'};`
+            style: `box-sizing: border-box; cursor: ${isSelectMode ? 'default' : 'text'};`,
+            tabIndex: isSelectMode ? '-1' : '0'
         });
 
         this.addEventListener('input', onInput);
@@ -26,6 +27,10 @@ class Input extends Element {
 
     get offsetHeight() {
         return this.el.offsetHeight;
+    }
+
+    get value() {
+        return this.el.value;
     }
 
     setValue(value) {

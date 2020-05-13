@@ -8,6 +8,16 @@ class InputService extends EttoService {
         this.render(this.state.inputVal, this.state.filtered);
     }
 
+    clear() {
+        this.actions.setInputVal('');
+        this.actions.setSelected(null);
+        this.actions.setFiltered([]);
+
+        this.Input.setValue('');
+        this.ClearBtn.hide();
+        this.render(this.state.inputVal, this.state.filtered);
+    }
+
     onInput(e) {
         const inputVal = e.target.value;
         this.actions.setInputVal(inputVal);

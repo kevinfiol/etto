@@ -45,7 +45,8 @@ var Input = /*@__PURE__*/(function (Element) {
         this.applyAttributes({
             autocomplete: 'off',
             value: '',
-            style: ("box-sizing: border-box; cursor: " + (isSelectMode ? 'default' : 'text') + ";")
+            style: ("box-sizing: border-box; cursor: " + (isSelectMode ? 'default' : 'text') + ";"),
+            tabIndex: isSelectMode ? '-1' : '0'
         });
 
         this.addEventListener('input', onInput);
@@ -58,10 +59,14 @@ var Input = /*@__PURE__*/(function (Element) {
     Input.prototype = Object.create( Element && Element.prototype );
     Input.prototype.constructor = Input;
 
-    var prototypeAccessors = { offsetHeight: { configurable: true } };
+    var prototypeAccessors = { offsetHeight: { configurable: true },value: { configurable: true } };
 
     prototypeAccessors.offsetHeight.get = function () {
         return this.el.offsetHeight;
+    };
+
+    prototypeAccessors.value.get = function () {
+        return this.el.value;
     };
 
     Input.prototype.setValue = function setValue (value) {
@@ -455,7 +460,7 @@ var EttoService = function EttoService(root, config, choices) {
         isFetching: false,
         cache: config.initialCache || {},
         choices: initialChoices,
-        filtered: this.selectMode ? initialChoices : [],
+        filtered: [],
         inputVal: '',
         selected: null,
         highlighted: null,
@@ -528,17 +533,6 @@ EttoService.prototype.render = function render (inputVal, filtered) {
         this.state.highlighted,
         this.state.selected
     );
-};
-
-EttoService.prototype.clear = function clear () {
-    this.actions.setInputVal('');
-    this.actions.setSelected(null);
-    if (!this.selectMode) { this.actions.setFiltered([]); }
-    if (this.selectMode) { this.Input.setPlaceholder(''); }
-
-    this.Input.setValue('');
-    this.ClearBtn.hide();
-    this.render(this.state.inputVal, this.state.filtered);
 };
 
 EttoService.prototype.setShowDropdown = function setShowDropdown (showDropdown) {
@@ -666,6 +660,16 @@ var InputService = /*@__PURE__*/(function (EttoService) {
     InputService.prototype = Object.create( EttoService && EttoService.prototype );
     InputService.prototype.constructor = InputService;
 
+    InputService.prototype.clear = function clear () {
+        this.actions.setInputVal('');
+        this.actions.setSelected(null);
+        this.actions.setFiltered([]);
+
+        this.Input.setValue('');
+        this.ClearBtn.hide();
+        this.render(this.state.inputVal, this.state.filtered);
+    };
+
     InputService.prototype.onInput = function onInput (e) {
         var inputVal = e.target.value;
         this.actions.setInputVal(inputVal);
@@ -736,6 +740,9 @@ var SelectService = /*@__PURE__*/(function (EttoService) {
     function SelectService(root, config, choices) {
         EttoService.call(this, root, config, choices);
 
+        // SelectService filtered should be populated by default
+        this.actions.setFiltered(this.state.choices);
+
         // Initial Render
         this.render(this.state.inputVal, this.state.filtered);
     }
@@ -743,6 +750,16 @@ var SelectService = /*@__PURE__*/(function (EttoService) {
     if ( EttoService ) SelectService.__proto__ = EttoService;
     SelectService.prototype = Object.create( EttoService && EttoService.prototype );
     SelectService.prototype.constructor = SelectService;
+
+    SelectService.prototype.clear = function clear () {
+        this.actions.setInputVal('');
+        this.actions.setSelected(null);
+        this.Input.setPlaceholder('');
+
+        this.Input.setValue('');
+        this.ClearBtn.hide();
+        this.render(this.state.inputVal, this.state.filtered);
+    };
 
     SelectService.prototype.onInput = function onInput (e) {
         var inputVal = e.target.value;

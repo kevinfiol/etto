@@ -47,7 +47,7 @@ class EttoService {
             isFetching: false,
             cache: config.initialCache || {},
             choices: initialChoices,
-            filtered: this.selectMode ? initialChoices : [],
+            filtered: [],
             inputVal: '',
             selected: null,
             highlighted: null,
@@ -120,17 +120,6 @@ class EttoService {
             this.state.highlighted,
             this.state.selected
         );
-    }
-
-    clear() {
-        this.actions.setInputVal('');
-        this.actions.setSelected(null);
-        if (!this.selectMode) this.actions.setFiltered([]);
-        if (this.selectMode) this.Input.setPlaceholder('');
-
-        this.Input.setValue('');
-        this.ClearBtn.hide();
-        this.render(this.state.inputVal, this.state.filtered);
     }
 
     setShowDropdown(showDropdown) {

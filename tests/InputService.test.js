@@ -109,4 +109,16 @@ o.spec('InputService service', () => {
         service.onBlur();
         o(service.state.highlighted).equals(null);
     });
+
+    o('InputService createItemMousedownEvt', () => {
+        service.Input.blur();
+        service.Input.setValue('');
+
+        o(document.activeElement !== service.Input.el).equals(true);
+
+        let evt = service.createItemMousedownEvt({ label: 'Wyoming', value: 'Wyoming' });
+        evt();
+
+        o(document.activeElement == service.Input.el).equals(true);
+    });
 });
