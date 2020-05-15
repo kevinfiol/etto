@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://unpkg.com/basscss@8.0.2/css/basscss.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./dist/etto.css">
+    <style>
+        a { color: rgb(154, 154, 206); }
+        hr { border: 0; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #414141; }
+
+        body {
+            background-color: #131313;
+            color: #e1e1e1;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        code pre {
+            padding: 1em;
+            line-height: 1.5;
+            background-color: #202020;
+            color: #d6d6d6;
+        }
+    </style>
+    <title>etto</title>
+</head>
+<body>
+    <main class="max-width-3 mx-auto p2">
+        <header>
+            <h1>etto</h1>
+            <span>small javascript autocomplete and select component</span><br />
+        </header>
+
+        <p>full readme on <a href="https://github.com/kevinfiol/etto">github</a></p>
+
+        <hr>
+
+        <p><em>note:</em> etto is intended for use in <a href="https://firefox.com">modern</a> <a href="https://github.com/Eloston/ungoogled-chromium">browsers</a></p>
+
+        <h2>install</h2>
+        <code><pre>npm install etto</pre></code>
+        <p>or</p>
+        <code><pre>&lt;script src="https://unpkg.com/etto/dist/etto.min.js"></script></pre></code>
+
+        <p>and (optional) styles</p>
+        <code><pre>&lt;link rel="stylesheet" href="https://unpkg.com/etto/dist/etto.css"></pre></code>
+
+        <h2>examples</h2>
+
+        <div class="etto-examples">
+            <h3>input mode</h3>
+            <div id="demo-1"></div>
+            <code>
+                <pre>
+choices = [
+    { label: 'Alabama', value: 'Alabama' },
+    { label: 'Alaska', value: 'Alaska, USA' },
+    { label: 'Wyoming', value: 'WY' }
+];
+
+etto = new Etto(document.getElementById('demo-1'), {}, choices);</pre>
+            </code>
+
+            <h3>select mode</h3>
+            <div id="demo-2"></div>
+            <code>
+                <pre>
+choices = [
+    { label: 'Minnesota', value: 'Minnesota' },
+    { label: 'Wyoming', value: 'Wyoming' },
+    { label: 'New York', value: 'New York' }
+];
+
+etto = new Etto(document.getElementById('demo-2'), { selectMode: true }, choices);</pre>
+            </code>
+
+            <h3>ajax source (example using <a href="https://swapi.dev/">star wars api</a>)</h3>
+            <div id="demo-3"></div>
+            <p>try searching for "darth vader".</p>
+            <p>this example uses <code>fetch</code>, and <code>AbortController</code> to abort requests that don't need to be completed. Remember to abort requests you don't intend to complete. Read more <a href="https://javascript.info/fetch-abort">here</a>.</p>
+            <code>
+                <pre>
+let controller = null;
+
+etto = new Etto(document.getElementById('demo-3'), {
+    source: async (query, done) => {
+        if (controller) controller.abort();
+        controller = new AbortController();
+
+        try {
+            const choices = [];
+            const response = await fetch(`https://swapi.dev/api/people/?search=${query}`, {
+                signal: controller.signal
+            });
+
+            controller = null;
+            const json = await response.json();
+            json.results.forEach(person => {
+                choices.push({ label: person.name, value: person.name })
+            });
+
+            done(choices);
+        } catch(err) {
+            if (err.name !== 'AbortError') {
+                done([]);
+                throw err;
+            }
+        }
+    }
+});</pre>
+            </code>
+
+            <h2>using custom properties</h2>
+            <p>etto has a few customizable properties for you to use.</p>
+
+            <h3>emptyHtml</h3>
+            <div id="demo-4"></div>
+            <code><pre>etto = new Etto(document.getElementById('demo-4'), { emptyHtml: '&lt;b>Nothing here chief!&lt;/b>' }, choices);</pre></code>
+        
+            <h3>createItemFn</h3>
+            <p>use the <code>createItemFn</code> property to tell etto how to render items in the dropdown list. a couple of parameters are passed, which you can use to return an html string.</p>
+            <code><pre>createItemFn(choice: object, inputVal: string, isHighlighted: boolean, isSelected: boolean): string</pre></code>
+            <div id="demo-5"></div>
+            <code>
+                <pre>
+choices = [
+    { label: 'Minnesota', value: 'Minnesota' },
+    { label: 'Wyoming', value: 'Wyoming' },
+    { label: 'New York', value: 'New York' }
+];
+
+etto = new Etto(document.getElementById('demo-5'), {
+    createItemFn: (choice, inputVal, isHighlighted, isSelected) => {
+        return '&lt;li>' +
+            '&lt;img src="https://i.picsum.photos/id/537/25/25.jpg" />' +
+            `&lt;b>label: ${choice.label}, value: ${choice.value}&lt;/b>` +
+        '&lt;/li>';
+    }
+}, choices);</pre>
+            </code>
+
+            <h3>filterFn</h3>
+            <p>use the <code>filterFn</code> property to tell etto how to filter the choices list.</p>
+            <code><pre>filterFn(inputVal: string, choices: array, matchFullWord: boolean, maxResults: number): array</pre></code>
+            <p>This example uses a filter function that only matches against <code>choice.value</code>, and does not consider <code>choice.label</code></p>
+            <div id="demo-6"></div>
+            <code>
+                <pre>
+choices = [
+    { label: 'banana', value: 'yellow' },
+    { label: 'apple', value: 'red' },
+    { label: 'kiwi', value: 'green' }
+];
+
+etto = new Etto(document.getElementById('demo-6'), {
+    filterFn: (inputVal, choices, matchFullWord, maxResults) => {
+        const v = inputVal.toUpperCase();
+
+        return choices.filter(choice => {
+            return choice.value.toUpperCase().indexOf(v) > -1;
+        });
+    }
+}, choices);</pre>
+            </code>
+
+            <h3>onSelect</h3>
+            <p>pass a callback function as <code>onSelect</code> to tell etto to trigger something upon selecting a choice.</p>
+            <div id="demo-7"></div>
+            <div id="demo-7-box" style="font-size: 1.5em; padding: 1em; text-align: center;">None selected.</div>
+            <code>
+                <pre>
+choices = [
+    { label: 'The Legend of Zelda', value: 'The Legend of Zelda', year: 1986 },
+    { label: 'Yoshi\'s Island', value: 'Yoshi\'s Island', year: 1995 },
+    { label: 'Animal Crossing', value: 'Animal Crossing', year: 2002 }
+];
+
+etto = new Etto(document.getElementById('demo-7'), {
+    selectMode: true,
+    onSelect: choice => {
+        const box = document.getElementById('demo-7-box');
+        box.innerText = `Selected: ${choice.label} was released in ${choice.year}.`;
+    }
+}, choices);</pre>
+            </code>
+        </div>
+
+        <hr />
+
+        <footer>
+            <p>please report any issues, bugs, or questions to <a href="https://github.com/kevinfiol/etto">github</a>.</p>
+            <p><a href="https://kevinfiol.com">kevinfiol.com</a></p>
+        </footer>
+    </main>
+    <script src="./dist/etto.min.js"></script>
+    <script>
+        let etto;
+        let choices
+
+        /**
+         * Demo 1
+         **/
+        choices = [
+            { label: 'Alabama', value: 'Alabama' },
+            { label: 'Alaska', value: 'Alaska, USA' },
+            { label: 'Wyoming', value: 'WY' }
+        ];
+
+        etto = new Etto(document.getElementById('demo-1'), {}, choices);
+
+        /**
+         * Demo 2
+         **/
+        choices = [
+            { label: 'Minnesota', value: 'Minnesota' },
+            { label: 'Wyoming', value: 'Wyoming' },
+            { label: 'New York', value: 'New York' }
+        ];
+
+        etto = new Etto(document.getElementById('demo-2'), { selectMode: true }, choices);
+
+        /**
+         * Demo 3
+         **/
+        let controller = null;
+
+        etto = new Etto(document.getElementById('demo-3'), {
+            source: async (query, done) => {
+                if (controller) controller.abort();
+                controller = new AbortController();
+
+                try {
+                    const choices = [];
+                    const response = await fetch(`https://swapi.dev/api/people/?search=${query}`, {
+                        signal: controller.signal
+                    });
+
+                    controller = null;
+                    const json = await response.json();
+                    json.results.forEach(person => {
+                        choices.push({ label: person.name, value: person.name })
+                    });
+
+                    done(choices);
+                } catch(err) {
+                    if (err.name !== 'AbortError') {
+                        done([]);
+                        throw err;
+                    }
+                }
+            }
+        });
+
+        /**
+         * Demo 4
+         **/
+        etto = new Etto(document.getElementById('demo-4'), { emptyHtml: '<b>Nothing here chief!</b>' }, choices);
+    
+        /**
+         * Demo 5
+         **/
+        etto = new Etto(document.getElementById('demo-5'), {
+            createItemFn: (choice, inputVal, isHighlighted, isSelected) => {
+                return '<li>' +
+                    '<img src="https://i.picsum.photos/id/537/25/25.jpg" />' +
+                    `<b>label: ${choice.label}, value: ${choice.value}</b>` +
+                '</li>';
+            }
+        }, choices);
+
+        /**
+         * Demo 6
+         **/
+        choices = [
+            { label: 'banana', value: 'yellow' },
+            { label: 'apple', value: 'red' },
+            { label: 'kiwi', value: 'green' }
+        ];
+
+        etto = new Etto(document.getElementById('demo-6'), {
+            filterFn: (inputVal, choices, matchFullWord, maxResults) => {
+                const v = inputVal.toUpperCase();
+
+                return choices.filter(choice => {
+                    return choice.value.toUpperCase().indexOf(v) > -1;
+                });
+            }
+        }, choices);
+
+        /**
+         * Demo 7
+         **/
+        choices = [
+            { label: 'The Legend of Zelda', value: 'The Legend of Zelda', year: 1986 },
+            { label: 'Yoshi\'s Island', value: 'Yoshi\'s Island', year: 1995 },
+            { label: 'Animal Crossing', value: 'Animal Crossing', year: 2002 }
+        ];
+
+        etto = new Etto(document.getElementById('demo-7'), {
+            selectMode: true,
+            onSelect: choice => {
+                const box = document.getElementById('demo-7-box');
+                box.innerText = `Selected: ${choice.label} was released in ${choice.year}.`;
+            }
+        }, choices);
+    </script>
+</body>
+</html>

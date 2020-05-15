@@ -9,6 +9,22 @@ class Etto {
             this.service = new InputService(root, config, choices);
         }
     }
+
+    get value() {
+        return this.service.Input.value;
+    }
+
+    setValue(value) {
+        this.service.Input.setValue(value);
+    }
+
+    get selected() {
+        return this.service.state.selected;
+    }
+
+    clear() {
+        this.service.clear();
+    }
 }
 
 module.exports = Etto;

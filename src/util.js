@@ -41,7 +41,9 @@ function filterChoices(inputVal, choices, matchFullWord, maxResults) {
 function choiceMap(choice) {
     return Object.assign({}, choice, {
         label: choice.label,
-        value: choice.value || choice.label
+        value: (choice.value !== undefined && choice.value !== null) 
+            ? choice.value
+            : choice.label
     });
 }
 

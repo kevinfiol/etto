@@ -1,3 +1,5 @@
+'use strict';
+
 var Element = function Element(el) {
     this.el = el;
 };
@@ -292,7 +294,9 @@ function filterChoices(inputVal, choices, matchFullWord, maxResults) {
 function choiceMap(choice) {
     return Object.assign({}, choice, {
         label: choice.label,
-        value: choice.value || choice.label
+        value: (choice.value !== undefined && choice.value !== null) 
+            ? choice.value
+            : choice.label
     });
 }
 
@@ -826,6 +830,26 @@ var Etto = function Etto(root, config, choices) {
     }
 };
 
+var prototypeAccessors = { value: { configurable: true },selected: { configurable: true } };
+
+prototypeAccessors.value.get = function () {
+    return this.service.Input.value;
+};
+
+Etto.prototype.setValue = function setValue (value) {
+    this.service.Input.setValue(value);
+};
+
+prototypeAccessors.selected.get = function () {
+    return this.service.state.selected;
+};
+
+Etto.prototype.clear = function clear () {
+    this.service.clear();
+};
+
+Object.defineProperties( Etto.prototype, prototypeAccessors );
+
 var src = Etto;
 
-export default src;
+module.exports = src;

@@ -2,7 +2,9 @@
   "name": "etto",
   "version": "0.1.0",
   "description": "small, agnostic autocomplete & select component",
-  "main": "index.js",
+  "type": "module",
+  "main": "./dist/esm/etto.esm.js",
+  "module": "./dist/esm/etto.esm.js",
   "author": "kevinfiol",
   "license": "MIT",
   "scripts": {
