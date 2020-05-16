@@ -53,7 +53,7 @@ In addition, custom properties can be added to every choice object if you'd like
 const choices = [
     { label: 'Alabama', value: 'AL', country: 'USA' },
     { label: 'Alaska', value: 'AK', isCold: true },
-    { label: 'Wyoming', value: 'WY' population: 578759 },
+    { label: 'Wyoming', value: 'WY', population: 578759 },
     { label: 'Minnesota', value: 'MN', capital: 'Saint Paul' }
 ];
 
