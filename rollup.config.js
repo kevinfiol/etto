@@ -1,8 +1,7 @@
 import cjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
-import buble from '@rollup/plugin-buble';
 
-import { uglify } from 'rollup-plugin-uglify';
+import { terser } from 'rollup-plugin-terser';
 import serve from 'rollup-plugin-serve';
 import livereload from 'rollup-plugin-livereload';
 
@@ -17,10 +16,6 @@ const filenames = {
     es:   isProd ? './dist/esm/etto.esm.js' : './dist/dev/etto-dev.esm.js'
 };
 
-const bubleConfig = {
-    objectAssign: 'Object.assign'
-};
-
 const configs = [
     {
         input,
@@ -33,8 +28,7 @@ const configs = [
         plugins: [
             resolve(),
             cjs(),
-            buble(bubleConfig),
-            isProd && uglify(),
+            isProd && terser(),
             isDev && serve({ contentBase: 'dist', port: 8090 }),
             isDev && livereload('dist')
         ]
@@ -49,8 +43,7 @@ const configs = [
         },
         plugins: [
             resolve(),
-            cjs(),
-            buble(bubleConfig)
+            cjs()
         ]
     },
     {
@@ -63,8 +56,7 @@ const configs = [
         },
         plugins: [
             resolve(),
-            cjs(),
-            buble(bubleConfig)
+            cjs()
         ]
     }
 ];

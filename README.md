@@ -18,14 +18,12 @@ Etto is named after [a friend of mine](https://github.com/ettore34).
 npm install etto
 ```
 
-ESM
+Node
 ```js
 import Etto from 'etto';
 ```
-CommonJS
-```js
-import Etto from 'etto/dist/cjs';
-```
+A CommonJS export is available under `/dist/cjs/`.
+
 Browser
 ```html
 <script src="https://unpkg.com/etto/dist/etto.min.js"></script>
@@ -41,7 +39,7 @@ Styles
 
 ### Basic usage
 
-By default, etto only matches against the `choice.label` property of each choice, whilst the `choice.value` property is what your input element will be populated with. You can provide a custom `config.filterFn` for a custom filter mechanism (read more below & see live examples).
+By default, `choice.label` is what is shown for each item, whilst `choice.value` is what your input element will be populated with upon selection. In addition, etto by default matches against only `choice.label`. You can provide a custom `config.filterFn` for a custom filter mechanism (read more below & see live examples).
 
 In addition, custom properties can be added to every choice object if you'd like. You can configure etto to use functions such as `config.onSelect` and `config.createItemFn` to use these properties in different ways.
 
@@ -68,6 +66,31 @@ etto can imitate a dropdown selection by enabling the built-in select service.
 const etto = new Etto(document.getElementById('my-input'), { selectMode: true }, choices);
 ```
 
+### QOL methods & properties
+
+Use `etto.value` to get/set current input value.
+```js
+const oldValue = etto.value;
+console.log(currentValue); // 'old value'
+
+etto.value = 'new value';
+console.log(etto.value); // 'new value'
+```
+
+Use `etto.selected` to get current selected choice when using select mode.
+```js
+const currentChoice = etto.selected;
+console.log(currentChoice); // { label: 'Wyoming', value: 'WY', population: 578759 }
+```
+
+Use `etto.clear` to clear current input value (and etto.selected when in select mode).
+```js
+etto.clear();
+console.log(etto.selected); // null
+```
+
+Several more lower-level methods are available under `etto.service`. Proceed with caution.
+
 ### Configuration
 
 etto provides several options to configure its behavior. Below are default values:
@@ -90,11 +113,11 @@ const etto = new Etto(document.getElementById('my-input'), {
 
     // requestDelay: number
     // used in conjunction with config.source; delay before making each request in milliseconds
-    requestDelay: 350
+    requestDelay: 350,
 
     // matchFullWord: boolean
     // whether to match full words
-    matchFullWord: false
+    matchFullWord: false,
 
     // showEmptyMsg: boolean
     // whether to display empty message upon no match
@@ -106,7 +129,7 @@ const etto = new Etto(document.getElementById('my-input'), {
 
     // createItemFn(choice: object, inputVal: string, isHighlighted: boolean, isSelected: boolean): string
     // customize how each list item is rendered; see live examples page
-    createItemFn: undefined
+    createItemFn: undefined,
 
     // filterFn(inputVal: string, choices: array, matchFullWord: boolean, maxResults: number): array
     // customize how etto filters results; see live examples page

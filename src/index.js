@@ -14,7 +14,7 @@ class Etto {
         return this.service.Input.value;
     }
 
-    setValue(value) {
+    set value(value) {
         this.service.Input.setValue(value);
     }
 
