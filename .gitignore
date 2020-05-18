@@ -1,3 +1,4 @@
+.reify-cache/
 dist/dev/
 node_modules/
 *.map
