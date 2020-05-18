@@ -3,7 +3,7 @@ etto
 
 A small, customizable autocomplete and select component. Some highlights:
 
-* Lightweight (~4kb min+gzip)
+* Lightweight (~3.1kb min+gzip)
 * Written in ES6+
 * Zero dependencies
 * Framework agnostic
