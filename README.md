@@ -12,7 +12,7 @@ A small, customizable autocomplete and select component. Some highlights:
 
 This a replacement for my earlier component, [otto](https://github.com/kevinfiol/otto). I wanted to get rid of the Hyperapp dependency, but also simplify the codebase and features, hence the new name and project. Etto is also named after [a friend of mine (https://github.com/ettore34). I advise you use etto over otto.
 
-Etto may or may not be the tool you're looking for. See the [other tools section](#other-tools)
+Etto may or may not be the tool you're looking for. See the [other tools section](#other-tools).
 
 ## Install
 
