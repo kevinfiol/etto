@@ -3,16 +3,16 @@ etto
 
 A small, customizable autocomplete and select component. Some highlights:
 
-* Lightweight (~3.1kb min+gzip)
+* Lightweight (~3.7kb min+gzip)
 * Written in ES6+
 * Zero dependencies
 * Framework agnostic
 
-**Etto uses ES6+ features, and only supports modern browsers.** It is not intended to work with IE11.
+**Etto uses ES6+ features, and only supports modern browsers. It is not intended to work with IE11.**
 
-This a replacement for my earlier component, [otto](https://github.com/kevinfiol/otto). I wanted to get rid of the Hyperapp dependency, but also simplify the codebase and features. I advise you use etto over otto.
+This a replacement for my earlier component, [otto](https://github.com/kevinfiol/otto). I wanted to get rid of the Hyperapp dependency, but also simplify the codebase and features, hence the new name and project. Etto is also named after [a friend of mine (https://github.com/ettore34). I advise you use etto over otto.
 
-Etto is named after [a friend of mine](https://github.com/ettore34).
+Etto may or may not be the tool you're looking for. See the [other tools section](#other-tools)
 
 ## Install
 
@@ -68,7 +68,7 @@ etto can imitate a dropdown selection by enabling the built-in select service.
 const etto = new Etto(document.getElementById('my-input'), { selectMode: true }, choices);
 ```
 
-### QOL methods & properties
+### QoL methods & properties
 
 Use `etto.value` to get/set current input value.
 ```js
@@ -144,3 +144,12 @@ const etto = new Etto(document.getElementById('my-input'), {
     onSelect: undefined
 });
 ```
+
+## Other Tools
+
+Etto aims to be small in size and scope, while remaining very customizable. That being said, here are some other tools that I can recommend:
+
+* [Awesomeplete](https://github.com/LeaVerou/awesomplete) - A truly awesome autocomplete component that's even smaller than Etto (2kb). Zero dependencies.
+* [select2](https://github.com/select2/select2) - Tried & battle-tested. Has a jQuery dependency.
+* [Choices.js](https://github.com/jshjohnson/Choices) - A select2 alternative without the jQuery dependency. 19kb gzipped.
+* [react-select](https://github.com/JedWatson/react-select) - As the name implies, a select component with a hard React dependency.
