@@ -55,11 +55,14 @@ const choices = [
 const etto = new Etto(document.getElementById('my-input'), {}, choices);
 ```
 
-* `choice.label` is what is shown for each item in the dropdown. (Required)
-* `choice.value` is what your input element will be populated with upon selection. (Optional, defaults to value of `choice.label`)
-* `choice.country`, `choice.isCold`, `choice.population`, `choice.capital` are examples of custom properties. (Optional) Add/use whatever you'd like!
+* `choice.label` (Required)
+    * what is shown for each item in the dropdown.
+* `choice.value` (Optional, defaults to value of `choice.label`)
+    * what your input element will be populated with upon selection. 
+* `choice.country`, `choice.isCold`, `choice.population`, `choice.capital` (Optional)
+    * these are examples of custom properties. Add/use whatever you'd like!
 
-By default, Etto matches against `choice.label` only. You can provide a `config.filterFn` function for a custom filtering mechanism.  You can also configure etto to use functions such as `config.onSelect` and `config.createItemFn` to take advantage of your custom properties (read more below & see live examples).
+By default, Etto matches against `choice.label` only. You can provide a `config.filterFn` function for a custom filtering mechanism.  You can also configure etto to use functions such as `config.onSelect` and `config.createItemFn` which are great for taking advantage of your custom properties (read more below & see live examples).
 
 ### Select mode
 
