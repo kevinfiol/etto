@@ -59,14 +59,14 @@ const etto = new Etto(document.getElementById('my-input'), {}, choices);
     * what is shown for each item in the dropdown.
 * `choice.value` (Optional, defaults to value of `choice.label`)
     * what your input element will be populated with upon selection. 
-* `choice.country`, `choice.isCold`, `choice.population`, `choice.capital` (Optional)
+* `choice.country`, `choice.isCold`, `choice.population`, `choice.capital`
     * these are examples of custom properties. Add/use whatever you'd like!
 
 By default, Etto matches against `choice.label` only. You can provide a `config.filterFn` function for a custom filtering mechanism.  You can also configure etto to use functions such as `config.onSelect` and `config.createItemFn` which are great for taking advantage of your custom properties (read more below & see live examples).
 
 ### Select mode
 
-etto can imitate a dropdown selection by enabling the built-in select service.
+etto can imitate a dropdown selection by enabling the built-in select mode service.
 
 ```js
 const etto = new Etto(document.getElementById('my-input'), { selectMode: true }, choices);
@@ -77,7 +77,7 @@ const etto = new Etto(document.getElementById('my-input'), { selectMode: true },
 Use `etto.value` to get/set current input value.
 ```js
 const oldValue = etto.value;
-console.log(currentValue); // 'old value'
+console.log(oldValue); // 'old value'
 
 etto.value = 'new value';
 console.log(etto.value); // 'new value'
@@ -89,9 +89,10 @@ const currentChoice = etto.selected;
 console.log(currentChoice); // { label: 'Wyoming', value: 'WY', population: 578759 }
 ```
 
-Use `etto.clear` to clear current input value (and etto.selected when in select mode).
+Use `etto.clear` to clear current input value (and `etto.selected` when in select mode).
 ```js
 etto.clear();
+console.log(etto.value); // ''
 console.log(etto.selected); // null
 ```
 
