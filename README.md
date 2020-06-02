@@ -89,7 +89,9 @@ const currentChoice = etto.selected;
 console.log(currentChoice); // { label: 'Wyoming', value: 'WY', population: 578759 }
 ```
 
-Use `etto.clear` to clear current input value (and `etto.selected` when in select mode).
+*Warning:* The `etto.selected` getter returns a reference to `etto.service.state.selected`. Mutating this object can result in unexpected behavior, so be cautious!
+
+Use `etto.clear` to clear current input value (it also clears `etto.selected` when in select mode).
 ```js
 etto.clear();
 console.log(etto.value); // ''
