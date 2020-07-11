@@ -164,8 +164,8 @@ etto = new Etto(document.getElementById('demo-6'), {
 }, choices);</pre>
             </code>
 
-            <h3>onSelect</h3>
-            <p>pass a callback function as <code>onSelect</code> to tell etto to trigger something upon selecting a choice.</p>
+            <h3>onSelect & onClear</h3>
+            <p>pass a callback function as <code>onSelect</code> to tell etto to trigger something upon selecting a choice. similarly, use <code>onClear</code> to trigger an event upon programmatically clearing the input.</p>
             <div id="demo-7"></div>
             <div id="demo-7-box" style="font-size: 1.5em; padding: 1em; text-align: center;">None selected.</div>
             <code>
@@ -176,11 +176,15 @@ choices = [
     { label: 'Animal Crossing', value: 'Animal Crossing', year: 2002 }
 ];
 
+const box = document.getElementById('demo-7-box');
+
 etto = new Etto(document.getElementById('demo-7'), {
     selectMode: true,
     onSelect: choice => {
-        const box = document.getElementById('demo-7-box');
         box.innerText = `Selected: ${choice.label} was released in ${choice.year}.`;
+    },
+    onClear: () => {
+        box.innerText = 'None selected.';
     }
 }, choices);</pre>
             </code>
@@ -263,7 +267,7 @@ etto = new Etto(document.getElementById('demo-7'), {
         etto = new Etto(document.getElementById('demo-5'), {
             createItemFn: (choice, inputVal, isHighlighted, isSelected) => {
                 return '<li>' +
-                    '<img src="https://i.picsum.photos/id/537/25/25.jpg" />' +
+                    '<img src="https://kevinfiol.github.io/etto/img.png" />' +
                     `<b>label: ${choice.label}, value: ${choice.value}</b>` +
                 '</li>';
             }
@@ -297,11 +301,15 @@ etto = new Etto(document.getElementById('demo-7'), {
             { label: 'Animal Crossing', value: 'Animal Crossing', year: 2002 }
         ];
 
+        const box = document.getElementById('demo-7-box');
+
         etto = new Etto(document.getElementById('demo-7'), {
             selectMode: true,
             onSelect: choice => {
-                const box = document.getElementById('demo-7-box');
                 box.innerText = `Selected: ${choice.label} was released in ${choice.year}.`;
+            },
+            onClear: () => {
+                box.innerText = 'None selected.';
             }
         }, choices);
     </script>

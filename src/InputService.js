@@ -11,10 +11,11 @@ class InputService extends AbstractEttoService {
     clear() {
         this.actions.setSelected(null);
         this.actions.setFiltered([]);
-
         this.Input.setValue('');
         this.ClearBtn.hide();
         this.render(this.Input.value, this.state.filtered);
+
+        if (this.onClear) this.onClear();
     }
 
     onInput(e) {

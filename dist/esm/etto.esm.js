@@ -413,6 +413,7 @@ class AbstractEttoService {
         this.createItemFn = config.createItemFn || undefined;
         this.filterFn     = config.filterFn     || filterChoices$1;
         this.onSelect     = config.onSelect     || undefined;
+        this.onClear      = config.onClear      || undefined;
 
         /**
         * State Management
@@ -435,7 +436,8 @@ class AbstractEttoService {
         /**
         * Elements
         **/
-        this.Input = new Input_1(document.createElement('input'),
+        this.Input = new Input_1(
+            document.createElement('input'),
             this.onInput.bind(this),
             this.onFocus.bind(this),
             this.onBlur.bind(this),
@@ -443,7 +445,8 @@ class AbstractEttoService {
             this.selectMode
         );
 
-        this.UnorderedList = new UnorderedList_1(document.createElement('ul'),
+        this.UnorderedList = new UnorderedList_1(
+            document.createElement('ul'),
             this.createItemMousedownEvt.bind(this),
             this.createItemFn,
             this.emptyHtml
@@ -470,7 +473,8 @@ class AbstractEttoService {
         // Append Spinner
         const spinnerTopPosition = ((this.Input.offsetHeight / 2) - (SPINNER_DOT_SIZE / 2));
 
-        this.Spinner = new Spinner_1(document.createElement('div'),
+        this.Spinner = new Spinner_1(
+            document.createElement('div'),
             SPINNER_DOT_SIZE,
             spinnerTopPosition
         );
@@ -480,7 +484,8 @@ class AbstractEttoService {
         // Append Clear Btn
         const clearBtnTopPosition = ((this.Input.offsetHeight / 2) - (CLEAR_BTN_HEIGHT / 2));
 
-        this.ClearBtn = new ClearBtn_1(document.createElement('div'),
+        this.ClearBtn = new ClearBtn_1(
+            document.createElement('div'),
             CLEAR_BTN_HEIGHT,
             clearBtnTopPosition,
             this.clear.bind(this)
@@ -619,10 +624,11 @@ class InputService extends AbstractEttoService_1 {
     clear() {
         this.actions.setSelected(null);
         this.actions.setFiltered([]);
-
         this.Input.setValue('');
         this.ClearBtn.hide();
         this.render(this.Input.value, this.state.filtered);
+
+        if (this.onClear) this.onClear();
     }
 
     onInput(e) {
@@ -702,6 +708,8 @@ class SelectService extends AbstractEttoService_1 {
         this.Input.setValue('');
         this.ClearBtn.hide();
         this.render(this.Input.value, this.state.filtered);
+
+        if (this.onClear) this.onClear();
     }
 
     onInput(e) {
