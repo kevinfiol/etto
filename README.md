@@ -148,7 +148,11 @@ const etto = new Etto(document.getElementById('my-input'), {
     // onSelect(choice: object): void
     // a custom callback you can use to do something upon selecting an item from the list
     // takes in object of selected choice
-    onSelect: undefined
+    onSelect: undefined,
+
+    // onClear(): void
+    // a custom callback you can use to do something upon programmatically clearing the user input
+    onClear: undefined
 });
 ```
 
