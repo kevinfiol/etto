@@ -5,3 +5,10 @@ dist/examples.js
 node_modules/
 src/
 tests/
+.eslintignore
+.eslintrc.cjs
+example_choices.js
+img.png
+index.html
+rollup.config.js
+yarn.lock
