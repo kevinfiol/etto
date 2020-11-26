@@ -32,4 +32,4 @@ const list_2 = [
     { label: 'nah', age: 25 }
 ];
 
-module.exports = { list_1, list_2 };
+export { list_1, list_2 };

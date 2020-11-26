@@ -1,29 +1,35 @@
-const o = require('ospec');
-const { dom } = require('../dom');
-const Dropdown = require('../../src/components/Dropdown');
+import { suite } from 'uvu';
+import { equal } from 'uvu/assert';
+import { dom } from '../dom.js';
+import Dropdown from '../../src/components/Dropdown.js';
 
-o.spec('Dropdown Component', () => {
-    let dropdown;
+const t = suite('Dropdown Component');
 
-    o('Dropdown selectMode', () => {
-        dropdown = new Dropdown(document.createElement('div'), true);
-        o(dropdown.el.style.overflow).equals('hidden auto');
-    });
+let dropdown;
 
-    o('Dropdown show', () => {
-        o(dropdown.el.style.display).equals('none');
-        dropdown.show();
-        o(dropdown.el.style.display).equals('block');
-    });
-
-    o('Dropdown hide', () => {
-        dropdown.hide();
-        o(dropdown.el.style.display).equals('none');
-    });
-
-    o('Dropdown isVisible', () => {
-        o(dropdown.isVisible()).equals(false);
-        dropdown.show();
-        o(dropdown.isVisible()).equals(true);
-    });
+t.before(() => {
+    dropdown = new Dropdown(document.createElement('div'), true);
 });
+
+t('Dropdown selectMode', () => {
+    equal(dropdown.el.style.overflow, 'hidden auto');
+});
+
+t('Dropdown show', () => {
+    equal(dropdown.el.style.display, 'none');
+    dropdown.show();
+    equal(dropdown.el.style.display, 'block');
+});
+
+t('Dropdown hide', () => {
+    dropdown.hide();
+    equal(dropdown.el.style.display, 'none');
+});
+
+t('Dropdown isVisible', () => {
+    equal(dropdown.isVisible(), false);
+    dropdown.show();
+    equal(dropdown.isVisible(), true);
+});
+
+t.run();

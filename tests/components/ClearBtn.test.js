@@ -1,32 +1,35 @@
-const o = require('ospec');
-const { dom, evt } = require('../dom');
-const ClearBtn = require('../../src/components/ClearBtn');
+import { suite } from 'uvu';
+import { equal } from 'uvu/assert';
+import { dom, evt } from '../dom.js';
+import ClearBtn from '../../src/components/ClearBtn.js';
 
-o.spec('ClearBtn Component', () => {
-    let clearBtn;
-    let domEl;
-    let val = 0;
+const t = suite('ClearBtn Component');
 
-    o.before(() => {
-        domEl = document.createElement('div');
-        clearBtn = new ClearBtn(domEl, 22, 100, () => {
-            val = 1;
-        });
-    });
+let clearBtn;
+let domEl;
+let val = 0;
 
-    o('ClearBtn event', () => {
-        evt('click', clearBtn.el);
-        o(val).equals(1);
-    });
-
-    o('ClearBtn show', () => {
-        o(clearBtn.el.style.display).equals('none');
-        clearBtn.show();
-        o(clearBtn.el.style.display).equals('flex');
-    });
-
-    o('ClearBtn hide', () => {
-        clearBtn.hide();
-        o(clearBtn.el.style.display).equals('none');
+t.before(() => {
+    domEl = document.createElement('div');
+    clearBtn = new ClearBtn(domEl, 22, 100, () => {
+        val = 1;
     });
 });
+
+t('ClearBtn event', () => {
+    evt('click', clearBtn.el);
+    equal(val, 1);
+});
+
+t('ClearBtn show', () => {
+    equal(clearBtn.el.style.display, 'none');
+    clearBtn.show();
+    equal(clearBtn.el.style.display, 'flex');
+});
+
+t('ClearBtn hide', () => {
+    clearBtn.hide();
+    equal(clearBtn.el.style.display, 'none');
+});
+
+t.run();

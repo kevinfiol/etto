@@ -1,4 +1,4 @@
-const Element = require('../lib/Element');
+import Element from '../lib/Element.js';
 
 class ClearBtn extends Element {
     constructor(
@@ -38,4 +38,4 @@ class ClearBtn extends Element {
     }
 }
 
-module.exports = ClearBtn;
+export default ClearBtn;

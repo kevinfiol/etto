@@ -47,4 +47,4 @@ function choiceMap(choice) {
     });
 }
 
-module.exports = { removeHtml, createEmText, filterChoices, choiceMap };
+export { removeHtml, createEmText, filterChoices, choiceMap };

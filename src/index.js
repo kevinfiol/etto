@@ -1,5 +1,5 @@
-const InputService = require('./InputService');
-const SelectService = require('./SelectService');
+import InputService from './InputService.js';
+import SelectService from './SelectService.js';
 
 class Etto {
     constructor(root, config, choices) {
@@ -27,4 +27,4 @@ class Etto {
     }
 }
 
-module.exports = Etto;
+export default Etto;

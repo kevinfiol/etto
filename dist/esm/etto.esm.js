@@ -28,9 +28,7 @@ class Element {
     }
 }
 
-var Element_1 = Element;
-
-class Input extends Element_1 {
+class Input extends Element {
     constructor(
         el,
         onInput,
@@ -80,9 +78,7 @@ class Input extends Element_1 {
     }
 }
 
-var Input_1 = Input;
-
-class Dropdown extends Element_1 {
+class Dropdown extends Element {
     constructor(el, isSelectMode) {
         super(el);
 
@@ -113,9 +109,7 @@ class Dropdown extends Element_1 {
     }
 }
 
-var Dropdown_1 = Dropdown;
-
-class Spinner extends Element_1 {
+class Spinner extends Element {
     constructor(
         el,
         dotSize,
@@ -181,9 +175,7 @@ class Spinner extends Element_1 {
     }
 }
 
-var Spinner_1 = Spinner;
-
-class ClearBtn extends Element_1 {
+class ClearBtn extends Element {
     constructor(
         el,
         btnHeight,
@@ -220,8 +212,6 @@ class ClearBtn extends Element_1 {
         this.el.style.display = 'none';
     }
 }
-
-var ClearBtn_1 = ClearBtn;
 
 function removeHtml(s) {
     return s.replace(/&/g, '').replace(/</g, '').replace(/>/g, '');
@@ -272,11 +262,7 @@ function choiceMap(choice) {
     });
 }
 
-var util = { removeHtml, createEmText, filterChoices, choiceMap };
-
-const { createEmText: createEmText$1 } = util;
-
-class UnorderedList extends Element_1 {
+class UnorderedList extends Element {
     constructor(el, createItemMousedownEvt, createItemFn, customEmptyHtml) {
         super(el);
         this.createItemMousedownEvt = createItemMousedownEvt;
@@ -304,7 +290,7 @@ class UnorderedList extends Element_1 {
                 ` data-label="${choice.label}"` +
                 ` data-value="${choice.value}"` +
             '>' +
-                createEmText$1(choice.label, inputVal) +
+                createEmText(choice.label, inputVal) +
             '</li>'
         ;
     }
@@ -335,8 +321,6 @@ class UnorderedList extends Element_1 {
         }
     }
 }
-
-var UnorderedList_1 = UnorderedList;
 
 class Actions {
     constructor(state) {
@@ -384,10 +368,6 @@ class Actions {
     }
 }
 
-var Actions_1 = Actions;
-
-const { filterChoices: filterChoices$1, choiceMap: choiceMap$1 } = util;
-
 const MIN_CHARS = 3;
 const MAX_RESULTS = 7;
 const REQUEST_DELAY = 350;
@@ -411,14 +391,14 @@ class AbstractEttoService {
         // Custom Properties
         this.emptyHtml    = config.emptyHtml    || undefined;
         this.createItemFn = config.createItemFn || undefined;
-        this.filterFn     = config.filterFn     || filterChoices$1;
+        this.filterFn     = config.filterFn     || filterChoices;
         this.onSelect     = config.onSelect     || undefined;
         this.onClear      = config.onClear      || undefined;
 
         /**
         * State Management
         **/
-        const initialChoices = choices ? choices.map(choiceMap$1) : [];
+        const initialChoices = choices ? choices.map(choiceMap) : [];
 
         this.state = {
             isFetching: false,
@@ -431,12 +411,12 @@ class AbstractEttoService {
             fetchTimer: null
         };
 
-        this.actions = new Actions_1(this.state);
+        this.actions = new Actions(this.state);
 
         /**
         * Elements
         **/
-        this.Input = new Input_1(
+        this.Input = new Input(
             document.createElement('input'),
             this.onInput.bind(this),
             this.onFocus.bind(this),
@@ -445,14 +425,14 @@ class AbstractEttoService {
             this.selectMode
         );
 
-        this.UnorderedList = new UnorderedList_1(
+        this.UnorderedList = new UnorderedList(
             document.createElement('ul'),
             this.createItemMousedownEvt.bind(this),
             this.createItemFn,
             this.emptyHtml
         );
 
-        this.Dropdown = new Dropdown_1(document.createElement('div'), this.selectMode);
+        this.Dropdown = new Dropdown(document.createElement('div'), this.selectMode);
         this.Dropdown.appendChild(this.UnorderedList.el);
 
         // Containers
@@ -473,7 +453,7 @@ class AbstractEttoService {
         // Append Spinner
         const spinnerTopPosition = ((this.Input.offsetHeight / 2) - (SPINNER_DOT_SIZE / 2));
 
-        this.Spinner = new Spinner_1(
+        this.Spinner = new Spinner(
             document.createElement('div'),
             SPINNER_DOT_SIZE,
             spinnerTopPosition
@@ -484,7 +464,7 @@ class AbstractEttoService {
         // Append Clear Btn
         const clearBtnTopPosition = ((this.Input.offsetHeight / 2) - (CLEAR_BTN_HEIGHT / 2));
 
-        this.ClearBtn = new ClearBtn_1(
+        this.ClearBtn = new ClearBtn(
             document.createElement('div'),
             CLEAR_BTN_HEIGHT,
             clearBtnTopPosition,
@@ -531,7 +511,7 @@ class AbstractEttoService {
                     this.Spinner.show();
 
                     this.source(inputVal, res => {
-                        const choices = res ? res.map(choiceMap$1) : [];
+                        const choices = res ? res.map(choiceMap) : [];
 
                         this.actions.setCache({ ...this.state.cache, [key]: choices });
                         this.actions.setIsFetching(false);
@@ -611,9 +591,7 @@ class AbstractEttoService {
     }
 }
 
-var AbstractEttoService_1 = AbstractEttoService;
-
-class InputService extends AbstractEttoService_1 {
+class InputService extends AbstractEttoService {
     constructor(root, config, choices) {
         super(root, config, choices);
 
@@ -689,9 +667,7 @@ class InputService extends AbstractEttoService_1 {
     }
 }
 
-var InputService_1 = InputService;
-
-class SelectService extends AbstractEttoService_1 {
+class SelectService extends AbstractEttoService {
     constructor(root, config, choices) {
         super(root, config, choices);
 
@@ -775,14 +751,12 @@ class SelectService extends AbstractEttoService_1 {
     }
 }
 
-var SelectService_1 = SelectService;
-
 class Etto {
     constructor(root, config, choices) {
         if (config.selectMode) {
-            this.service = new SelectService_1(root, config, choices);
+            this.service = new SelectService(root, config, choices);
         } else {
-            this.service = new InputService_1(root, config, choices);
+            this.service = new InputService(root, config, choices);
         }
     }
 
@@ -803,6 +777,4 @@ class Etto {
     }
 }
 
-var src = Etto;
-
-export default src;
+export default Etto;

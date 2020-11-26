@@ -1,4 +1,4 @@
-const AbstractEttoService = require('./AbstractEttoService');
+import AbstractEttoService from './AbstractEttoService.js';
 
 class InputService extends AbstractEttoService {
     constructor(root, config, choices) {
@@ -76,4 +76,4 @@ class InputService extends AbstractEttoService {
     }
 }
 
-module.exports = InputService;
+export default InputService;

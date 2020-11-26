@@ -1,5 +1,5 @@
-const Element = require('../lib/Element');
-const { createEmText } = require('../util');
+import Element from '../lib/Element.js';
+import { createEmText } from '../util.js';
 
 class UnorderedList extends Element {
     constructor(el, createItemMousedownEvt, createItemFn, customEmptyHtml) {
@@ -61,4 +61,4 @@ class UnorderedList extends Element {
     }
 }
 
-module.exports = UnorderedList;
+export default UnorderedList;

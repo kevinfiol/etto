@@ -1,10 +1,10 @@
-const Input = require('./components/Input');
-const Dropdown = require('./components/Dropdown');
-const Spinner = require('./components/Spinner');
-const ClearBtn = require('./components/ClearBtn');
-const UnorderedList = require('./components/UnorderedList');
-const Actions = require('./Actions');
-const { filterChoices, choiceMap } = require('./util');
+import Input from './components/Input.js';
+import Dropdown from './components/Dropdown.js';
+import Spinner from './components/Spinner.js';
+import ClearBtn from './components/ClearBtn.js';
+import UnorderedList from './components/UnorderedList.js';
+import Actions from './Actions.js';
+import { filterChoices, choiceMap } from './util.js';
 
 const MIN_CHARS = 3;
 const MAX_RESULTS = 7;
@@ -229,4 +229,4 @@ class AbstractEttoService {
     }
 }
 
-module.exports = AbstractEttoService;
+export default AbstractEttoService;

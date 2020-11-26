@@ -1,42 +1,45 @@
-const o = require('ospec');
-const { dom } = require('../dom');
-const Spinner = require('../../src/components/Spinner');
+import { suite } from 'uvu';
+import { equal } from 'uvu/assert';
+import { dom } from '../dom.js';
+import Spinner from '../../src/components/Spinner.js';
 
-o.spec('Spinner Component', () => {
-    let spinner;
-    let domEl;
+const t = suite('Spinner Component');
 
-    o.before(() => {
-        spinner = new Spinner(document.createElement('div'), 6, 10);
-    });
+let spinner;
+let domEl;
 
-    o('Spinner init', () => {
-        o(spinner.el.style.display).equals('none');
-    });
-
-    o('Spinner initial createDots call', () => {
-        o(spinner.el.children.length).equals(3);
-
-        let litDot = spinner.el.children[0];
-        o(litDot.style.opacity).equals(spinner.hiOpacity);
-    });
-
-    o('Spinner show & hide', () => {
-        spinner.show();
-        o(spinner.el.style.display).equals('flex');
-
-        spinner.hide();
-        o(spinner.el.style.display).equals('none');
-    });
-
-    o('Spinner animateDots', () => {
-        spinner.animateDots();
-
-        let litDot = spinner.el.children[1];
-        o(litDot.style.opacity).equals(spinner.hiOpacity);
-
-        // check other dots
-        o(spinner.el.children[0].style.opacity).equals(spinner.loOpacity);
-        o(spinner.el.children[2].style.opacity).equals(spinner.loOpacity);
-    });
+t.before(() => {
+    spinner = new Spinner(document.createElement('div'), 6, 10);
 });
+
+t('Spinner init', () => {
+    equal(spinner.el.style.display, 'none');
+});
+
+t('Spinner initial createDots call', () => {
+    equal(spinner.el.children.length, 3);
+
+    let litDot = spinner.el.children[0];
+    equal(litDot.style.opacity, spinner.hiOpacity);
+});
+
+t('Spinner show & hide', () => {
+    spinner.show();
+    equal(spinner.el.style.display, 'flex');
+
+    spinner.hide();
+    equal(spinner.el.style.display, 'none');
+});
+
+t('Spinner animateDots', () => {
+    spinner.animateDots();
+
+    let litDot = spinner.el.children[1];
+    equal(litDot.style.opacity, spinner.hiOpacity);
+
+    // check other dots
+    equal(spinner.el.children[0].style.opacity, spinner.loOpacity);
+    equal(spinner.el.children[2].style.opacity, spinner.loOpacity);
+});
+
+t.run();

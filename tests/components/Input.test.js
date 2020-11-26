@@ -1,39 +1,41 @@
-const o = require('ospec');
-const { dom } = require('../dom');
-const Input = require('../../src/components/Input');
+import { suite } from 'uvu';
+import { equal } from 'uvu/assert';
+import { dom } from '../dom.js';
+import Input from '../../src/components/Input.js';
 
-o.spec('Input Component', () => {
-    let input;
+const t = suite('Input Component');
 
-    focusVal = 0;
-    blurVal = 0;
+let input;
+let focusVal = 0;
+let blurVal = 0;
 
-    o.before(() => {
-        input = new Input(document.createElement('input'),
-            undefined,
-            () => focusVal = 1,
-            () => blurVal = 1,
-            undefined
-        );
-    });
-
-    o('Input setValue', () => {
-        input.setValue('bar');
-        o(input.el.value).equals('bar');
-    });
-
-    o('Input setPlaceholder', () => {
-        input.setPlaceholder('temp');
-        o(input.el.placeholder).equals('temp');
-    });
-
-    o('Input focus', () => {
-        input.focus();
-        o(focusVal).equals(1);
-    });
-
-    o('Input blur', () => {
-        input.blur();
-        o(blurVal).equals(1);
-    });
+t.before(() => {
+    input = new Input(document.createElement('input'),
+        undefined,
+        () => focusVal = 1,
+        () => blurVal = 1,
+        undefined
+    );
 });
+
+t('Input setValue', () => {
+    input.setValue('bar');
+    equal(input.el.value, 'bar');
+});
+
+t('Input setPlaceholder', () => {
+    input.setPlaceholder('temp');
+    equal(input.el.placeholder, 'temp');
+});
+
+t('Input focus', () => {
+    input.focus();
+    equal(focusVal, 1);
+});
+
+t('Input blur', () => {
+    input.blur();
+    equal(blurVal, 1);
+});
+
+t.run();

@@ -1,4 +1,4 @@
-const Element = require('../lib/Element');
+import Element from '../lib/Element.js';
 
 class Spinner extends Element {
     constructor(
@@ -66,4 +66,4 @@ class Spinner extends Element {
     }
 }
 
-module.exports = Spinner;
+export default Spinner;

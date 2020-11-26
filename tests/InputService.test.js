@@ -1,128 +1,133 @@
-const o = require('ospec');
-const { dom, keydownEvt } = require('./dom.js');
-const InputService = require('../src/InputService');
-const { list_1 } = require('../example_choices');
+import { suite } from 'uvu';
+import { equal, not } from 'uvu/assert';
+import { dom, keydownEvt } from './dom.js';
+import InputService from '../src/InputService.js';
+import { list_1 } from '../example_choices.js';
 
-o.spec('InputService service', () => {
-    let service;
-    let root;
-    let choices;
+const t = suite('InputService service');
 
-    o.before(() => {
-        choices = [ ...list_1 ];
-    });
+let service;
+let root;
+let choices;
 
-    o('InputService constructor', () => {
-        root = document.createElement('div');
-        service = new InputService(root, {}, choices);
-    })
-
-    o('InputService onInput', () => {
-        // Must fill Input.value to simulate input
-        let value = 'eart';
-        service.Input.setValue(value);
-        service.onInput({ target: { value } });
-
-        o(service.ClearBtn.el.style.display).notEquals('none');
-
-        // minChars is set to 3 by default
-        o(service.state.filtered).deepEquals([{ label: 'Ness from Earthbound', value: 'Ness from Earthbound' }]);
-        o(service.Dropdown.isVisible()).equals(true);
-
-        // no match
-        value = 'text that does not have a match';
-        service.Input.setValue(value);
-        service.onInput({ target: { value } });
-        o(service.state.filtered).deepEquals([]);
-        o(service.Dropdown.isVisible()).equals(true);
-    });
-
-    o('InputService onFocus', () => {
-        service.onFocus();
-        o(service.Dropdown.isVisible()).equals(false);
-    });
-
-    o('InputService onBlur', () => {
-        service.actions.setHighlighted(0);
-        service.setShowDropdown(true);
-        o(service.Dropdown.isVisible()).equals(true);
-
-        service.onBlur();
-        o(service.state.highlighted).equals(null);
-        o(service.Dropdown.isVisible()).equals(false);
-    });
-
-    o('InputService onSelection', () => {
-        service.actions.setHighlighted(0);
-        service.setShowDropdown(true);
-        service.onSelection({ label: 'min', value: 'min' });
-
-        o(service.Input.value).equals('min');
-        o(service.state.filtered).deepEquals([
-            { label: 'Minnesota', value: 'Minnesota' },
-            { label: 'Wyoming', value: 'Wyoming' }
-        ]);
-        o(service.state.highlighted).equals(null);
-        o(service.Dropdown.isVisible()).equals(false);
-    });
-
-    o('InputService Keyboard Input', () => {
-        // make dropdown visible first
-        service.setShowDropdown(true);
-
-        const keyUp = () => keydownEvt(38, service.Input.el);
-        const keyDown = () => keydownEvt(40, service.Input.el);
-        const enterKey = () => keydownEvt(13, service.Input.el);
-
-        keyDown();
-        o(service.state.highlighted).notEquals(null);
-        o(service.state.highlighted).equals(0);
-
-        // change input val
-        service.onInput({ target: { value: 'min' } });
-        // should match 'Minnesota' and 'Wyoming'
-        o(service.state.filtered.length).equals(2);
-
-        keyDown();
-        o(service.state.highlighted).equals(1);
-        keyDown();
-        o(service.state.highlighted).equals(1);
-
-        // enter key
-        enterKey();
-        o(service.state.highlighted).equals(null);
-        o(service.Input.value).equals('Wyoming');
-
-        // need to refocus
-        service.Input.focus();
-        service.onFocus();
-        o(service.state.highlighted).equals(null);
-
-        // go down one
-        keyDown();
-        o(service.state.highlighted).equals(0);
-
-        // go back up
-        keyUp();
-        o(service.state.highlighted).equals(0);
-        // cant go anymore up
-        keyUp();
-        o(service.state.highlighted).equals(0);
-
-        // blur the input
-        service.onBlur();
-        o(service.state.highlighted).equals(null);
-    });
-
-    o('InputService createItemMousedownEvt', () => {
-        service.Input.blur();
-        service.Input.setValue('');
-
-        o(document.activeElement !== service.Input.el).equals(true);
-
-        let evt = service.createItemMousedownEvt({ label: 'Wyoming', value: 'Wyoming' });
-        evt();
-
-        o(document.activeElement == service.Input.el).equals(true);
-    });
+t.before(() => {
+    choices = [ ...list_1 ];
 });
+
+t('InputService constructor', () => {
+    root = document.createElement('div');
+    service = new InputService(root, {}, choices);
+})
+
+t('InputService onInput', () => {
+    // Must fill Input.value to simulate input
+    let value = 'eart';
+    service.Input.setValue(value);
+    service.onInput({ target: { value } });
+
+    not.equal(service.ClearBtn.el.style.display, 'none');
+
+    // minChars is set to 3 by default
+    equal(service.state.filtered, [{ label: 'Ness from Earthbound', value: 'Ness from Earthbound' }]);
+    equal(service.Dropdown.isVisible(), true);
+
+    // no match
+    value = 'text that does not have a match';
+    service.Input.setValue(value);
+    service.onInput({ target: { value } });
+    equal(service.state.filtered, []);
+    equal(service.Dropdown.isVisible(), true);
+});
+
+t('InputService onFocus', () => {
+    service.onFocus();
+    equal(service.Dropdown.isVisible(), false);
+});
+
+t('InputService onBlur', () => {
+    service.actions.setHighlighted(0);
+    service.setShowDropdown(true);
+    equal(service.Dropdown.isVisible(), true);
+
+    service.onBlur();
+    equal(service.state.highlighted, null);
+    equal(service.Dropdown.isVisible(), false);
+});
+
+t('InputService onSelection', () => {
+    service.actions.setHighlighted(0);
+    service.setShowDropdown(true);
+    service.onSelection({ label: 'min', value: 'min' });
+
+    equal(service.Input.value, 'min');
+    equal(service.state.filtered, [
+        { label: 'Minnesota', value: 'Minnesota' },
+        { label: 'Wyoming', value: 'Wyoming' }
+    ]);
+    equal(service.state.highlighted, null);
+    equal(service.Dropdown.isVisible(), false);
+});
+
+t('InputService Keyboard Input', () => {
+    // make dropdown visible first
+    service.setShowDropdown(true);
+
+    const keyUp = () => keydownEvt(38, service.Input.el);
+    const keyDown = () => keydownEvt(40, service.Input.el);
+    const enterKey = () => keydownEvt(13, service.Input.el);
+
+    keyDown();
+    not.equal(service.state.highlighted, null);
+    equal(service.state.highlighted, 0);
+
+    // change input val
+    service.onInput({ target: { value: 'min' } });
+    // should match 'Minnesota' and 'Wyoming'
+    equal(service.state.filtered.length, 2);
+
+    keyDown();
+    equal(service.state.highlighted, 1);
+    keyDown();
+    equal(service.state.highlighted, 1);
+
+    // enter key
+    enterKey();
+    equal(service.state.highlighted, null);
+    equal(service.Input.value, 'Wyoming');
+
+    // need to refocus
+    service.Input.focus();
+    service.onFocus();
+    equal(service.state.highlighted, null);
+
+    // go down one
+    keyDown();
+    equal(service.state.highlighted, 0);
+
+    // go back up
+    keyUp();
+    equal(service.state.highlighted, 0);
+    // cant go anymore up
+    keyUp();
+    equal(service.state.highlighted, 0);
+
+    // blur the input
+    service.onBlur();
+    equal(service.state.highlighted, null);
+});
+
+t('InputService createItemMousedownEvt', () => {
+    service.Input.blur();
+    service.Input.setValue('');
+
+    equal(document.activeElement !== service.Input.el, true);
+
+    let evt = service.createItemMousedownEvt({ label: 'Wyoming', value: 'Wyoming' });
+
+    evt.apply(service); // call evt with `service` as the thisArg
+    service.Input.focus();
+
+    equal(document.activeElement === service.Input.el, true);
+});
+
+t.run();

@@ -1,4 +1,4 @@
-const jsdom = require('jsdom');
+import jsdom from 'jsdom';
 const { JSDOM } = jsdom;
 
 const dom = new JSDOM('<!DOCTYPE html><body></body></html>');
@@ -9,11 +9,11 @@ function evt(action, el) {
     const ev = document.createEvent('HTMLEvents');
     ev.initEvent(action, false, true);
     el.dispatchEvent(ev);
-};
+}
 
 function keydownEvt(keyCode, el) {
     const ev = new window.KeyboardEvent('keydown', { keyCode: keyCode });
     el.dispatchEvent(ev);
-};
+}
 
-module.exports = { dom, evt, keydownEvt };
+export { dom, evt, keydownEvt };
