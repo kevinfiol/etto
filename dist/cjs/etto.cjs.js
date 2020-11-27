@@ -37,6 +37,7 @@ class Input extends Element {
         onFocus,
         onBlur,
         onKeydown,
+        onValue,
         isSelectMode
     ) {
         super(el);
@@ -49,6 +50,7 @@ class Input extends Element {
             tabIndex: isSelectMode ? '-1' : '0'
         });
 
+        this.onValue = onValue;
         this.addEventListener('input', onInput);
         this.addEventListener('focus', onFocus);
         this.addEventListener('blur', onBlur);
@@ -65,6 +67,7 @@ class Input extends Element {
 
     setValue(value) {
         this.el.value = value;
+        if (this.onValue) this.onValue(value); // custom callback
     }
 
     setPlaceholder(placeholder) {
@@ -382,13 +385,15 @@ class AbstractEttoService {
         /**
         * Configuration
         **/
-        this.selectMode    = config.selectMode    || false;
-        this.source        = config.source        || undefined;
-        this.minChars      = config.minChars      || MIN_CHARS;
-        this.maxResults    = config.maxResults    || MAX_RESULTS;
-        this.requestDelay  = config.requestDelay  || REQUEST_DELAY;
-        this.matchFullWord = config.matchFullWord || false;
-        this.showEmptyMsg  = (config.showEmptyMsg !== undefined ? config.showEmptyMsg : true);
+        this.selectMode        = config.selectMode    || false;
+        this.source            = config.source        || undefined;
+        this.minChars          = config.minChars      || MIN_CHARS;
+        this.maxResults        = config.maxResults    || MAX_RESULTS;
+        this.requestDelay      = config.requestDelay  || REQUEST_DELAY;
+        this.matchFullWord     = config.matchFullWord || false;
+        this.showEmptyMsg      = (config.showEmptyMsg !== undefined ? config.showEmptyMsg : true);
+        this.initialCache      = config.initialCache || {}; // initial cache for ajax results
+        this.selectPlaceholder = config.selectPlaceholder || 'Select...';
 
         // Custom Properties
         this.emptyHtml    = config.emptyHtml    || undefined;
@@ -396,6 +401,7 @@ class AbstractEttoService {
         this.filterFn     = config.filterFn     || filterChoices;
         this.onSelect     = config.onSelect     || undefined;
         this.onClear      = config.onClear      || undefined;
+        this.onValue      = config.onValue      || undefined;
 
         /**
         * State Management
@@ -404,7 +410,7 @@ class AbstractEttoService {
 
         this.state = {
             isFetching: false,
-            cache: config.initialCache || {},
+            cache: this.initialCache,
             choices: initialChoices,
             filtered: [],
             selected: null,
@@ -424,6 +430,7 @@ class AbstractEttoService {
             this.onFocus.bind(this),
             this.onBlur.bind(this),
             this.onKeydown.bind(this),
+            this.onValue,
             this.selectMode
         );
 
@@ -613,6 +620,7 @@ class InputService extends AbstractEttoService {
 
     onInput(e) {
         const inputVal = e.target.value;
+        if (this.onValue) this.onValue(inputVal); // custom callback
 
         if (inputVal) this.ClearBtn.show();
         else this.ClearBtn.hide();
@@ -676,13 +684,21 @@ class SelectService extends AbstractEttoService {
         // SelectService filtered should be populated by default
         this.actions.setFiltered(this.state.choices);
 
+        // add this to imitate select box hiding on second click
+        this.Input.addEventListener('mousedown', () => {
+            if (this.Dropdown.isVisible()) this.Dropdown.hide();
+            else this.Dropdown.show();
+        });
+
+        this.Input.setPlaceholder(this.selectPlaceholder);
+
         // Initial Render
         this.render(this.Input.value, this.state.filtered);
     }
 
     clear() {
         this.actions.setSelected(null);
-        this.Input.setPlaceholder('');
+        this.Input.setPlaceholder(this.selectPlaceholder);
         this.Input.setValue('');
         this.ClearBtn.hide();
         this.render(this.Input.value, this.state.filtered);
@@ -692,6 +708,7 @@ class SelectService extends AbstractEttoService {
 
     onInput(e) {
         const inputVal = e.target.value;
+        if (this.onValue) this.onValue(inputVal); // custom callback
 
         if (inputVal) this.ClearBtn.show();
         else this.ClearBtn.hide();
@@ -707,16 +724,22 @@ class SelectService extends AbstractEttoService {
     }
 
     onFocus() {
-        this.Input.setValue('');
+        if (this.Input.value !== '')
+            this.Input.setValue('');
         this.setShowDropdown(true);
     }
 
     onBlur() {
         if (!this.state.selected) {
-            this.Input.setValue('');
+            if (this.Input.value !== '')
+                this.Input.setValue('');
             this.ClearBtn.hide();
         } else {
-            this.Input.setValue(this.state.selected.value);
+            setTimeout(() => {
+                if (this.state.selected.value && this.Input.value.trim() !== this.state.selected.value)
+                    this.Input.setValue(this.state.selected.value);
+            });
+
             this.ClearBtn.show();
         }
 
@@ -727,10 +750,8 @@ class SelectService extends AbstractEttoService {
     }
 
     onSelection(choice) {
-        setTimeout(() => {
-            this.Input.setValue(choice.value);
-            this.Input.setPlaceholder(choice.value);
-        });
+        this.Input.setValue(choice.value);
+        this.Input.setPlaceholder(choice.value);
 
         this.actions.setFiltered(this.state.choices);
         this.actions.setHighlighted(null);
