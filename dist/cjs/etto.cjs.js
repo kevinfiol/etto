@@ -93,7 +93,6 @@ class Dropdown extends Element {
             `${isSelectMode ? 'overflow: hidden auto; ' : 'overflow: hidden; '}` +
             'position: absolute; ' +
             'width: 100%; ' +
-            'background-color: white; ' +
             'z-index: 99;'
         });
 
