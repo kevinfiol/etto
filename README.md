@@ -137,7 +137,8 @@ const etto = new Etto(document.getElementById('my-input'), {
     emptyHtml: undefined,
 
     // initialCache: object
-    // for use with a source function; in case you already have some cached data you'd like to initialize with Etto
+    // used in conjunction with config.source;
+    // in case you already have some cached data you'd like to initialize with Etto
     initialCache: {},
 
     // selectPlaceholder: string
@@ -160,7 +161,7 @@ const etto = new Etto(document.getElementById('my-input'), {
 
     // onClear(): void
     // a custom callback you can use to do something upon programmatically clearing the user input
-    onClear: undefined
+    onClear: undefined,
 
     // onValue(value: string) void
     // a custom callback you can use to when the input value has changed
