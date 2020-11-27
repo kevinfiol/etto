@@ -136,6 +136,14 @@ const etto = new Etto(document.getElementById('my-input'), {
     // custom html markup for empty message
     emptyHtml: undefined,
 
+    // initialCache: object
+    // for use with a source function; in case you already have some cached data you'd like to initialize with Etto
+    initialCache: {},
+
+    // selectPlaceholder: string
+    // for use with select mode; the default placeholder text for an empty select box
+    selectPlaceholder: 'Select...',
+
     // createItemFn(choice: object, inputVal: string, isHighlighted: boolean, isSelected: boolean): string
     // customize how each list item is rendered; see live examples page
     createItemFn: undefined,
@@ -153,6 +161,11 @@ const etto = new Etto(document.getElementById('my-input'), {
     // onClear(): void
     // a custom callback you can use to do something upon programmatically clearing the user input
     onClear: undefined
+
+    // onValue(value: string) void
+    // a custom callback you can use to when the input value has changed
+    // primarily for use in input mode; might behave unexpectedly when using select mode
+    onValue: undefined
 });
 ```
 

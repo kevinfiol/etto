@@ -18,13 +18,15 @@ class AbstractEttoService {
         /**
         * Configuration
         **/
-        this.selectMode    = config.selectMode    || false;
-        this.source        = config.source        || undefined;
-        this.minChars      = config.minChars      || MIN_CHARS;
-        this.maxResults    = config.maxResults    || MAX_RESULTS;
-        this.requestDelay  = config.requestDelay  || REQUEST_DELAY;
-        this.matchFullWord = config.matchFullWord || false;
-        this.showEmptyMsg  = (config.showEmptyMsg !== undefined ? config.showEmptyMsg : true);
+        this.selectMode        = config.selectMode    || false;
+        this.source            = config.source        || undefined;
+        this.minChars          = config.minChars      || MIN_CHARS;
+        this.maxResults        = config.maxResults    || MAX_RESULTS;
+        this.requestDelay      = config.requestDelay  || REQUEST_DELAY;
+        this.matchFullWord     = config.matchFullWord || false;
+        this.showEmptyMsg      = (config.showEmptyMsg !== undefined ? config.showEmptyMsg : true);
+        this.initialCache      = config.initialCache || {}; // initial cache for ajax results
+        this.selectPlaceholder = config.selectPlaceholder || 'Select...';
 
         // Custom Properties
         this.emptyHtml    = config.emptyHtml    || undefined;
@@ -32,6 +34,7 @@ class AbstractEttoService {
         this.filterFn     = config.filterFn     || filterChoices;
         this.onSelect     = config.onSelect     || undefined;
         this.onClear      = config.onClear      || undefined;
+        this.onValue      = config.onValue      || undefined;
 
         /**
         * State Management
@@ -40,7 +43,7 @@ class AbstractEttoService {
 
         this.state = {
             isFetching: false,
-            cache: config.initialCache || {},
+            cache: this.initialCache,
             choices: initialChoices,
             filtered: [],
             selected: null,
@@ -60,6 +63,7 @@ class AbstractEttoService {
             this.onFocus.bind(this),
             this.onBlur.bind(this),
             this.onKeydown.bind(this),
+            this.onValue,
             this.selectMode
         );
 

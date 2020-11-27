@@ -40,7 +40,7 @@ const source = function(query, done) {
     }
 
     xhr = new XMLHttpRequest();
-    xhr.open('GET', 'https://swapi.co/api/people/?search=' + query, true);
+    xhr.open('GET', 'https://swapi.dev/api/people/?search=' + query, true);
 
     xhr.onload = function () {
         if (xhr.status >= 200 && xhr.status < 400) {
@@ -67,12 +67,13 @@ const source = function(query, done) {
     xhr.send();
 };
 
-new Etto(document.getElementById('demo-1'), {}, list_1);
+new Etto(document.getElementById('demo-1'), { onValue: val => console.log('onValue: ', val) }, list_1);
 new Etto(document.getElementById('demo-2'), { source });
 
 
 new Etto(document.getElementById('demo-3'), {
-    selectMode: true
+    selectMode: true,
+    onValue: val => console.log('onValue: ', val)
     // filterFn: (inputVal, choices, matchFullWord, maxResults) => {
     //     return [
     //         { label: 'banana', value: 'banana' },

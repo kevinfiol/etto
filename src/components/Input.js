@@ -7,6 +7,7 @@ class Input extends Element {
         onFocus,
         onBlur,
         onKeydown,
+        onValue,
         isSelectMode
     ) {
         super(el);
@@ -19,6 +20,7 @@ class Input extends Element {
             tabIndex: isSelectMode ? '-1' : '0'
         });
 
+        this.onValue = onValue;
         this.addEventListener('input', onInput);
         this.addEventListener('focus', onFocus);
         this.addEventListener('blur', onBlur);
@@ -35,6 +37,7 @@ class Input extends Element {
 
     setValue(value) {
         this.el.value = value;
+        if (this.onValue) this.onValue(value); // custom callback
     }
 
     setPlaceholder(placeholder) {

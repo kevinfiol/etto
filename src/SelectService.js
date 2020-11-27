@@ -7,13 +7,21 @@ class SelectService extends AbstractEttoService {
         // SelectService filtered should be populated by default
         this.actions.setFiltered(this.state.choices);
 
+        // add this to imitate select box hiding on second click
+        this.Input.addEventListener('mousedown', () => {
+            if (this.Dropdown.isVisible()) this.Dropdown.hide();
+            else this.Dropdown.show();
+        });
+
+        this.Input.setPlaceholder(this.selectPlaceholder);
+
         // Initial Render
         this.render(this.Input.value, this.state.filtered);
     }
 
     clear() {
         this.actions.setSelected(null);
-        this.Input.setPlaceholder('');
+        this.Input.setPlaceholder(this.selectPlaceholder);
         this.Input.setValue('');
         this.ClearBtn.hide();
         this.render(this.Input.value, this.state.filtered);
@@ -23,6 +31,7 @@ class SelectService extends AbstractEttoService {
 
     onInput(e) {
         const inputVal = e.target.value;
+        if (this.onValue) this.onValue(inputVal); // custom callback
 
         if (inputVal) this.ClearBtn.show();
         else this.ClearBtn.hide();
@@ -38,16 +47,22 @@ class SelectService extends AbstractEttoService {
     }
 
     onFocus() {
-        this.Input.setValue('');
+        if (this.Input.value !== '')
+            this.Input.setValue('');
         this.setShowDropdown(true);
     }
 
     onBlur() {
         if (!this.state.selected) {
-            this.Input.setValue('');
+            if (this.Input.value !== '')
+                this.Input.setValue('');
             this.ClearBtn.hide();
         } else {
-            this.Input.setValue(this.state.selected.value);
+            setTimeout(() => {
+                if (this.state.selected.value && this.Input.value.trim() !== this.state.selected.value)
+                    this.Input.setValue(this.state.selected.value);
+            });
+
             this.ClearBtn.show();
         }
 
@@ -58,10 +73,8 @@ class SelectService extends AbstractEttoService {
     }
 
     onSelection(choice) {
-        setTimeout(() => {
-            this.Input.setValue(choice.value);
-            this.Input.setPlaceholder(choice.value);
-        });
+        this.Input.setValue(choice.value);
+        this.Input.setPlaceholder(choice.value);
 
         this.actions.setFiltered(this.state.choices);
         this.actions.setHighlighted(null);

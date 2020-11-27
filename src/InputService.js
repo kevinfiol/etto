@@ -20,6 +20,7 @@ class InputService extends AbstractEttoService {
 
     onInput(e) {
         const inputVal = e.target.value;
+        if (this.onValue) this.onValue(inputVal); // custom callback
 
         if (inputVal) this.ClearBtn.show();
         else this.ClearBtn.hide();
