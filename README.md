@@ -6,6 +6,9 @@ A small, customizable autocomplete and select component. Some highlights:
 * Lightweight ([~3.1kb min+gzip](https://bundlephobia.com/result?p=etto))
 * Zero dependencies
 * Framework agnostic
+* Select mode included
+* Support for user-defined callbacks
+* Use the included filtering mechanism or bring your own!
 
 **Etto only supports modern browsers. It is not intended to work with IE11.**
 
