@@ -165,7 +165,7 @@ const etto = new Etto(document.getElementById('my-input'), {
     // a custom callback you can use to do something upon programmatically clearing the user input
     onClear: undefined,
 
-    // onValue(value: string) void
+    // onValue(value: string): void
     // a custom callback you can use to when the input value has changed
     // primarily for use in input mode; might behave unexpectedly when using select mode
     onValue: undefined
