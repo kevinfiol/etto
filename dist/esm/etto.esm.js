@@ -114,8 +114,7 @@ class Dropdown extends Element {
 class Spinner extends Element {
     constructor(
         el,
-        dotSize,
-        topPosition
+        dotSize
     ) {
         super(el);
 
@@ -128,10 +127,8 @@ class Spinner extends Element {
 
         this.applyClassList(['etto-spinner']);
         this.applyAttributes({
-            style: 'position: absolute; display: none; align-items: center; right: 2em;'
+            style: 'position: absolute; display: none; align-items: center; right: 2rem;'
         });
-
-        this.el.style.top = `${topPosition}px`;
 
         // Initialize Dots
         this.createDots();
@@ -180,8 +177,6 @@ class Spinner extends Element {
 class ClearBtn extends Element {
     constructor(
         el,
-        btnHeight,
-        clearBtnTopPosition,
         clickEvt
     ) {
         super(el);
@@ -191,14 +186,11 @@ class ClearBtn extends Element {
             style: 'opacity: 0.7; ' +
                 'position: absolute; ' +
                 'display: none; ' + 
-                'align-items: center; ' +
-                'right: 0.6em; ' +
+                'right: 0.8rem; ' +
                 'cursor: pointer; ' +
                 'font-family: sans-serif; ' +
                 'font-size: 20px; ' +
-                'font-weight: 400; ' +
-                `height: ${btnHeight}px; ` +
-                `top: ${clearBtnTopPosition}px;`
+                'font-weight: 400; '
         });
 
         this.addEventListener('click', clickEvt);
@@ -375,7 +367,6 @@ const MAX_RESULTS = 7;
 const REQUEST_DELAY = 350;
 const SPINNER_DOT_SIZE = 6;
 const SPINNER_TIMER = 300;
-const CLEAR_BTN_HEIGHT = 22;
 
 class AbstractEttoService {
     constructor(root, config, choices) {
@@ -431,6 +422,16 @@ class AbstractEttoService {
             this.selectMode
         );
 
+        this.Spinner = new Spinner(
+            document.createElement('div'),
+            SPINNER_DOT_SIZE
+        );
+
+        this.ClearBtn = new ClearBtn(
+            document.createElement('div'),
+            this.clear.bind(this)
+        );
+
         this.UnorderedList = new UnorderedList(
             document.createElement('ul'),
             this.createItemMousedownEvt.bind(this),
@@ -447,37 +448,17 @@ class AbstractEttoService {
         this.container.setAttribute('style', 'position: relative;');
 
         const inputContainer = document.createElement('div');
+        inputContainer.classList.add('etto-input-container');
         inputContainer.setAttribute('style', 'position: relative;');
         inputContainer.appendChild(this.Input.el);
+        inputContainer.appendChild(this.ClearBtn.el);
+        inputContainer.appendChild(this.Spinner.el);
 
         this.container.appendChild(inputContainer);
         this.container.appendChild(this.Dropdown.el);
 
         this.root = root;
         this.root.appendChild(this.container);
-
-        // Append Spinner
-        const spinnerTopPosition = ((this.Input.offsetHeight / 2) - (SPINNER_DOT_SIZE / 2));
-
-        this.Spinner = new Spinner(
-            document.createElement('div'),
-            SPINNER_DOT_SIZE,
-            spinnerTopPosition
-        );
-
-        this.container.appendChild(this.Spinner.el);
-
-        // Append Clear Btn
-        const clearBtnTopPosition = ((this.Input.offsetHeight / 2) - (CLEAR_BTN_HEIGHT / 2));
-
-        this.ClearBtn = new ClearBtn(
-            document.createElement('div'),
-            CLEAR_BTN_HEIGHT,
-            clearBtnTopPosition,
-            this.clear.bind(this)
-        );
-
-        this.container.appendChild(this.ClearBtn.el);
     }
 
     render(inputVal, filtered) {

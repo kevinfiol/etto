@@ -3,8 +3,7 @@ import Element from '../lib/Element.js';
 class Spinner extends Element {
     constructor(
         el,
-        dotSize,
-        topPosition
+        dotSize
     ) {
         super(el);
 
@@ -17,10 +16,8 @@ class Spinner extends Element {
 
         this.applyClassList(['etto-spinner']);
         this.applyAttributes({
-            style: 'position: absolute; display: none; align-items: center; right: 2em;'
+            style: 'position: absolute; display: none; align-items: center; right: 2rem;'
         });
-
-        this.el.style.top = `${topPosition}px`;
 
         // Initialize Dots
         this.createDots();

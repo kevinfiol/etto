@@ -1,8 +1,11 @@
 .etto-container { color: black; }
-.etto-input { width: 100%; height: 2em; padding: 1.5em 1em; font-family: monospace; }
+.etto-input-container { width: 100%; display: flex; }
+.etto-input { width: 100%; height: 2em; padding: 1.5em 1em; font-family: monospace; margin-bottom: 0; margin-top: 0; }
+.etto-clear-btn { align-self: center; }
+.etto-spinner { align-self: center; line-height: 0; }
+.etto-spinner-dot { background-color: black; }
+.etto-dropdown { border: 1px solid #d1d1d1; font-family: monospace; transition: all 0.5s; background-color: white; }
 .etto-ul { padding: 0; margin: 0; }
 .etto-li { padding: 6px; margin: 0; }
 .etto-highlighted, .etto-li:hover:not(.etto-selected) { background-color: #f2f2f2; }
 .etto-selected { background-color: #4c4cff; color: white; }
-.etto-dropdown { border: 1px solid #d1d1d1; font-family: monospace; transition: all 0.5s; background-color: white; }
-.etto-spinner-dot { background-color: black; }

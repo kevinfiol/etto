@@ -3,8 +3,6 @@ import Element from '../lib/Element.js';
 class ClearBtn extends Element {
     constructor(
         el,
-        btnHeight,
-        clearBtnTopPosition,
         clickEvt
     ) {
         super(el);
@@ -14,14 +12,11 @@ class ClearBtn extends Element {
             style: 'opacity: 0.7; ' +
                 'position: absolute; ' +
                 'display: none; ' + 
-                'align-items: center; ' +
-                'right: 0.6em; ' +
+                'right: 0.8rem; ' +
                 'cursor: pointer; ' +
                 'font-family: sans-serif; ' +
                 'font-size: 20px; ' +
-                'font-weight: 400; ' +
-                `height: ${btnHeight}px; ` +
-                `top: ${clearBtnTopPosition}px;`
+                'font-weight: 400; '
         });
 
         this.addEventListener('click', clickEvt);
