@@ -4,11 +4,10 @@ etto
 A small, customizable autocomplete and select component. Some highlights:
 
 * Lightweight ([~3.1kb min+gzip](https://bundlephobia.com/result?p=etto))
-* Written in ES6+
 * Zero dependencies
 * Framework agnostic
 
-**Etto uses ES6+ features, and only supports modern browsers. It is not intended to work with IE11.**
+**Etto only supports modern browsers. It is not intended to work with IE11.**
 
 This a replacement for my earlier component, [otto](https://github.com/kevinfiol/otto). I wanted to get rid of the Hyperapp dependency, but also simplify the codebase and features, hence the new name and project. Etto is also named after [a friend of mine](https://github.com/ettore34). I advise you use etto over otto.
 
