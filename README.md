@@ -3,7 +3,7 @@ etto
 
 A small, customizable autocomplete and select component. Some highlights:
 
-* Lightweight (~3.7kb min+gzip)
+* Lightweight ([~3.1kb min+gzip](https://bundlephobia.com/result?p=etto))
 * Written in ES6+
 * Zero dependencies
 * Framework agnostic
