@@ -132,7 +132,7 @@ choices = [
 
 etto = new Etto(document.getElementById('demo-5'), {
     createItemFn: (choice, inputVal, isHighlighted, isSelected) => {
-        return '&lt;li>' +
+        return '&lt;li class="etto-li">' +
             '&lt;img src="https://kevinfiol.github.io/etto/img.png" />' +
             `&lt;b>label: ${choice.label}, value: ${choice.value}&lt;/b>` +
         '&lt;/li>';
@@ -191,7 +191,7 @@ etto = new Etto(document.getElementById('demo-7'), {
 
 
             <h3>onValue</h3>
-            <p>you can also use the <code>onValue</code> callback which triggers after every new value to to the `input` element.</p>
+            <p>you can also use the <code>onValue</code> callback which triggers after every new value to the <code>input</code> element.</p>
             <div id="demo-8"></div>
             <div id="demo-8-box" style="font-size: 1.5em; padding: 1em; text-align: center;">Waiting for input...</div>
             <code>
@@ -288,7 +288,7 @@ etto = new Etto(document.getElementById('demo-8'), {
          **/
         etto = new Etto(document.getElementById('demo-5'), {
             createItemFn: (choice, inputVal, isHighlighted, isSelected) => {
-                return '<li>' +
+                return '<li class="etto-li">' +
                     '<img src="https://kevinfiol.github.io/etto/img.png" />' +
                     `<b>label: ${choice.label}, value: ${choice.value}</b>` +
                 '</li>';
