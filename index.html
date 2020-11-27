@@ -188,6 +188,28 @@ etto = new Etto(document.getElementById('demo-7'), {
     }
 }, choices);</pre>
             </code>
+
+
+            <h3>onValue</h3>
+            <p>you can also use the <code>onValue</code> callback which triggers after every new value to to the `input` element.</p>
+            <div id="demo-8"></div>
+            <div id="demo-8-box" style="font-size: 1.5em; padding: 1em; text-align: center;">Waiting for input...</div>
+            <code>
+                <pre>
+choices = [
+    { label: 'Apples' },
+    { label: 'Bananas' },
+    { label: 'Animal Crossing' }
+];
+
+const demo8box = document.getElementById('demo-8-box');
+
+etto = new Etto(document.getElementById('demo-8'), {
+    onValue: value => {
+        demo8box.innerText = value.trim() ? value : 'Input is currently empty.';
+    }
+}, choices);</pre>
+            </code>
         </div>
 
         <hr />
@@ -310,6 +332,23 @@ etto = new Etto(document.getElementById('demo-7'), {
             },
             onClear: () => {
                 box.innerText = 'None selected.';
+            }
+        }, choices);
+
+        /**
+        * Demo 8
+        **/
+        choices = [
+            { label: 'Apples' },
+            { label: 'Bananas' },
+            { label: 'Animal Crossing' }
+        ];
+
+        const demo8box = document.getElementById('demo-8-box');
+
+        etto = new Etto(document.getElementById('demo-8'), {
+            onValue: value => {
+                demo8box.innerText = value.trim() ? value : 'Input is currently empty.';
             }
         }, choices);
     </script>
