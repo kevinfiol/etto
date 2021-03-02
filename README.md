@@ -3,7 +3,7 @@ etto
 
 A small, customizable autocomplete and select component. Some highlights:
 
-* Lightweight ([~3.1kb min+gzip](https://bundlephobia.com/result?p=etto))
+* Lightweight ([~3.3kb min+gzip](https://bundlephobia.com/result?p=etto))
 * Zero dependencies
 * Framework agnostic
 * Select mode included
@@ -98,6 +98,11 @@ Use `etto.clear` to clear current input value (it also clears `etto.selected` wh
 etto.clear();
 console.log(etto.value); // ''
 console.log(etto.selected); // null
+```
+
+Use `etto.destroy` to remove all event listeners and delete the service of the `Etto` instance.
+```js
+etto.destroy();
 ```
 
 Several more lower-level methods are available under `etto.service`. Proceed with caution.
