@@ -25,6 +25,14 @@ class Etto {
     clear() {
         this.service.clear();
     }
+
+    destroy() {
+        this.service.Input.removeAllEvents();
+        this.service.ClearBtn.removeAllEvents();
+        this.service.Dropdown.removeAllEvents();
+        this.service.UnorderedList.removeAllEvents();
+        delete this.service;
+    }
 }
 
 export default Etto;

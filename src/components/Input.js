@@ -51,6 +51,10 @@ class Input extends Element {
     blur() {
         this.el.blur();
     }
+
+    setCursorToEnd() {
+        this.el.selectionStart = this.el.selectionEnd = this.el.value.length;
+    }
 }
 
 export default Input;

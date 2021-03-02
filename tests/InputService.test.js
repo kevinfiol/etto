@@ -116,15 +116,13 @@ t('InputService Keyboard Input', () => {
     equal(service.state.highlighted, null);
 });
 
-t('InputService createItemMousedownEvt', () => {
+t('InputService itemMouseDownEvt', () => {
     service.Input.blur();
     service.Input.setValue('');
 
     equal(document.activeElement !== service.Input.el, true);
 
-    let evt = service.createItemMousedownEvt({ label: 'Wyoming', value: 'Wyoming' });
-
-    evt.apply(service); // call evt with `service` as the thisArg
+    service.itemMouseDownEvt({ label: 'Wyoming', value: 'Wyoming' })
     service.Input.focus();
 
     equal(document.activeElement === service.Input.el, true);

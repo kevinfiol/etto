@@ -37,6 +37,7 @@ class InputService extends AbstractEttoService {
 
     onFocus() {
         this.setShowDropdown(this.state.filtered.length > 0);
+        this.Input.setCursorToEnd();
     }
 
     onBlur() {
@@ -69,11 +70,9 @@ class InputService extends AbstractEttoService {
         if (this.onSelect) this.onSelect(choice);
     }
 
-    createItemMousedownEvt(choice) {
-        return () => {
-            this.onSelection(choice);
-            this.Input.focus();
-        };
+    itemMouseDownEvt(choice) {
+        this.onSelection(choice);
+        this.Input.focus();
     }
 }
 

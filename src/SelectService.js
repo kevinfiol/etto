@@ -90,10 +90,8 @@ class SelectService extends AbstractEttoService {
         if (this.onSelect) this.onSelect(choice);
     }
 
-    createItemMousedownEvt(choice) {
-        return () => {
-            this.onSelection(choice);
-        };
+    itemMouseDownEvt(choice) {
+        this.onSelection(choice);
     }
 }
 

@@ -11,7 +11,7 @@ let val = 0;
 
 t.before(() => {
     domEl = document.createElement('div');
-    clearBtn = new ClearBtn(domEl, 22, 100, () => {
+    clearBtn = new ClearBtn(domEl, () => {
         val = 1;
     });
 });

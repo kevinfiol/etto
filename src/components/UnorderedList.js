@@ -2,9 +2,9 @@ import Element from '../lib/Element.js';
 import { createEmText } from '../util.js';
 
 class UnorderedList extends Element {
-    constructor(el, createItemMousedownEvt, createItemFn, customEmptyHtml) {
+    constructor(el, itemMouseDownEvt, createItemFn, customEmptyHtml) {
         super(el);
-        this.createItemMousedownEvt = createItemMousedownEvt;
+        this.itemMouseDownEvt = itemMouseDownEvt;
 
         // Use custom createItemFn or default to this.createListItem
         this.createItemFn = createItemFn || this.createListItem;
@@ -19,7 +19,7 @@ class UnorderedList extends Element {
         this.el.innerHTML = html;
     }
 
-    createListItem(choice, inputVal, isHighlighted, isSelected) {
+    createListItem(choice, index, inputVal, isHighlighted, isSelected) {
         let liClass = 'etto-li';
         if (isHighlighted) liClass += ' etto-highlighted';
         if (isSelected) liClass += ' etto-selected';
@@ -28,6 +28,7 @@ class UnorderedList extends Element {
                 ' style="list-style-type: none; cursor: default"' +
                 ` data-label="${choice.label}"` +
                 ` data-value="${choice.value}"` +
+                ` data-index="${index}"` +
             '>' +
                 createEmText(choice.label, inputVal) +
             '</li>'
@@ -44,16 +45,14 @@ class UnorderedList extends Element {
             for (let i = 0; i < listLen; i++) {
                 const isSelected = selected ? (list[i].value === selected.value) : false;
                 const isHighlighted = i === highlightedIndex;
-                html += this.createItemFn(list[i], inputVal, isHighlighted, isSelected);
+                html += this.createItemFn(list[i], i, inputVal, isHighlighted, isSelected);
             }
 
             this.setInnerHtml(html);
-
-            // Iterate on newly created list items
-            for (let i = 0; i < listLen; i++) {
-                const li = this.el.children[i];
-                li.addEventListener('mousedown', this.createItemMousedownEvt(list[i]));
-            }
+            this.removeEventListener('mousedown'); // remove old event listener if exists
+            this.addEventListener('mousedown', ev => {
+                this.itemMouseDownEvt(list[ev.target.dataset.index]);
+            });
         } else {
             html += '<li class="etto-li etto-empty">' + this.emptyHtml + '</li>';
             this.setInnerHtml(html);

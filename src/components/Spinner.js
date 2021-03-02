@@ -7,7 +7,7 @@ class Spinner extends Element {
     ) {
         super(el);
 
-        this.dotSize = 6;
+        this.dotSize = dotSize || 6;
         this.dots = [];
         this.currentDot = 0;
 

@@ -7,7 +7,7 @@ global.document = window.document;
 
 function evt(action, el) {
     const ev = document.createEvent('HTMLEvents');
-    ev.initEvent(action, false, true);
+    ev.initEvent(action, true, true);
     el.dispatchEvent(ev);
 }
 

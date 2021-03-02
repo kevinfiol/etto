@@ -78,7 +78,7 @@ class AbstractEttoService {
 
         this.UnorderedList = new UnorderedList(
             document.createElement('ul'),
-            this.createItemMousedownEvt.bind(this),
+            this.itemMouseDownEvt.bind(this),
             this.createItemFn,
             this.emptyHtml
         );

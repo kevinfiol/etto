@@ -20,6 +20,7 @@ t('SelectService constructor', () => {
 });
 
 t('SelectService onFocus', () => {
+    equal(service.Dropdown.isVisible(), false);
     service.Input.focus();
 
     equal(document.activeElement == service.Input.el, true);
@@ -63,10 +64,11 @@ t('SelectService onBlur', () => {
 });
 
 t('SelectService onSelection', () => {
+    equal(service.Dropdown.isVisible(), false);
     // using the select service, the state.selected var can only be
     // changed when the user clicks or selects something from the dropdown
     // we can simulate onSelection by simulating a click
-    service.Input.focus()
+    service.Input.focus();
 
     // mousedown the first element, this triggers onSelection
     // this also tests SelectService.createItemMousedownEvt
@@ -81,7 +83,7 @@ t('SelectService onSelection', () => {
 });
 
 t('SelectService Keyboard Input', () => {
-    const keyUp = () => keydownEvt(38, service.Input.el);
+    // const keyUp = () => keydownEvt(38, service.Input.el);
     const keyDown = () => keydownEvt(40, service.Input.el);
     const enterKey = () => keydownEvt(13, service.Input.el);
 

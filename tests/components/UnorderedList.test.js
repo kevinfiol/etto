@@ -33,6 +33,7 @@ t('UnorderedList createListItem', () => {
 
     let highlighted = ul.createListItem(
         { label: 'banana', value: 'banana' },
+        0,
         inputVal,
         true,
         false
@@ -52,6 +53,7 @@ t('UnorderedList createListItem', () => {
 
     let selected = ul.createListItem(
         { label: 'noodle', value: 'noodle' },
+        0,
         inputVal,
         false,
         true

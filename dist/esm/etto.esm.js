@@ -1,10 +1,29 @@
 class Element {
     constructor(el) {
         this.el = el;
+        this.listeners = {};
     }
 
     addEventListener(event, callback) {
-        this.el.addEventListener(event, callback);
+        if (!(event in this.listeners)) {
+            this.listeners[event] = callback;
+            this.el.addEventListener(event, callback);
+        } else {
+            console.warn('Cannot add multiple event listeners to Etto Element');
+        }
+    }
+
+    removeEventListener(event) {
+        if (event in this.listeners) {
+            this.el.removeEventListener(event, this.listeners[event], false);
+            delete this.listeners[event];
+        }
+    }
+
+    removeAllEvents() {
+        for (const event in this.listeners) {
+            this.removeEventListener(event);
+        }
     }
 
     applyClassList(classList) {
@@ -79,6 +98,10 @@ class Input extends Element {
     blur() {
         this.el.blur();
     }
+
+    setCursorToEnd() {
+        this.el.selectionStart = this.el.selectionEnd = this.el.value.length;
+    }
 }
 
 class Dropdown extends Element {
@@ -118,7 +141,7 @@ class Spinner extends Element {
     ) {
         super(el);
 
-        this.dotSize = 6;
+        this.dotSize = dotSize || 6;
         this.dots = [];
         this.currentDot = 0;
 
@@ -257,9 +280,9 @@ function choiceMap(choice) {
 }
 
 class UnorderedList extends Element {
-    constructor(el, createItemMousedownEvt, createItemFn, customEmptyHtml) {
+    constructor(el, itemMouseDownEvt, createItemFn, customEmptyHtml) {
         super(el);
-        this.createItemMousedownEvt = createItemMousedownEvt;
+        this.itemMouseDownEvt = itemMouseDownEvt;
 
         // Use custom createItemFn or default to this.createListItem
         this.createItemFn = createItemFn || this.createListItem;
@@ -274,7 +297,7 @@ class UnorderedList extends Element {
         this.el.innerHTML = html;
     }
 
-    createListItem(choice, inputVal, isHighlighted, isSelected) {
+    createListItem(choice, index, inputVal, isHighlighted, isSelected) {
         let liClass = 'etto-li';
         if (isHighlighted) liClass += ' etto-highlighted';
         if (isSelected) liClass += ' etto-selected';
@@ -283,6 +306,7 @@ class UnorderedList extends Element {
                 ' style="list-style-type: none; cursor: default"' +
                 ` data-label="${choice.label}"` +
                 ` data-value="${choice.value}"` +
+                ` data-index="${index}"` +
             '>' +
                 createEmText(choice.label, inputVal) +
             '</li>'
@@ -299,16 +323,14 @@ class UnorderedList extends Element {
             for (let i = 0; i < listLen; i++) {
                 const isSelected = selected ? (list[i].value === selected.value) : false;
                 const isHighlighted = i === highlightedIndex;
-                html += this.createItemFn(list[i], inputVal, isHighlighted, isSelected);
+                html += this.createItemFn(list[i], i, inputVal, isHighlighted, isSelected);
             }
 
             this.setInnerHtml(html);
-
-            // Iterate on newly created list items
-            for (let i = 0; i < listLen; i++) {
-                const li = this.el.children[i];
-                li.addEventListener('mousedown', this.createItemMousedownEvt(list[i]));
-            }
+            this.removeEventListener('mousedown'); // remove old event listener if exists
+            this.addEventListener('mousedown', ev => {
+                this.itemMouseDownEvt(list[ev.target.dataset.index]);
+            });
         } else {
             html += '<li class="etto-li etto-empty">' + this.emptyHtml + '</li>';
             this.setInnerHtml(html);
@@ -434,7 +456,7 @@ class AbstractEttoService {
 
         this.UnorderedList = new UnorderedList(
             document.createElement('ul'),
-            this.createItemMousedownEvt.bind(this),
+            this.itemMouseDownEvt.bind(this),
             this.createItemFn,
             this.emptyHtml
         );
@@ -615,6 +637,7 @@ class InputService extends AbstractEttoService {
 
     onFocus() {
         this.setShowDropdown(this.state.filtered.length > 0);
+        this.Input.setCursorToEnd();
     }
 
     onBlur() {
@@ -647,11 +670,9 @@ class InputService extends AbstractEttoService {
         if (this.onSelect) this.onSelect(choice);
     }
 
-    createItemMousedownEvt(choice) {
-        return () => {
-            this.onSelection(choice);
-            this.Input.focus();
-        };
+    itemMouseDownEvt(choice) {
+        this.onSelection(choice);
+        this.Input.focus();
     }
 }
 
@@ -745,10 +766,8 @@ class SelectService extends AbstractEttoService {
         if (this.onSelect) this.onSelect(choice);
     }
 
-    createItemMousedownEvt(choice) {
-        return () => {
-            this.onSelection(choice);
-        };
+    itemMouseDownEvt(choice) {
+        this.onSelection(choice);
     }
 }
 
@@ -775,6 +794,14 @@ class Etto {
 
     clear() {
         this.service.clear();
+    }
+
+    destroy() {
+        this.service.Input.removeAllEvents();
+        this.service.ClearBtn.removeAllEvents();
+        this.service.Dropdown.removeAllEvents();
+        this.service.UnorderedList.removeAllEvents();
+        delete this.service;
     }
 }
 
