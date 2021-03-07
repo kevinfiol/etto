@@ -117,6 +117,14 @@ const etto = new Etto(document.getElementById('my-input'), {
     // whether to enable select mode
     selectMode: false,
 
+    // classList: array
+    // additional classes to add to the etto-input element
+    classList: undefined,
+
+    // placeholder: string,
+    // custom placeholder. defaults to 'Select...' in select mode
+    placeholder: undefined,
+
     // source(query: string, done: function): void
     // for use with async choice sources; see live examples page
     source: undefined,
