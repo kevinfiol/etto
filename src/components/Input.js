@@ -16,6 +16,7 @@ class Input extends Element {
 
         this.applyClassList(['etto-input', ...(classList || [])]);
         this.applyAttributes({
+            type: 'text',
             autocomplete: 'off',
             value: '',
             style: `box-sizing: border-box; cursor: ${isSelectMode ? 'default' : 'text'};`,
