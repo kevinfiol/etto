@@ -13,7 +13,7 @@ class SelectService extends AbstractEttoService {
             else this.Dropdown.show();
         });
 
-        this.Input.setPlaceholder(this.selectPlaceholder);
+        this.Input.setPlaceholder(this.defaultPlaceholder);
 
         // Initial Render
         this.render(this.Input.value, this.state.filtered);
@@ -21,7 +21,7 @@ class SelectService extends AbstractEttoService {
 
     clear() {
         this.actions.setSelected(null);
-        this.Input.setPlaceholder(this.selectPlaceholder);
+        this.Input.setPlaceholder(this.defaultPlaceholder);
         this.Input.setValue('');
         this.ClearBtn.hide();
         this.render(this.Input.value, this.state.filtered);

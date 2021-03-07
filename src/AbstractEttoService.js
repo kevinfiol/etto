@@ -13,19 +13,19 @@ const SPINNER_DOT_SIZE = 6;
 const SPINNER_TIMER = 300;
 
 class AbstractEttoService {
-    constructor(root, config, choices) {
+    constructor(root, config = {}, choices) {
         /**
         * Configuration
         **/
-        this.selectMode        = config.selectMode    || false;
-        this.source            = config.source        || undefined;
-        this.minChars          = config.minChars      || MIN_CHARS;
-        this.maxResults        = config.maxResults    || MAX_RESULTS;
-        this.requestDelay      = config.requestDelay  || REQUEST_DELAY;
-        this.matchFullWord     = config.matchFullWord || false;
-        this.showEmptyMsg      = (config.showEmptyMsg !== undefined ? config.showEmptyMsg : true);
-        this.initialCache      = config.initialCache || {}; // initial cache for ajax results
-        this.selectPlaceholder = config.selectPlaceholder || 'Select...';
+        this.selectMode         = config.selectMode    || false;
+        this.source             = config.source        || undefined;
+        this.minChars           = config.minChars      || MIN_CHARS;
+        this.maxResults         = config.maxResults    || MAX_RESULTS;
+        this.requestDelay       = config.requestDelay  || REQUEST_DELAY;
+        this.matchFullWord      = config.matchFullWord || false;
+        this.showEmptyMsg       = (config.showEmptyMsg !== undefined ? config.showEmptyMsg : true);
+        this.initialCache       = config.initialCache || {}; // initial cache for ajax results
+        this.defaultPlaceholder = config.placeholder || (config.selectMode ? 'Select...' : '');
 
         // Custom Properties
         this.emptyHtml    = config.emptyHtml    || undefined;
@@ -63,7 +63,9 @@ class AbstractEttoService {
             this.onBlur.bind(this),
             this.onKeydown.bind(this),
             this.onValue,
-            this.selectMode
+            this.selectMode,
+            config.classList,
+            this.defaultPlaceholder
         );
 
         this.Spinner = new Spinner(

@@ -27,9 +27,7 @@ class Element {
     }
 
     applyClassList(classList) {
-        for (let i = 0; i < classList.length; i++) {
-            this.el.classList.add(classList[i]);
-        }
+        this.el.classList.add(...classList);
     }
 
     applyAttributes(attributes) {
@@ -55,16 +53,19 @@ class Input extends Element {
         onBlur,
         onKeydown,
         onValue,
-        isSelectMode
+        isSelectMode,
+        classList,
+        placeholder
     ) {
         super(el);
 
-        this.applyClassList(['etto-input']);
+        this.applyClassList(['etto-input', ...(classList || [])]);
         this.applyAttributes({
             autocomplete: 'off',
             value: '',
             style: `box-sizing: border-box; cursor: ${isSelectMode ? 'default' : 'text'};`,
-            tabIndex: isSelectMode ? '-1' : '0'
+            tabIndex: isSelectMode ? '-1' : '0',
+            placeholder: placeholder
         });
 
         this.onValue = onValue;
@@ -391,19 +392,19 @@ const SPINNER_DOT_SIZE = 6;
 const SPINNER_TIMER = 300;
 
 class AbstractEttoService {
-    constructor(root, config, choices) {
+    constructor(root, config = {}, choices) {
         /**
         * Configuration
         **/
-        this.selectMode        = config.selectMode    || false;
-        this.source            = config.source        || undefined;
-        this.minChars          = config.minChars      || MIN_CHARS;
-        this.maxResults        = config.maxResults    || MAX_RESULTS;
-        this.requestDelay      = config.requestDelay  || REQUEST_DELAY;
-        this.matchFullWord     = config.matchFullWord || false;
-        this.showEmptyMsg      = (config.showEmptyMsg !== undefined ? config.showEmptyMsg : true);
-        this.initialCache      = config.initialCache || {}; // initial cache for ajax results
-        this.selectPlaceholder = config.selectPlaceholder || 'Select...';
+        this.selectMode         = config.selectMode    || false;
+        this.source             = config.source        || undefined;
+        this.minChars           = config.minChars      || MIN_CHARS;
+        this.maxResults         = config.maxResults    || MAX_RESULTS;
+        this.requestDelay       = config.requestDelay  || REQUEST_DELAY;
+        this.matchFullWord      = config.matchFullWord || false;
+        this.showEmptyMsg       = (config.showEmptyMsg !== undefined ? config.showEmptyMsg : true);
+        this.initialCache       = config.initialCache || {}; // initial cache for ajax results
+        this.defaultPlaceholder = config.placeholder || (config.selectMode ? 'Select...' : '');
 
         // Custom Properties
         this.emptyHtml    = config.emptyHtml    || undefined;
@@ -441,7 +442,9 @@ class AbstractEttoService {
             this.onBlur.bind(this),
             this.onKeydown.bind(this),
             this.onValue,
-            this.selectMode
+            this.selectMode,
+            config.classList,
+            this.defaultPlaceholder
         );
 
         this.Spinner = new Spinner(
@@ -689,7 +692,7 @@ class SelectService extends AbstractEttoService {
             else this.Dropdown.show();
         });
 
-        this.Input.setPlaceholder(this.selectPlaceholder);
+        this.Input.setPlaceholder(this.defaultPlaceholder);
 
         // Initial Render
         this.render(this.Input.value, this.state.filtered);
@@ -697,7 +700,7 @@ class SelectService extends AbstractEttoService {
 
     clear() {
         this.actions.setSelected(null);
-        this.Input.setPlaceholder(this.selectPlaceholder);
+        this.Input.setPlaceholder(this.defaultPlaceholder);
         this.Input.setValue('');
         this.ClearBtn.hide();
         this.render(this.Input.value, this.state.filtered);

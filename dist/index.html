@@ -120,7 +120,8 @@ etto = new Etto(document.getElementById('demo-3'), {
         
             <h3>createItemFn</h3>
             <p>use the <code>createItemFn</code> property to tell etto how to render items in the dropdown list. a couple of parameters are passed, which you can use to return an html string.</p>
-            <code><pre>createItemFn(choice: object, inputVal: string, isHighlighted: boolean, isSelected: boolean): string</pre></code>
+            <p><em>note:</em> you must use the <code>index</code> parameter to attach a <code>data-index</code> attribute to your list element. etto uses this internally for item selection. if you do not add this attribute, <strong>selection will not work</strong>. see example code below.</p>
+            <code><pre>createItemFn(choice: object, index: number, inputVal: string, isHighlighted: boolean, isSelected: boolean): string</pre></code>
             <div id="demo-5"></div>
             <code>
                 <pre>
@@ -131,8 +132,8 @@ choices = [
 ];
 
 etto = new Etto(document.getElementById('demo-5'), {
-    createItemFn: (choice, inputVal, isHighlighted, isSelected) => {
-        return '&lt;li>' +
+    createItemFn: (choice, index, inputVal, isHighlighted, isSelected) => {
+        return `&lt;li data-index="${index}" class="etto-li">` +
             '&lt;img src="https://kevinfiol.github.io/etto/img.png" />' +
             `&lt;b>label: ${choice.label}, value: ${choice.value}&lt;/b>` +
         '&lt;/li>';
@@ -287,8 +288,8 @@ etto = new Etto(document.getElementById('demo-8'), {
          * Demo 5
          **/
         etto = new Etto(document.getElementById('demo-5'), {
-            createItemFn: (choice, inputVal, isHighlighted, isSelected) => {
-                return '<li>' +
+            createItemFn: (choice, index, inputVal, isHighlighted, isSelected) => {
+                return `<li data-index="${index}" class="etto-li">` +
                     '<img src="https://kevinfiol.github.io/etto/img.png" />' +
                     `<b>label: ${choice.label}, value: ${choice.value}</b>` +
                 '</li>';

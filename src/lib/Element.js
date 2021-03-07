@@ -27,9 +27,7 @@ class Element {
     }
 
     applyClassList(classList) {
-        for (let i = 0; i < classList.length; i++) {
-            this.el.classList.add(classList[i]);
-        }
+        this.el.classList.add(...classList);
     }
 
     applyAttributes(attributes) {
