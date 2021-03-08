@@ -331,7 +331,7 @@ class UnorderedList extends Element {
             this.setInnerHtml(html);
             this.removeEventListener('mousedown'); // remove old event listener if exists
             this.addEventListener('mousedown', ev => {
-                this.itemMouseDownEvt(list[ev.target.dataset.index]);
+                if (ev.target && ev.target.nodeName == "LI") this.itemMouseDownEvt(list[ev.target.dataset.index]);
             });
         } else {
             html += '<li class="etto-li etto-empty">' + this.emptyHtml + '</li>';
