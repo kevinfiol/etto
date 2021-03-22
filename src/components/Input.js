@@ -9,19 +9,21 @@ class Input extends Element {
         onKeydown,
         onValue,
         isSelectMode,
-        classList,
-        placeholder
+        classList = [],
+        placeholder,
+        inputAttributes = {}
     ) {
         super(el);
 
-        this.applyClassList(['etto-input', ...(classList || [])]);
+        this.applyClassList(['etto-input', ...classList]);
         this.applyAttributes({
             type: 'text',
             autocomplete: 'off',
             value: '',
             style: `box-sizing: border-box; cursor: ${isSelectMode ? 'default' : 'text'};`,
             tabIndex: isSelectMode ? '-1' : '0',
-            placeholder: placeholder
+            placeholder: placeholder,
+            ...inputAttributes
         });
 
         this.onValue = onValue;

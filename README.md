@@ -125,6 +125,10 @@ const etto = new Etto(document.getElementById('my-input'), {
     // custom placeholder. defaults to 'Select...' in select mode
     placeholder: undefined,
 
+    // inputAttributes: object
+    // any additional attributes you'd like to apply to the etto-input element. be aware that overwriting the `style` attribute may break Etto functionality
+    inputAttributes: undefined,
+
     // source(query: string, done: function): void
     // for use with async choice sources; see live examples page
     source: undefined,
@@ -155,10 +159,6 @@ const etto = new Etto(document.getElementById('my-input'), {
     // used in conjunction with config.source;
     // in case you already have some cached data you'd like to initialize with Etto
     initialCache: {},
-
-    // selectPlaceholder: string
-    // for use with select mode; the default placeholder text for an empty select box
-    selectPlaceholder: 'Select...',
 
     // createItemFn(choice: object, inputVal: string, isHighlighted: boolean, isSelected: boolean): string
     // customize how each list item is rendered; see live examples page

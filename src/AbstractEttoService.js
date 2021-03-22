@@ -65,7 +65,8 @@ class AbstractEttoService {
             this.onValue,
             this.selectMode,
             config.classList,
-            this.defaultPlaceholder
+            this.defaultPlaceholder,
+            config.inputAttributes
         );
 
         this.Spinner = new Spinner(
