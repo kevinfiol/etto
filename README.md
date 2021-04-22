@@ -5,7 +5,7 @@ A small, customizable autocomplete and select component. Some highlights:
 
 * Lightweight ([~3.3kb min+gzip](https://bundlephobia.com/result?p=etto))
 * Zero dependencies
-* Framework agnostic
+* View-library agnostic
 * Select mode included
 * Support for user-defined callbacks
 * Use the included filtering mechanism or bring your own!
