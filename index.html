@@ -119,7 +119,7 @@ etto = new Etto(document.getElementById('demo-3'), {
             <code><pre>etto = new Etto(document.getElementById('demo-4'), { emptyHtml: '&lt;b>Nothing here chief!&lt;/b>' }, choices);</pre></code>
         
             <h3 id="createItemFn">createItemFn</h3>
-            <p>use the <code>createItemFn</code> property to tell etto how to render <code>li<code> items in the dropdown list. a couple of parameters are passed, which you can use to return an html string.</p>
+            <p>use the <code>createItemFn</code> property to tell etto how to render <code>li</code> items in the dropdown list. a couple of parameters are passed, which you can use to return an html string.</p>
             <p><strong>Note:</strong> elements <em>must</em> be <code>li</code> tags and <em>must</em> include a <code>data-index</code> attribute with the value provided by the <code>index</code> parameter. see below for an example.</p>
             <code><pre>createItemFn(choice: object, index: number, inputVal: string, isHighlighted: boolean, isSelected: boolean): string</pre></code>
             <div id="demo-5"></div>
