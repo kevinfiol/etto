@@ -1,4 +1,7 @@
 .reify-cache/
-dist/dev/
 node_modules/
 *.map
+dist/etto.cjs
+dist/etto.js
+dist/etto.esm.js
+dist/etto.min.js

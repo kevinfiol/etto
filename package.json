@@ -1,26 +1,36 @@
 {
   "name": "etto",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "small, agnostic autocomplete & select component",
   "type": "module",
-  "main": "./dist/esm/etto.esm.js",
-  "module": "./dist/esm/etto.esm.js",
-  "author": "kevinfiol",
   "license": "MIT",
+  "repository": "kevinfiol/etto",
+  "source": "src/index.js",
+  "main": "dist/etto.cjs",
+  "module": "dist/etto.esm.js",
+  "exports": "dist/etto.js",
+  "unpkg": "dist/etto.min.js",
+  "umd:name": "etto",
+  "author": "kevinfiol",
   "scripts": {
-    "dev": "rollup -c -w --environment DEV",
-    "build": "rollup -c --environment PROD",
+    "build": "microbundle --no-sourcemap --no-compress --format=modern,cjs,esm && microbundle --no-sourcemap --format=umd",
     "test": "uvu"
   },
+  "engines": {
+    "node": ">=12.x"
+  },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^12.0.0",
-    "@rollup/plugin-node-resolve": "^8.0.0",
-    "eslint": "^7.1.0",
     "jsdom": "15.1.1",
-    "rollup": "^2.12.0",
-    "rollup-plugin-livereload": "^1.3.0",
-    "rollup-plugin-serve": "^1.0.1",
-    "rollup-plugin-terser": "^6.1.0",
+    "microbundle": "^0.13.3",
     "uvu": "^0.5.0"
-  }
+  },
+  "keywords": [
+    "vanillajs",
+    "autocomplete",
+    "typeahead",
+    "select"
+  ]
 }
