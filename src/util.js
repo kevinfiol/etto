@@ -3,28 +3,28 @@ function removeHtml(s) {
 }
 
 function createEmText(choiceLabel, inputVal) {
-    const label = removeHtml(choiceLabel);
-    const len = inputVal.length;
-    const emIndex = choiceLabel.toUpperCase().indexOf(inputVal.toUpperCase());
+    let label = removeHtml(choiceLabel);
+    let len = inputVal.length;
+    let emIndex = choiceLabel.toUpperCase().indexOf(inputVal.toUpperCase());
 
     if (emIndex < 0)
         return label;
 
-    const beg = label.slice(0, emIndex);
-    const mid = label.slice(emIndex, emIndex + len);
-    const end = label.slice(emIndex + len);
+    let beg = label.slice(0, emIndex);
+    let mid = label.slice(emIndex, emIndex + len);
+    let end = label.slice(emIndex + len);
 
     return `${ beg }<b>${ mid }</b>${ end }`;
 }
 
 function filterChoices(inputVal, choices, matchFullWord, maxResults) {
-    const v = inputVal.toUpperCase();
+    let v = inputVal.toUpperCase();
 
     let filtered = choices.filter(c => {
-        const label = c.label;
+        let label = c.label;
         let index = label.toUpperCase().indexOf(v);
 
-        const passes = matchFullWord || false
+        let passes = matchFullWord || false
             ? label[index - 1] === undefined || label[index - 1] === ' '
             : true
         ;
