@@ -2,7 +2,6 @@
 dist/dev/
 dist/index.html
 dist/examples.js
-dist/*.map
 node_modules/
 tests/
 .eslintignore

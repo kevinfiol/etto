@@ -1,6 +1,6 @@
 {
   "name": "etto",
-  "version": "1.6.10",
+  "version": "1.6.11",
   "description": "small, agnostic autocomplete & select component",
   "type": "module",
   "license": "MIT",
@@ -20,7 +20,8 @@
     "node": ">=12.x"
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "devDependencies": {
     "esbuild": "^0.12.22",
