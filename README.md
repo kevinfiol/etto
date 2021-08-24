@@ -3,7 +3,7 @@ etto
 
 A small, customizable autocomplete and select component. Some highlights:
 
-* Lightweight ([~3.3kb min+gzip](https://bundlephobia.com/result?p=etto))
+* Lightweight ([~3.8kb min+gzip](https://bundlephobia.com/result?p=etto))
 * Zero dependencies
 * View-library agnostic
 * Select mode included
