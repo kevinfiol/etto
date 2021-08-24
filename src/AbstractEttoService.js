@@ -6,11 +6,11 @@ import UnorderedList from './components/UnorderedList.js';
 import Actions from './Actions.js';
 import { filterChoices, choiceMap } from './util.js';
 
-const MIN_CHARS = 3;
-const MAX_RESULTS = 7;
-const REQUEST_DELAY = 350;
-const SPINNER_DOT_SIZE = 6;
-const SPINNER_TIMER = 300;
+let MIN_CHARS = 3;
+let MAX_RESULTS = 7;
+let REQUEST_DELAY = 350;
+let SPINNER_DOT_SIZE = 6;
+let SPINNER_TIMER = 300;
 
 class AbstractEttoService {
     constructor(root, config = {}, choices) {
@@ -38,7 +38,7 @@ class AbstractEttoService {
         /**
         * State Management
         **/
-        const initialChoices = choices ? choices.map(choiceMap) : [];
+        let initialChoices = choices ? choices.map(choiceMap) : [];
 
         this.state = {
             isFetching: false,
@@ -94,7 +94,7 @@ class AbstractEttoService {
         this.container.classList.add('etto-container');
         this.container.setAttribute('style', 'position: relative;');
 
-        const inputContainer = document.createElement('div');
+        let inputContainer = document.createElement('div');
         inputContainer.classList.add('etto-input-container');
         inputContainer.setAttribute('style', 'position: relative;');
         inputContainer.appendChild(this.Input.el);
@@ -128,7 +128,7 @@ class AbstractEttoService {
     }
 
     fetchFromSource(inputVal) {
-        const key = inputVal.toUpperCase().trim();
+        let key = inputVal.toUpperCase().trim();
 
         if (this.state.cache[key]) {
             this.onReceiveChoices(this.state.cache[key]);
@@ -145,7 +145,7 @@ class AbstractEttoService {
                     this.Spinner.show();
 
                     this.source(inputVal, res => {
-                        const choices = res ? res.map(choiceMap) : [];
+                        let choices = res ? res.map(choiceMap) : [];
 
                         this.actions.setCache({ ...this.state.cache, [key]: choices });
                         this.actions.setIsFetching(false);
@@ -161,7 +161,7 @@ class AbstractEttoService {
     }
 
     onReceiveChoices(choices) {
-        const filtered = this.filterFn(
+        let filtered = this.filterFn(
             this.Input.value,
             choices,
             this.matchFullWord,
@@ -204,7 +204,7 @@ class AbstractEttoService {
             this.render(this.Input.value, this.state.filtered);
             this.setShowDropdown(this.state.filtered.length > 0);
 
-            const highlightedItem = this.UnorderedList.el.getElementsByClassName('etto-highlighted')[0];
+            let highlightedItem = this.UnorderedList.el.getElementsByClassName('etto-highlighted')[0];
             if (highlightedItem !== undefined && highlightedItem !== null) {
                 try { highlightedItem.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
                 catch (TypeError) { /** jsdom **/ }
@@ -217,7 +217,7 @@ class AbstractEttoService {
                 e.preventDefault();
 
                 if (this.state.highlighted !== null) {
-                    const choice = this.state.filtered[this.state.highlighted];
+                    let choice = this.state.filtered[this.state.highlighted];
                     this.onSelection(choice);
                 }
             }

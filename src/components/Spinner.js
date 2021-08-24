@@ -35,7 +35,7 @@ class Spinner extends Element {
     createDots() {
         // Create Dots
         for (let i = 0; i < 3; i++) {
-            const dot = document.createElement('div');
+            let dot = document.createElement('div');
             dot.classList.add('etto-spinner-dot');
             dot.setAttribute(
                 'style',

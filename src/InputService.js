@@ -19,7 +19,7 @@ class InputService extends AbstractEttoService {
     }
 
     onInput(e) {
-        const inputVal = e.target.value;
+        let inputVal = e.target.value;
         if (this.onValue) this.onValue(inputVal); // custom callback
 
         if (inputVal) this.ClearBtn.show();
@@ -51,7 +51,7 @@ class InputService extends AbstractEttoService {
     }
 
     onSelection(choice) {
-        const filtered = this.filterFn(
+        let filtered = this.filterFn(
             choice.label,
             this.state.choices,
             this.matchFullWord,

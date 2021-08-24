@@ -39,12 +39,12 @@ class UnorderedList extends Element {
         this.setInnerHtml('');
         let html = '';
 
-        const listLen = list.length;
+        let listLen = list.length;
         if (listLen > 0) {
             // Build HTML
             for (let i = 0; i < listLen; i++) {
-                const isSelected = selected ? (list[i].value === selected.value) : false;
-                const isHighlighted = i === highlightedIndex;
+                let isSelected = selected ? (list[i].value === selected.value) : false;
+                let isHighlighted = i === highlightedIndex;
                 html += this.createItemFn(list[i], i, inputVal, isHighlighted, isSelected);
             }
 

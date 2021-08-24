@@ -21,7 +21,7 @@ class Element {
     }
 
     removeAllEvents() {
-        for (const event in this.listeners) {
+        for (let event in this.listeners) {
             this.removeEventListener(event);
         }
     }

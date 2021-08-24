@@ -30,7 +30,7 @@ class SelectService extends AbstractEttoService {
     }
 
     onInput(e) {
-        const inputVal = e.target.value;
+        let inputVal = e.target.value;
         if (this.onValue) this.onValue(inputVal); // custom callback
 
         if (inputVal) this.ClearBtn.show();
