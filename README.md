@@ -160,12 +160,13 @@ const etto = new Etto(document.getElementById('my-input'), {
     // in case you already have some cached data you'd like to initialize with Etto
     initialCache: {},
 
-    // createItemFn(choice: object, inputVal: string, isHighlighted: boolean, isSelected: boolean): string
-    // customize how each list item is rendered; see live examples page
+    // createItemFn(choice: object, index: number, inputVal: string, isHighlighted: boolean, isSelected: boolean): string
+    // customize how each list item is rendered
+    // Note: The rendered item *must* be an `li` element with a `data-index` attribute; see live examples page for a detailed explanation (https://kevinfiol.com/etto/#createItemFn)
     createItemFn: undefined,
 
     // filterFn(inputVal: string, choices: array, matchFullWord: boolean, maxResults: number): array
-    // customize how etto filters results; see live examples page
+    // customize how etto filters results; see live examples page (https://kevinfiol.com/etto/#filterFn)
     // defaults to using the included filter function, /src/util.js > filterChoices
     filterFn: filterChoices,
 

@@ -38,7 +38,7 @@
 
         <p><em>note:</em> etto is intended for use in <a href="https://firefox.com">modern</a> <a href="https://github.com/Eloston/ungoogled-chromium">browsers</a></p>
 
-        <h2>install</h2>
+        <h2 id="install">install</h2>
         <code><pre>npm install etto</pre></code>
         <p>or</p>
         <code><pre>&lt;script src="https://unpkg.com/etto/dist/etto.min.js"></script></pre></code>
@@ -46,10 +46,10 @@
         <p>and (optional) styles</p>
         <code><pre>&lt;link rel="stylesheet" href="https://unpkg.com/etto/dist/etto.css"></pre></code>
 
-        <h2>examples</h2>
+        <h2 id="examples">examples</h2>
 
         <div class="etto-examples">
-            <h3>input mode</h3>
+            <h3 id="input-mode">input mode</h3>
             <div id="demo-1"></div>
             <code>
                 <pre>
@@ -62,7 +62,7 @@ choices = [
 etto = new Etto(document.getElementById('demo-1'), {}, choices);</pre>
             </code>
 
-            <h3>select mode</h3>
+            <h3 id="select-mode">select mode</h3>
             <div id="demo-2"></div>
             <code>
                 <pre>
@@ -75,7 +75,7 @@ choices = [
 etto = new Etto(document.getElementById('demo-2'), { selectMode: true }, choices);</pre>
             </code>
 
-            <h3>ajax source (example using <a href="https://swapi.dev/">star wars api</a>)</h3>
+            <h3 id="ajax-source">ajax source (example using <a href="https://swapi.dev/">star wars api</a>)</h3>
             <div id="demo-3"></div>
             <p>try searching for "darth vader".</p>
             <p>this example uses <code>fetch</code>, and <code>AbortController</code> to abort requests that don't need to be completed. Remember to abort requests you don't intend to complete. Read more <a href="https://javascript.info/fetch-abort">here</a>.</p>
@@ -111,16 +111,17 @@ etto = new Etto(document.getElementById('demo-3'), {
 });</pre>
             </code>
 
-            <h2>using custom properties</h2>
+            <h2 id="using-custom-properties">using custom properties</h2>
             <p>etto has a few customizable properties for you to use.</p>
 
-            <h3>emptyHtml</h3>
+            <h3 id="emptyHtml">emptyHtml</h3>
             <div id="demo-4"></div>
             <code><pre>etto = new Etto(document.getElementById('demo-4'), { emptyHtml: '&lt;b>Nothing here chief!&lt;/b>' }, choices);</pre></code>
         
-            <h3>createItemFn</h3>
-            <p>use the <code>createItemFn</code> property to tell etto how to render items in the dropdown list. a couple of parameters are passed, which you can use to return an html string.</p>
-            <code><pre>createItemFn(choice: object, inputVal: string, isHighlighted: boolean, isSelected: boolean): string</pre></code>
+            <h3 id="createItemFn">createItemFn</h3>
+            <p>use the <code>createItemFn</code> property to tell etto how to render <code>li<code> items in the dropdown list. a couple of parameters are passed, which you can use to return an html string.</p>
+            <p><strong>Note:</strong> elements <em>must</em> be <code>li</code> tags and <em>must</em> include a <code>data-index</code> attribute with the value provided by the <code>index</code> parameter. see below for an example.</p>
+            <code><pre>createItemFn(choice: object, index: number, inputVal: string, isHighlighted: boolean, isSelected: boolean): string</pre></code>
             <div id="demo-5"></div>
             <code>
                 <pre>
@@ -131,8 +132,8 @@ choices = [
 ];
 
 etto = new Etto(document.getElementById('demo-5'), {
-    createItemFn: (choice, inputVal, isHighlighted, isSelected) => {
-        return '&lt;li class="etto-li">' +
+    createItemFn: (choice, index, inputVal, isHighlighted, isSelected) => {
+        return `&lt;li class="etto-li" data-index="${index}">` +
             '&lt;img src="https://kevinfiol.github.io/etto/img.png" />' +
             `&lt;b>label: ${choice.label}, value: ${choice.value}&lt;/b>` +
         '&lt;/li>';
@@ -140,7 +141,7 @@ etto = new Etto(document.getElementById('demo-5'), {
 }, choices);</pre>
             </code>
 
-            <h3>filterFn</h3>
+            <h3 id="filterFn">filterFn</h3>
             <p>use the <code>filterFn</code> property to tell etto how to filter the choices list.</p>
             <code><pre>filterFn(inputVal: string, choices: array, matchFullWord: boolean, maxResults: number): array</pre></code>
             <p>This example uses a filter function that only matches against <code>choice.value</code>, and does not consider <code>choice.label</code></p>
@@ -164,7 +165,7 @@ etto = new Etto(document.getElementById('demo-6'), {
 }, choices);</pre>
             </code>
 
-            <h3>onSelect & onClear</h3>
+            <h3 id="onSelect-and-onClear">onSelect & onClear</h3>
             <p>pass a callback function as <code>onSelect</code> to tell etto to trigger something upon selecting a choice. similarly, use <code>onClear</code> to trigger an event upon programmatically clearing the input.</p>
             <div id="demo-7"></div>
             <div id="demo-7-box" style="font-size: 1.5em; padding: 1em; text-align: center;">None selected.</div>
@@ -190,7 +191,7 @@ etto = new Etto(document.getElementById('demo-7'), {
             </code>
 
 
-            <h3>onValue</h3>
+            <h3 id="onValue">onValue</h3>
             <p>you can also use the <code>onValue</code> callback which triggers after every new value to the <code>input</code> element.</p>
             <div id="demo-8"></div>
             <div id="demo-8-box" style="font-size: 1.5em; padding: 1em; text-align: center;">Waiting for input...</div>
@@ -219,7 +220,7 @@ etto = new Etto(document.getElementById('demo-8'), {
             <p><a href="https://kevinfiol.com">kevinfiol.com</a></p>
         </footer>
     </main>
-    <script src="./dist/etto.min.js"></script>
+    <script src="https://unpkg.com/etto/dist/etto.min.js"></script>
     <script>
         let etto;
         let choices
@@ -287,8 +288,8 @@ etto = new Etto(document.getElementById('demo-8'), {
          * Demo 5
          **/
         etto = new Etto(document.getElementById('demo-5'), {
-            createItemFn: (choice, inputVal, isHighlighted, isSelected) => {
-                return '<li class="etto-li">' +
+            createItemFn: (choice, index, inputVal, isHighlighted, isSelected) => {
+                return `<li class="etto-li" data-index="${index}">` +
                     '<img src="https://kevinfiol.github.io/etto/img.png" />' +
                     `<b>label: ${choice.label}, value: ${choice.value}</b>` +
                 '</li>';
