@@ -1,6 +1,6 @@
 {
   "name": "etto",
-  "version": "1.6.6",
+  "version": "1.6.7",
   "description": "small, agnostic autocomplete & select component",
   "type": "module",
   "license": "MIT",
@@ -13,7 +13,7 @@
   "umd:name": "etto",
   "author": "kevinfiol",
   "scripts": {
-    "build": "microbundle --no-sourcemap --no-compress --format=modern,cjs,esm && microbundle --no-sourcemap --format=umd",
+    "build": "microbundle --no-sourcemap --no-compress --format=modern,cjs,esm && microbundle --no-sourcemap --format=umd --name=Etto",
     "test": "uvu"
   },
   "engines": {
