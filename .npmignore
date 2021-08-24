@@ -4,7 +4,6 @@ dist/index.html
 dist/examples.js
 dist/*.map
 node_modules/
-src/
 tests/
 .eslintignore
 .eslintrc.cjs
