@@ -2,6 +2,7 @@
 dist/dev/
 dist/index.html
 dist/examples.js
+dist/*.map
 node_modules/
 src/
 tests/
@@ -12,3 +13,4 @@ img.png
 index.html
 rollup.config.js
 yarn.lock
+build.js

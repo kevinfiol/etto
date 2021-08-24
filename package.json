@@ -1,18 +1,19 @@
 {
   "name": "etto",
-  "version": "1.6.8",
+  "version": "1.6.9",
   "description": "small, agnostic autocomplete & select component",
   "type": "module",
   "license": "MIT",
   "repository": "kevinfiol/etto",
   "source": "src/index.js",
   "main": "dist/etto.cjs",
-  "module": "dist/etto.esm.js",
+  "module": "dist/etto.js",
   "exports": "dist/etto.js",
   "unpkg": "dist/etto.min.js",
   "umd:name": "etto",
   "author": "kevinfiol",
   "scripts": {
+    "esbuild": "node build.js",
     "build": "microbundle --no-sourcemap --no-compress --format=modern,cjs,esm && microbundle --no-sourcemap --format=umd --name=Etto",
     "test": "uvu"
   },
@@ -23,6 +24,7 @@
     "dist"
   ],
   "devDependencies": {
+    "esbuild": "^0.12.22",
     "jsdom": "15.1.1",
     "microbundle": "^0.13.3",
     "uvu": "^0.5.1"
