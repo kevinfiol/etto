@@ -6,7 +6,6 @@ node_modules/
 tests/
 .eslintignore
 .eslintrc.cjs
-example_choices.js
 img.png
 index.html
 rollup.config.js

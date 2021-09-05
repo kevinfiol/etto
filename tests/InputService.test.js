@@ -2,7 +2,7 @@ import { suite } from 'uvu';
 import { equal, not } from 'uvu/assert';
 import { dom, keydownEvt } from './dom.js';
 import InputService from '../src/InputService.js';
-import { list_1 } from '../example_choices.js';
+import { list_1 } from './example_choices.js';
 
 const t = suite('InputService service');
 
