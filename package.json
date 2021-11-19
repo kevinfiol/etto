@@ -1,6 +1,6 @@
 {
   "name": "etto",
-  "version": "1.6.13",
+  "version": "1.6.14",
   "description": "small, agnostic autocomplete & select component",
   "type": "module",
   "license": "MIT",
@@ -8,7 +8,6 @@
   "source": "src/index.js",
   "main": "dist/etto.cjs",
   "module": "dist/etto.js",
-  "exports": "dist/etto.js",
   "unpkg": "dist/etto.min.js",
   "umd:name": "etto",
   "author": "kevinfiol",
